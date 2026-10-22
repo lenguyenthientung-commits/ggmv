@@ -18,7 +18,6 @@ interface HeaderProps {
   setThemeId: (t: ThemeId) => void;
   mode: Mode;
   setMode: (m: Mode) => void;
-  seasonName?: string;
   houseNote: string;
 }
 
@@ -50,7 +49,6 @@ export const Header: React.FC<HeaderProps> = ({
   setThemeId,
   mode,
   setMode,
-  seasonName,
   houseNote,
 }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -183,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <AppearanceMenu themeId={themeId} setThemeId={setThemeId} mode={mode} setMode={setMode} seasonName={seasonName} />
+          <AppearanceMenu themeId={themeId} setThemeId={setThemeId} mode={mode} setMode={setMode} />
           <button
             onClick={toggleMusic}
             className={`btn-icon ${musicOn ? '!text-accent' : ''}`}

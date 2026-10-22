@@ -8,7 +8,6 @@ interface AppearanceMenuProps {
   setThemeId: (t: ThemeId) => void;
   mode: Mode;
   setMode: (m: Mode) => void;
-  seasonName?: string;
 }
 
 const MODES: { id: Mode; label: string; icon: React.ReactNode }[] = [
@@ -17,7 +16,7 @@ const MODES: { id: Mode; label: string; icon: React.ReactNode }[] = [
   { id: 'system', label: 'Hệ thống', icon: <Monitor className="w-3.5 h-3.5" /> },
 ];
 
-export const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ themeId, setThemeId, mode, setMode, seasonName }) => {
+export const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ themeId, setThemeId, mode, setMode }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -96,11 +95,6 @@ export const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ themeId, setThem
             })}
           </div>
 
-          <p className="mt-3 text-[12px] leading-snug text-ink-3">
-            {themeId === 'auto' && seasonName
-              ? `Mặc định đổi màu theo dịp lễ: đang là “${seasonName}”.`
-              : 'Mặc định tự đổi màu theo dịp lễ (Tết, Halloween…).'}
-          </p>
         </div>
       )}
     </div>

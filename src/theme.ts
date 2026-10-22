@@ -48,14 +48,10 @@ export function saveAppearance(theme: ThemeId, mode: Mode) {
 
 export const systemPrefersDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-// Seasonal accent only applies while the default theme is selected
-export function applyAppearance(theme: ThemeId, mode: Mode, seasonId: string | null) {
+export function applyAppearance(theme: ThemeId, mode: Mode) {
   const root = document.documentElement;
   if (theme === 'auto') delete root.dataset.theme;
   else root.dataset.theme = theme;
-
-  if (theme === 'auto' && seasonId) root.dataset.season = seasonId;
-  else delete root.dataset.season;
 
   const dark = mode === 'dark' || (mode === 'system' && systemPrefersDark());
   root.dataset.mode = dark ? 'dark' : 'light';

@@ -19,7 +19,7 @@ interface RandomWheelProps {
 const WHEEL_SIZE = 440;
 const DPR = 2;
 
-// Read a design token so the wheel follows the season's accent
+// Read a design token so the wheel follows the theme's accent
 const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 // Radiating speed lines behind the result reveal (static, decorative)
@@ -288,9 +288,9 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     drawWheel(currentAngleRef.current);
     // Redraw once web fonts are ready so canvas text uses them
     document.fonts?.ready.then(() => drawWheel(currentAngleRef.current));
-    // Canvas does not follow CSS: redraw when theme / mode / season changes
+    // Canvas does not follow CSS: redraw when theme / mode changes
     const observer = new MutationObserver(() => drawWheel(currentAngleRef.current));
-    observer.observe(document.documentElement, { attributeFilter: ['data-theme', 'data-mode', 'data-season'] });
+    observer.observe(document.documentElement, { attributeFilter: ['data-theme', 'data-mode'] });
     return () => observer.disconnect();
   }, [slices]);
 

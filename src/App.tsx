@@ -11,8 +11,6 @@ import { AddMovieModal } from './components/AddMovieModal';
 import { CinemaScreenModal } from './components/CinemaScreenModal';
 import { MovieStats } from './components/MovieStats';
 import { CinemaRulesModal } from './components/CinemaRulesModal';
-import { SeasonalBanner } from './components/SeasonalBanner';
-import { getActiveCampaign } from './data/seasonalCampaigns';
 import { ThemeId, Mode, loadTheme, loadMode, saveAppearance, applyAppearance } from './theme';
 import { EggEvent, EggId, DEFAULT_HOUSE_NOTE, takeUnseenEvents, markSurface, hasCrossSurfaceVisit } from './easterEggs';
 import { ProjectorDust, IntermissionCard, UnlockToast } from './components/EasterEggs';
@@ -28,20 +26,19 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [cinemaModalMovie, setCinemaModalMovie] = useState<Movie | null>(null);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
-  const [campaign] = useState(() => getActiveCampaign());
   const [themeId, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [mode, setMode] = useState<Mode>(() => loadMode());
 
-  // Appearance: CSS keys off <html data-theme / data-mode / data-season>
+  // Appearance: CSS keys off <html data-theme / data-mode>
   useEffect(() => {
-    applyAppearance(themeId, mode, campaign?.id ?? null);
+    applyAppearance(themeId, mode);
     saveAppearance(themeId, mode);
     if (mode !== 'system') return;
     const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const follow = () => applyAppearance(themeId, mode, campaign?.id ?? null);
+    const follow = () => applyAppearance(themeId, mode);
     media.addEventListener('change', follow);
     return () => media.removeEventListener('change', follow);
-  }, [themeId, mode, campaign]);
+  }, [themeId, mode]);
 
   // Persist user selection
   const handleSetUser = (name: string) => {
@@ -386,8 +383,7 @@ export default function App() {
         setThemeId={setThemeId}
         mode={mode}
         setMode={setMode}
-        seasonName={campaign?.title}
-        houseNote={campaign?.note ?? DEFAULT_HOUSE_NOTE}
+        houseNote={DEFAULT_HOUSE_NOTE}
       />
 
       {/* Main Container */}
@@ -405,8 +401,6 @@ export default function App() {
             onOpenSession={() => setActiveTab('sessions')}
           />
         )}
-
-        {campaign && activeTab === 'movies' && <SeasonalBanner campaign={campaign} />}
 
         {/* Tab 1: Kho Phim (Watchlist Vault) */}
         {activeTab === 'movies' && (
