@@ -117,7 +117,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <div className="panel overflow-hidden shadow-[6px_6px_0_var(--color-shadow)]">
               <div className="flex items-center justify-between px-5 h-12 border-b-[1.5px] border-ink">
                 <span className="label !text-ink">{world.name}</span>
-                <span className="label">Hồn &amp; Xác</span>
+                <span className="label">{world.kicker.split(' · ')[0]}</span>
               </div>
               <div className="p-3 sm:p-4">
                 <WorldKeyVisual id={world.id} title={world.concept} />

@@ -1,5 +1,5 @@
 /* =====================================================================
-   Seasonal worlds · "Linh hồn & Thể xác"
+   Seasonal worlds
    A world overrides the WHOLE palette (it is its own light or dark world),
    the shape tokens (corners), the display type (width, slant, tracking),
    the page pattern and one ambient motion inside its key visual.
@@ -22,7 +22,7 @@ html[data-world="halloween"] {
   --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M8 8l6 6M14 8l-6 6M30 28l5 5M35 28l-5 5' stroke='%23b8ff3b' stroke-opacity='.10' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
-/* ---------- Tết · Hồn Về (light, woodblock) ---------- */
+/* ---------- Tết · Mở Hàng (light, woodblock) ---------- */
 html[data-world="tet"] {
   color-scheme: light;
   --color-paper: #f3ecdc; --color-card: #fbf6ea; --color-sunk: #e8dfca; --color-line: #d4c7a8;
@@ -37,7 +37,7 @@ html[data-world="tet"] {
 /* woodblock print: every sheet gets an inner second rule */
 html[data-world="tet"] .panel { box-shadow: inset 0 0 0 4px var(--color-card), inset 0 0 0 5px var(--color-ink); }
 
-/* ---------- Valentine · Hai Hồn (light) ---------- */
+/* ---------- Valentine · Ghế Đôi (light) ---------- */
 html[data-world="valentine"] {
   color-scheme: light;
   --color-paper: #fbe9e4; --color-card: #fff6f3; --color-sunk: #f6d9d2; --color-line: #ebc2b9;
@@ -46,11 +46,11 @@ html[data-world="valentine"] {
   --color-shadow: #3b0d1d;
   --art-ink: #3b0d1d; --art-body: #fff6f3; --art-soul: #ffd1dc; --art-accent: #ff2e63; --art-alt: #7a1fa2; --art-bg: #ffd9e0; --art-hole: #3b0d1d;
   --radius-card: 22px; --radius-btn: 999px;
-  --display-stretch: 70%; --display-skew: -8deg;
+  --display-stretch: 70%; --display-skew: -8deg; --hero-size: clamp(52px, 8.4vw, 116px);
   --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M10 30c6-12 14 12 20 0s14 12 20 0' fill='none' stroke='%23ff2e63' stroke-opacity='.09' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
-/* ---------- Giáng sinh · Tuyết Ngược (light) ---------- */
+/* ---------- Giáng sinh · Chiếu Lại (light) ---------- */
 html[data-world="christmas"] {
   color-scheme: light;
   --color-paper: #eaf2f4; --color-card: #f7fbfc; --color-sunk: #d9e7ea; --color-line: #bdd3d8;
@@ -63,7 +63,7 @@ html[data-world="christmas"] {
   --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Cpath d='M12 18v-8m-3 3l3-3l3 3M38 44v-8m-3 3l3-3l3 3' fill='none' stroke='%230f2a24' stroke-opacity='.08' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
-/* ---------- Trung thu · Lên Cung Trăng (dark) ---------- */
+/* ---------- Trung thu · Đèn Kéo Quân (dark) ---------- */
 html[data-world="mid-autumn"] {
   color-scheme: dark;
   --color-paper: #0d1330; --color-card: #151d45; --color-sunk: #1d2756; --color-line: #2e3a73;
@@ -94,33 +94,33 @@ html[data-world="halloween"] .possessed span span:nth-child(4n + 2) { transform:
 html[data-world="halloween"] .possessed span span:nth-child(7n) { transform: skewX(-10deg) scaleY(1.08); }
 
 /* ---------- Motion: one ambient loop per world, inside its key visual ---------- */
-.w-dive, .w-bob, .w-rise, .w-beat, .w-snow, .w-escape, .w-sway { transform-box: fill-box; transform-origin: center; }
+.w-dive, .w-bob, .w-rise, .w-beat, .w-snow, .w-flicker { transform-box: fill-box; transform-origin: center; }
 .w-dive { animation: w-dive 4s ease-in-out infinite; }
 .w-bob { animation: w-bob 6s ease-in-out infinite; }
 .w-rise { animation: w-rise 5s ease-in-out infinite; }
 .w-beat { animation: w-beat 2.4s ease-in-out infinite; }
-.w-snow { animation: w-snow 6.5s linear infinite; }
-.w-escape { animation: w-escape 5s ease-in-out infinite; }
-.w-sway { transform-box: view-box; transform-origin: 150px 222px; animation: w-sway 7s ease-in-out infinite; }
+.w-snow { animation: w-snow 7s linear infinite; }
+.w-flicker { transform-origin: 50% 100%; animation: w-flicker 1.3s ease-in-out infinite; }
+.w-reel { animation: w-reel 12s linear infinite; }
 
 /* the Halloween soul is drawn upside down (rotate 180), so its local -Y points down the neck */
 @keyframes w-dive { 50% { transform: translateY(-5px); } }
 @keyframes w-bob { 50% { transform: translate(-4px, -8px) rotate(-4deg); } }
 @keyframes w-rise { 50% { transform: translateY(-7px); } }
 @keyframes w-beat { 0%, 30%, 100% { transform: scale(1); } 12% { transform: scale(1.08); } 22% { transform: scale(1.03); } }
-@keyframes w-snow { 0% { transform: translateY(14px); opacity: 0; } 20%, 70% { opacity: 1; } 100% { transform: translateY(-46px); opacity: 0; } }
-@keyframes w-escape { 50% { transform: translate(5px, -6px); } }
-@keyframes w-sway { 50% { transform: rotate(-2.5deg); } }
+@keyframes w-snow { 0% { transform: translateY(-40px); opacity: 0; } 15%, 80% { opacity: 1; } 100% { transform: translateY(44px); opacity: 0; } }
+@keyframes w-flicker { 50% { transform: scale(0.88, 1.1) rotate(3deg); } }
+/* four paper cut-outs, 70px apart, drawn twice: one period is 280px */
+@keyframes w-reel { to { transform: translateX(-280px); } }
 
 /* The collision moment: hover / focus / tap on the key visual */
 .world-art:hover .w-dive, .world-art:focus .w-dive { animation: w-possess 0.7s var(--ease-snap) forwards; }
 .world-art:hover .w-beat, .world-art:focus .w-beat { animation-duration: 0.9s; }
 .world-art:hover .w-rise, .world-art:focus .w-rise { animation: w-rise-up 0.8s var(--ease-snap) forwards; }
-.world-art:hover .w-escape, .world-art:focus .w-escape { animation: w-escape-away 0.9s var(--ease-snap) forwards; }
-.world-art:hover .w-sway, .world-art:focus .w-sway { animation-duration: 2.2s; }
+.world-art:hover .w-snow, .world-art:focus .w-snow { animation-duration: 2.6s; }
+.world-art:hover .w-reel, .world-art:focus .w-reel { animation-duration: 3s; }
 @keyframes w-possess { to { transform: translateY(-34px); } }
 @keyframes w-rise-up { to { transform: translateY(-22px) scale(1.06); } }
-@keyframes w-escape-away { to { transform: translate(26px, -30px) rotate(8deg); } }
 
 /* Entering a world: a curtain in the world's colours sweeps up once */
 @keyframes world-curtain {
@@ -131,7 +131,7 @@ html[data-world="halloween"] .possessed span span:nth-child(7n) { transform: ske
 .world-curtain { animation: world-curtain 1s var(--ease-snap) forwards; }
 
 @media (prefers-reduced-motion: reduce) {
-  .w-dive, .w-bob, .w-rise, .w-beat, .w-snow, .w-escape, .w-sway { animation: none !important; }
+  .w-dive, .w-bob, .w-rise, .w-beat, .w-snow, .w-flicker, .w-reel { animation: none !important; }
   .w-snow { opacity: 0.8; }
   .world-curtain { display: none; }
 }

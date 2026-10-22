@@ -1,7 +1,6 @@
-// Seasonal worlds: "Linh hồn & Thể xác" (Soul & Body).
-// Each world is a separate visual universe (palette, shape, type, key visual, motion, copy)
-// built on the same two characters: Hồn (a soul made of projector light) and Xác (a faceless
-// body). Visual tokens live in worlds.css under html[data-world="<id>"]; art in art.tsx.
+// Seasonal worlds. Each world is a separate visual universe (palette, shape, type, key visual,
+// motion, copy) with its own concept, always tied back to watching films together.
+// Visual tokens live in worlds.css under html[data-world="<id>"]; art in art.tsx.
 //
 // Worlds are opt-in: the default preference is "off". "auto" follows the calendar below.
 
@@ -11,7 +10,7 @@ export type WorldPref = 'off' | 'auto' | WorldId;
 export interface World {
   id: WorldId;
   name: string;      // menu label
-  concept: string;   // one-line story of the soul/body collision
+  concept: string;   // one-line story of the key visual
   kicker: string;    // hero kicker
   headline: [string, string]; // hero headline, two lines (second line takes the accent)
   tagline: string;   // hero paragraph
@@ -34,21 +33,21 @@ export const WORLDS: World[] = [
   },
   {
     id: 'tet',
-    name: 'Hồn Về',
-    concept: 'Cái Xác gói lá dong mở nắp, các hồn nhỏ bay về đủ mặt.',
-    kicker: 'Tết · Đoàn viên & Tái sinh',
-    headline: ['Hồn về', 'đủ mặt'],
-    tagline: 'Năm mới, kho phim mới, ghế cũ. Ai đi xa cũng về kịp suất đầu năm.',
-    signoff: 'Một năm, một nhà, một máy chiếu. Chúc cả hội phim hay vạn sự.',
+    name: 'Mở Hàng',
+    concept: 'Phong lì xì đầu năm không đựng tiền, chỉ đựng một tấm vé suất mở hàng.',
+    kicker: 'Tết · Suất mở hàng',
+    headline: ['Lì xì', 'bằng vé'],
+    tagline: 'Suất chiếu đầu năm là suất mở hàng. Mở hàng phim hay thì cả năm chọn gì cũng trúng.',
+    signoff: 'Năm mới, kho phim mới, ghế cũ. Chúc cả hội phim hay vạn sự.',
     dark: false,
     swatch: ['#f3ecdc', '#d6336c'],
   },
   {
     id: 'valentine',
-    name: 'Hai Hồn',
-    concept: 'Hai hồn rời ngực hai cái Xác và xoắn thành một trái tim.',
-    kicker: 'Valentine · Heart, Soul & Desire',
-    headline: ['Hai hồn', 'một vé'],
+    name: 'Ghế Đôi',
+    concept: 'Hai ghế hàng cuối, tay vịn ở giữa đã gập lên, một hộp bỏng ngô cho hai người.',
+    kicker: 'Valentine · Hàng ghế cuối',
+    headline: ['Ghế đôi', 'hàng cuối'],
     tagline: 'Không cần người yêu. Chỉ cần một người chịu ngồi xem hết credit cùng bạn.',
     signoff: 'Tim đập theo nhịp 24 khung hình mỗi giây.',
     dark: false,
@@ -56,22 +55,22 @@ export const WORLDS: World[] = [
   },
   {
     id: 'christmas',
-    name: 'Tuyết Ngược',
-    concept: 'Người tuyết thở ra linh hồn, và linh hồn mang luôn củ cà rốt đi.',
-    kicker: 'Giáng sinh · Surreal Wonderland',
-    headline: ['Tuyết rơi', 'ngược lên'],
-    tagline: 'Ở rạp này tuyết bay lên trời, người tuyết bị cướp mũi, và phim vẫn chiếu đúng giờ.',
-    signoff: 'Quà lớn nhất năm: không ai spoil cái kết.',
+    name: 'Chiếu Lại',
+    concept: 'Cái TV cũ chiếu lại phim quen: tuyết rơi trong màn hình, tất Noel treo ở núm vặn.',
+    kicker: 'Giáng sinh · Mùa xem lại',
+    headline: ['Phim cũ', 'tuyết mới'],
+    tagline: 'Giáng sinh là mùa được phép xem lại phim đã thuộc thoại. Không ai phàn nàn, vì ai cũng thuộc.',
+    signoff: 'Quà lớn nhất năm: một bộ phim đã biết kết mà vẫn khóc.',
     dark: false,
     swatch: ['#eaf2f4', '#ff7a1a'],
   },
   {
     id: 'mid-autumn',
-    name: 'Lên Cung Trăng',
-    concept: 'Xác níu rễ đa ở lại mặt đất, Hồn leo rễ lên trăng.',
-    kicker: 'Trung thu · Lunar Spirits',
-    headline: ['Hồn lên', 'cung trăng'],
-    tagline: 'Chú Cuội bám rễ đa mà bay. Cả hội bám vòng quay mà chọn phim.',
+    name: 'Đèn Kéo Quân',
+    concept: 'Hơi nến làm lồng đèn xoay, bóng người ngựa chạy vòng quanh: rạp chiếu đầu tiên của tuổi thơ.',
+    kicker: 'Trung thu · Rạp chiếu đầu tiên',
+    headline: ['Chiếu bóng', 'dưới trăng'],
+    tagline: 'Trước khi có máy chiếu đã có đèn kéo quân: một ngọn nến, vài hình cắt giấy, và cả xóm ngồi xem bóng chạy.',
     signoff: 'Trăng tròn rồi. Đồng thuận của hội vẫn còn khuyết.',
     dark: true,
     swatch: ['#0d1330', '#ffc857'],

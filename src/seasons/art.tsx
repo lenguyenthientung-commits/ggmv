@@ -1,10 +1,10 @@
 import React from 'react';
 import { WorldId } from './worlds';
 
-// Original 2D art for the seasonal worlds. Two recurring characters:
+// Original 2D art for the seasonal worlds. Halloween stars two characters:
 //   Hồn: a soul made of projector light (teardrop body, wavy tail, two eyes)
-//   Xác: a faceless body (mannequin), sometimes missing its head, sometimes its heart
-// Every colour comes from --art-* tokens (worlds.css), so each world paints the same cast.
+//   Xác: a faceless body (mannequin), missing its head
+// The other worlds each draw their own object. Every colour comes from --art-* tokens (worlds.css).
 
 const INK = 'var(--art-ink)';
 const BODY = 'var(--art-body)';
@@ -138,7 +138,7 @@ const HalloweenArt = () => (
   </>
 );
 
-// ---------- Tết: Reunion & Rebirth ----------
+// ---------- Tết: the opening show (lì xì holds a ticket, not money) ----------
 const Spiral = ({ x, y, r = 0 }: { x: number; y: number; r?: number }) => (
   <path transform={`translate(${x} ${y}) rotate(${r})`} d="M0 0 m-9 0 a9 9 0 1 1 9 9 a6 6 0 1 1 -6 -6 a3 3 0 1 1 3 3" fill="none" {...line} strokeWidth={2} />
 );
@@ -150,128 +150,175 @@ const Blossom = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
     <circle r={3.5} fill={BODY} {...line} strokeWidth={2} />
   </g>
 );
+const display = { fontFamily: 'Archivo, sans-serif', fontWeight: 900, fill: INK } as const;
 const TetArt = () => (
   <>
     <rect x={30} y={30} width={340} height={340} fill={BG} {...line} />
     <rect x={42} y={42} width={316} height={316} fill="none" stroke={INK} strokeWidth={1.5} />
     <Spiral x={58} y={58} /><Spiral x={342} y={58} r={90} /><Spiral x={58} y={342} r={-90} /><Spiral x={342} y={342} r={180} />
-    {/* family souls flying home */}
-    {[
-      [84, 118, 0.42, 24], [318, 104, 0.48, -26], [70, 246, 0.36, 38], [330, 236, 0.4, -32],
-    ].map(([x, y, s, r], i) => (
-      <g key={i}>
-        <path d={`M${x} ${y} Q${(x + 200) / 2} ${y - 30} 200 168`} fill="none" stroke={ACCENT} strokeWidth={2} strokeDasharray="2 7" strokeLinecap="round" />
-        <Hon x={x} y={y} s={s} r={r} eyes="happy" />
+    {/* peach branch across the corner */}
+    <path d="M44 120 C84 118 112 96 132 64 M96 110 C104 92 100 76 92 60" fill="none" stroke={INK} strokeWidth={4} strokeLinecap="round" />
+    <Blossom x={132} y={66} s={0.8} /><Blossom x={92} y={62} s={0.6} /><Blossom x={70} y={116} s={0.7} />
+    <Blossom x={314} y={262} s={0.75} /><Blossom x={334} y={296} s={0.5} />
+    <g transform="rotate(-6 200 260)">
+      {/* envelope back + open flap */}
+      <rect x={120} y={180} width={160} height={168} rx={6} fill={ACCENT} {...line} />
+      <path d="M120 184 L200 132 L280 184 Z" fill={ACCENT} {...line} />
+      {/* the first ticket of the year slides out */}
+      <g className="w-rise">
+        <path d="M142 104 h116 v86 a10 10 0 0 0 0 20 v86 h-116 v-86 a10 10 0 0 0 0 -20 z" fill={BODY} {...line} />
+        <text x={200} y={134} textAnchor="middle" {...display} fontSize={13} letterSpacing={3}>SUẤT</text>
+        <text x={200} y={182} textAnchor="middle" {...display} fontSize={44}>01</text>
+        <path d="M160 200 h80" stroke={INK} strokeWidth={1.5} strokeDasharray="4 5" />
+        <text x={200} y={226} textAnchor="middle" {...display} fontSize={12} letterSpacing={2} fill={ACCENT}>MỞ HÀNG</text>
       </g>
-    ))}
-    {/* the body: wrapped in dong leaves like bánh chưng, lid open */}
-    <Xac x={200} y={318} s={0.55} />
-    <g>
-      <rect x={140} y={222} width={120} height={98} rx={6} fill={ALT} {...line} />
-      <path d="M150 236 l26 26 M196 232 l30 30 M224 288 l26 -26 M156 300 l22 -20" stroke={BODY} strokeOpacity={0.35} strokeWidth={2} />
-      <path d="M180 222 v98 M220 222 v98 M140 252 h120 M140 290 h120" stroke={BODY} strokeWidth={4} />
+      {/* front pocket with the seal */}
+      <path d="M120 236 L200 262 L280 236 V342 a6 6 0 0 1 -6 6 H126 a6 6 0 0 1 -6 -6 Z" fill={ACCENT} {...line} />
+      <circle cx={200} cy={302} r={26} fill={BG} {...line} />
+      <circle cx={200} cy={302} r={20} fill="none" stroke={INK} strokeWidth={1.5} />
+      <text x={200} y={308} textAnchor="middle" {...display} fontSize={15}>LỘC</text>
     </g>
-    <g transform="rotate(-28 140 222)">
-      <rect x={136} y={200} width={128} height={24} rx={4} fill={ALT} {...line} />
-      <path d="M180 200 v24 M220 200 v24" stroke={BODY} strokeWidth={4} />
-    </g>
-    {/* rebirth: the big soul rises like steam out of the box */}
-    <Hon x={206} y={160} s={1.1} eyes="happy" className="w-rise" />
-    <Blossom x={292} y={300} s={0.9} /><Blossom x={110} y={312} s={0.7} /><Blossom x={318} y={170} s={0.55} />
+    <path d="M286 104 l12 -10 M292 124 l16 -2 M112 148 l-14 -6" stroke={INK} strokeWidth={3} strokeLinecap="round" />
   </>
 );
 
-// ---------- Valentine: Heart, Soul & Desire ----------
+// ---------- Valentine: the back-row love seat ----------
 const TICKET = 'M40 70 h320 v100 a26 26 0 0 0 0 60 v100 h-320 v-100 a26 26 0 0 0 0 -60 z';
+const HEART = 'M0 10 C-14 0 -14 -12 -6 -12 C-2 -12 0 -9 0 -7 C0 -9 2 -12 6 -12 C14 -12 14 0 0 10 Z';
+const Seat = ({ x, label }: { x: number; label: string }) => (
+  <g transform={`translate(${x} 0)`}>
+    <path d="M10 318 v22 M110 318 v22" stroke={INK} strokeWidth={6} strokeLinecap="round" />
+    <rect x={0} y={144} width={120} height={140} rx={28} fill={ACCENT} {...line} />
+    <path d="M30 168 v90 M60 166 v94 M90 168 v90" stroke={INK} strokeOpacity={0.25} strokeWidth={2} strokeLinecap="round" />
+    <rect x={38} y={154} width={44} height={18} rx={3} fill={BODY} {...line} strokeWidth={2} />
+    <text x={60} y={167} textAnchor="middle" {...display} fontSize={11}>{label}</text>
+    <rect x={-4} y={270} width={128} height={48} rx={16} fill={ACCENT} {...line} />
+  </g>
+);
 const ValentineArt = () => (
   <>
     <Frame d={TICKET} />
     <path d="M60 92 h280" stroke={INK} strokeDasharray="4 6" strokeWidth={1.5} />
-    <Xac x={118} y={318} s={0.92} hollowChest />
-    <Xac x={282} y={318} s={0.92} hollowChest flip />
-    {/* both souls leave through the chest and cross on the way up */}
-    {['M112 244 C150 236 236 222 200 186', 'M288 244 C250 236 164 222 200 186'].map((d) => (
-      <g key={d}>
-        <path d={d} fill="none" stroke={INK} strokeWidth={17} strokeLinecap="round" />
-        <path d={d} fill="none" stroke={SOUL} strokeWidth={11} strokeLinecap="round" />
-      </g>
-    ))}
-    {/* ...and knot into one heart that still has their eyes */}
-    <g className="w-beat">
-      <path d="M186 104 v-14 M214 104 v-18 M200 102 v-10" stroke={INK} strokeWidth={8} strokeLinecap="round" />
-      <path d="M186 104 v-14 M214 104 v-18 M200 102 v-10" stroke={ACCENT} strokeWidth={3.5} strokeLinecap="round" />
-      <path d="M200 192 C150 160 146 112 172 104 C188 99 197 110 200 118 C203 110 212 99 228 104 C254 112 250 160 200 192 Z" fill={ACCENT} {...line} />
-      <path d="M176 120 q6 -8 14 -8" fill="none" stroke="#fff" strokeOpacity={0.7} strokeWidth={3} strokeLinecap="round" />
-      <ellipse cx={190} cy={142} rx={3.5} ry={5.5} fill={INK} />
-      <ellipse cx={210} cy={142} rx={3.5} ry={5.5} fill={INK} />
+    <text x={200} y={124} textAnchor="middle" {...display} fontSize={12} letterSpacing={3}>HÀNG CUỐI · GHẾ ĐÔI</text>
+    <Seat x={72} label="H12" /><Seat x={208} label="H13" />
+    {/* outer armrests down, the middle one folded up */}
+    <rect x={56} y={250} width={22} height={50} rx={9} fill={ALT} {...line} />
+    <rect x={322} y={250} width={22} height={50} rx={9} fill={ALT} {...line} />
+    <rect x={192} y={150} width={16} height={106} rx={8} fill={ALT} {...line} />
+    {/* one popcorn for two */}
+    <path d="M168 220 a12 12 0 0 1 18 -14 a13 13 0 0 1 24 -2 a12 12 0 0 1 20 12 a10 10 0 0 1 2 16 h-64 a10 10 0 0 1 0 -12 z" fill={SOUL} {...line} />
+    <path d="M168 232 H232 L224 304 H176 Z" fill={BODY} {...line} />
+    <path d="M188 232 l2 72 M212 232 l-2 72" stroke={ACCENT} strokeWidth={8} />
+    <path d="M168 232 H232 L224 304 H176 Z" fill="none" {...line} />
+    <path d="M222 204 C250 180 290 160 312 146" fill="none" stroke={INK} strokeWidth={2} strokeDasharray="1 6" strokeLinecap="round" />
+    {/* ...and one kernel popped into a heart */}
+    <g transform="translate(326 128) scale(1.3)">
+      <path className="w-beat" d={HEART} fill={SOUL} {...line} />
     </g>
   </>
 );
 
-// ---------- Christmas: Surreal Wonderland ----------
+// ---------- Christmas: rerun season on an old TV ----------
 const Flake = ({ x, y, i }: { x: number; y: number; i: number }) => (
   // position on the outer group, motion on the inner path (a CSS animation replaces the SVG transform)
   <g transform={`translate(${x} ${y})`}>
-    <path className="w-snow" style={{ animationDelay: `${i * -1.1}s` }} d="M0 -6 v12 M-5 -3 l10 6 M-5 3 l10 -6" fill="none" {...line} strokeWidth={2} />
+    <path className="w-snow" style={{ animationDelay: `${i * -0.9}s` }} d="M0 -5 v10 M-4 -2.5 l8 5 M-4 2.5 l8 -5" fill="none" {...line} stroke={BODY} strokeWidth={2} />
   </g>
 );
 const ChristmasArt = () => (
   <>
     <rect x={34} y={34} width={332} height={332} rx={40} fill={BG} {...line} />
-    <path d="M34 330 C110 312 170 344 240 326 C300 312 340 330 366 322" fill="none" {...line} />
-    {/* snow falls upward here */}
-    {[[80, 300], [120, 220], [330, 280], [300, 190], [70, 150], [350, 120]].map(([x, y], i) => (
-      <Flake key={i} x={x} y={y} i={i} />
-    ))}
-    <g>
-      {['M158 200 L112 170 M126 180 l-6 -16 M120 176 l-14 2', 'M242 200 L292 168 M276 178 l4 -16 M282 174 l14 0'].map((d) => (
-        <path key={d} d={d} fill="none" {...line} strokeWidth={4} />
+    <path d="M34 340 H366" {...line} />
+    {/* antenna with a star on top */}
+    <path d="M200 120 L150 58 M200 120 L256 64" fill="none" {...line} />
+    <path transform="translate(256 62)" d="M0 -12 L3.5 -4 L12 -3.5 L5.5 2 L7.5 11 L0 6 L-7.5 11 L-5.5 2 L-12 -3.5 L-3.5 -4 Z" fill={ACCENT} {...line} strokeWidth={2} />
+    <circle cx={150} cy={58} r={5} fill={ACCENT} {...line} strokeWidth={2} />
+    <path d="M128 316 l-10 24 M292 316 l10 24" {...line} strokeWidth={5} />
+    <rect x={96} y={118} width={230} height={198} rx={22} fill={ALT} {...line} />
+    <defs>
+      <clipPath id="w-screen">
+        <rect x={116} y={140} width={152} height={154} rx={26} />
+      </clipPath>
+    </defs>
+    <rect x={116} y={140} width={152} height={154} rx={26} fill={INK} />
+    {/* the film inside: snow falling on a small hill and a tree */}
+    <g clipPath="url(#w-screen)">
+      <path d="M116 270 C150 252 190 262 222 252 C246 246 262 254 268 252 V300 H116 Z" fill={BODY} />
+      <path d="M230 254 l-14 0 l14 -40 l14 40 z M230 228 l-9 0 l9 -22 l9 22 z" fill={ACCENT} />
+      <rect x={227} y={254} width={6} height={8} fill={ACCENT} />
+      {[[140, 170], [176, 196], [206, 160], [158, 226], [248, 186], [196, 236], [132, 206], [226, 214]].map(([x, y], i) => (
+        <Flake key={i} x={x} y={y} i={i} />
       ))}
-      <circle cx={200} cy={290} r={58} fill={BODY} {...line} />
-      <circle cx={200} cy={206} r={42} fill={BODY} {...line} />
-      <circle cx={200} cy={142} r={30} fill={BODY} {...line} />
-      <path d="M172 168 q28 12 56 0 l2 12 q-30 12 -60 0 z M206 178 l6 30 l12 -4 l-8 -26" fill={ALT} {...line} />
-      {/* the body has lost its nose (and its soul) */}
-      <circle cx={213} cy={142} r={4.5} fill={HOLE} {...line} strokeWidth={2} />
-      <circle cx={200} cy={206} r={4} fill={INK} /><circle cx={200} cy={226} r={4} fill={INK} />
+      <path d="M134 156 q10 -10 26 -12" fill="none" stroke="#fff" strokeOpacity={0.35} strokeWidth={4} strokeLinecap="round" />
     </g>
-    <path d="M222 132 C240 118 252 110 262 104" fill="none" stroke={INK} strokeWidth={2} strokeDasharray="1 6" strokeLinecap="round" />
-    {/* the soul escapes as breath, carrying the carrot */}
-    <g className="w-escape">
-      <Hon x={292} y={84} s={0.82} r={-28} />
-      <path d="M252 112 L300 96 L262 128 Z" fill={ACCENT} {...line} />
-      <path d="M262 108 l8 8 M272 104 l8 8 M282 100 l6 6" stroke={INK} strokeWidth={1.5} />
-      <path d="M300 96 l10 -10 M300 96 l14 -2 M300 96 l6 -12" stroke={ALT} strokeWidth={4} strokeLinecap="round" />
+    <rect x={116} y={140} width={152} height={154} rx={26} fill="none" {...line} />
+    {/* knobs, speaker; the stocking hangs off the dial */}
+    <circle cx={296} cy={168} r={13} fill={BODY} {...line} />
+    <path d="M296 158 v10" {...line} />
+    <circle cx={296} cy={208} r={10} fill={BODY} {...line} />
+    <path d="M284 240 h24 M284 252 h24 M284 264 h24 M284 276 h24" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
+    <path d="M300 176 C320 182 330 192 334 204" fill="none" stroke={INK} strokeWidth={2} />
+    <g transform="rotate(-8 334 204)">
+      <path d="M322 214 h28 v40 c0 10 4 14 10 18 c8 6 2 20 -10 16 l-22 -8 c-8 -3 -8 -12 -6 -20 z" fill={ACCENT} {...line} />
+      <rect x={318} y={202} width={36} height={14} rx={4} fill={BODY} {...line} />
     </g>
+    {/* cocoa, still steaming */}
+    <path className="w-rise" d="M58 290 q-8 -10 0 -20 q8 -10 0 -20 M72 290 q-8 -10 0 -20" fill="none" stroke={INK} strokeWidth={2.5} strokeLinecap="round" />
+    <path d="M86 310 h8 a10 10 0 0 1 0 20 h-8" fill="none" {...line} />
+    <rect x={46} y={300} width={42} height={40} rx={6} fill={ACCENT} {...line} />
   </>
 );
 
-// ---------- Mid-Autumn: Lunar Spirits (Chú Cuội, retold) ----------
+// ---------- Mid-Autumn: the trotting-horse lantern, the first cinema ----------
 const Star = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
   <path transform={`translate(${x} ${y}) scale(${s})`} d="M0 -7 L2 -2 L7 0 L2 2 L0 7 L-2 2 L-7 0 L-2 -2 Z" fill={BODY} />
 );
+// paper cut-outs, one per 70px, drawn twice so the loop is seamless
+const CUTOUTS = [
+  // rider on a horse
+  'M-22 0 q8 -10 30 -6 l8 -12 l8 2 l-6 14 l-2 16 h-5 l-1 -12 h-20 l-4 12 h-5 l1 -14 z M-6 -10 l2 -14 h8 l2 14 z M0 -30 a5 5 0 1 0 0.1 0 z',
+  // fish
+  'M-20 0 q14 -16 32 0 q-18 16 -32 0 z M12 0 l12 -10 v20 z',
+  // kid with a star lantern on a stick
+  'M-6 18 l6 -26 l6 26 z M0 -14 a6 6 0 1 0 0.1 0 z M4 -2 l14 -14 M18 -24 l3 6 l6 1 l-5 4 l1 6 l-5 -3 l-5 3 l1 -6 l-5 -4 l6 -1 z',
+  // galloping horse, no rider
+  'M-22 -2 q10 -8 30 -4 l10 -10 l6 3 l-8 13 l4 16 h-5 l-5 -12 h-18 l-6 12 h-5 l4 -14 z',
+];
 const MidAutumnArt = () => (
   <>
     <rect x={34} y={34} width={332} height={332} fill={BG} {...line} />
-    <Star x={84} y={74} /><Star x={196} y={58} s={0.7} /><Star x={60} y={150} s={0.6} /><Star x={350} y={200} s={0.8} /><Star x={238} y={112} s={0.5} />
-    {/* the moon is a sleeping spirit */}
-    <circle cx={296} cy={102} r={56} fill={ACCENT} {...line} />
-    <circle cx={276} cy={84} r={7} fill={INK} fillOpacity={0.15} /><circle cx={318} cy={124} r={10} fill={INK} fillOpacity={0.12} />
-    <path d="M276 104 q7 6 14 0 M302 104 q7 6 14 0" fill="none" {...line} />
-    <path d="M34 336 C100 318 160 340 230 328 C300 316 340 334 366 326 L366 366 L34 366 Z" fill={ALT} {...line} />
-    {/* banyan tree */}
-    <path d="M96 336 C104 296 100 262 108 236 L124 236 C128 266 126 298 134 336 Z" fill={BODY} {...line} />
-    {[[88, 210, 34], [128, 196, 40], [100, 176, 30], [146, 226, 26]].map(([x, y, r], i) => (
-      <circle key={i} cx={x} cy={y} r={r} fill={ALT} {...line} />
-    ))}
-    <path d="M74 236 v40 M90 240 v52 M150 246 v34" stroke={INK} strokeWidth={2} />
-    {/* one root climbs to the moon; the soul climbs it while the body holds on below */}
-    <g className="w-sway">
-      <path d="M150 222 C196 206 206 168 228 156 C246 146 252 140 252 140" fill="none" stroke={INK} strokeWidth={9} strokeLinecap="round" />
-      <path d="M150 222 C196 206 206 168 228 156 C246 146 252 140 252 140" fill="none" stroke={BODY} strokeWidth={4} strokeLinecap="round" />
-      <Hon x={212} y={172} s={0.5} r={-38} eyes="closed" />
+    <Star x={292} y={70} /><Star x={330} y={150} s={0.7} /><Star x={60} y={190} s={0.6} /><Star x={170} y={60} s={0.5} /><Star x={320} y={232} s={0.6} />
+    <circle cx={92} cy={96} r={40} fill={ACCENT} {...line} />
+    <circle cx={78} cy={86} r={7} fill={INK} fillOpacity={0.15} /><circle cx={104} cy={110} r={9} fill={INK} fillOpacity={0.12} />
+    <path d="M34 330 C100 316 160 334 230 324 C300 314 340 330 366 324 L366 366 L34 366 Z" fill={ALT} {...line} />
+    {/* the lantern's glow lands on the ground like a screen */}
+    <path d="M150 310 L250 310 L300 352 L100 352 Z" fill={ACCENT} fillOpacity={0.22} />
+    <path d="M200 34 V138" stroke={INK} strokeWidth={2.5} />
+    <circle cx={200} cy={220} r={96} fill={ACCENT} fillOpacity={0.14} />
+    <defs>
+      <clipPath id="w-paper">
+        <rect x={130} y={152} width={140} height={146} />
+      </clipPath>
+    </defs>
+    <rect x={130} y={152} width={140} height={146} fill={SOUL} />
+    {/* the candle's heat turns the inner drum: shadows chase each other round */}
+    <g clipPath="url(#w-paper)">
+      <ellipse cx={200} cy={240} rx={60} ry={50} fill={ACCENT} fillOpacity={0.35} />
+      <g className="w-reel">
+        {[0, 1].map((rep) =>
+          CUTOUTS.map((d, i) => (
+            <path key={`${rep}-${i}`} transform={`translate(${150 + (rep * 4 + i) * 70} ${i % 2 ? 196 : 232}) scale(1.25)`} d={d} fill={INK} fillOpacity={0.85} />
+          )),
+        )}
+      </g>
+      <rect x={194} y={270} width={12} height={28} fill={BODY} {...line} strokeWidth={2} />
+      <path className="w-flicker" d="M200 248 q-8 12 0 22 q8 -10 0 -22 z" fill={ACCENT} {...line} strokeWidth={2} />
     </g>
-    <Xac x={172} y={336} s={0.56} arms="up" />
+    <rect x={130} y={152} width={140} height={146} fill="none" {...line} />
+    <path d="M165 152 v146 M235 152 v146" stroke={INK} strokeWidth={1.5} strokeOpacity={0.5} />
+    <rect x={120} y={136} width={160} height={18} fill={ALT} {...line} />
+    <rect x={120} y={296} width={160} height={18} fill={ALT} {...line} />
+    <path d="M132 314 v26 M200 314 v32 M268 314 v26" stroke={ACCENT} strokeWidth={4} strokeLinecap="round" />
   </>
 );
 
@@ -292,24 +339,46 @@ export const WorldKeyVisual: React.FC<{ id: WorldId; title: string }> = ({ id, t
   );
 };
 
-// ---------- Logo mark: the soul wearing the season ----------
-const MARK_ACCESSORY: Record<WorldId, React.ReactNode> = {
-  halloween: null,
-  tet: <path d="M-33 -12 q33 -11 66 0 l-1 6 q-32 -10 -64 0 z" fill={ALT} {...line} strokeWidth={2} />,
-  valentine: null,
-  christmas: <path d="M-28 16 q28 12 56 0 l2 10 q-30 12 -60 0 z" fill={ACCENT} {...line} />,
-  'mid-autumn': <circle cx={26} cy={-34} r={14} fill={ACCENT} {...line} />,
-};
-const MARK_EYES: Record<WorldId, Eyes> = {
-  halloween: 'x', tet: 'happy', valentine: 'heart', christmas: 'open', 'mid-autumn': 'closed',
+// ---------- Logo mark: each world's key object, small ----------
+const thin = { ...line, strokeWidth: 2 };
+const MARK: Record<WorldId, React.ReactNode> = {
+  halloween: <Hon x={0} y={0} s={0.95} eyes="x" />,
+  tet: (
+    <>
+      <rect x={-14} y={-42} width={28} height={30} fill={BODY} {...thin} />
+      <rect x={-24} y={-24} width={48} height={56} rx={3} fill={ACCENT} {...thin} />
+      <circle cx={0} cy={6} r={10} fill={BG} {...thin} />
+    </>
+  ),
+  valentine: (
+    <>
+      <rect x={-34} y={-22} width={30} height={46} rx={9} fill={BODY} {...thin} />
+      <rect x={4} y={-22} width={30} height={46} rx={9} fill={BODY} {...thin} />
+      <path transform="translate(0 -30) scale(1.4)" d={HEART} fill={SOUL} {...thin} />
+    </>
+  ),
+  christmas: (
+    <>
+      <rect x={-34} y={-30} width={68} height={54} rx={9} fill={ALT} {...thin} />
+      <rect x={-27} y={-23} width={42} height={40} rx={8} fill={INK} />
+      <path d="M-18 -14 v0 M-4 -6 v0 M-14 6 v0 M6 -16 v0 M2 8 v0" stroke={BODY} strokeWidth={4} strokeLinecap="round" />
+      <circle cx={25} cy={-14} r={4} fill={BODY} {...thin} />
+    </>
+  ),
+  'mid-autumn': (
+    <>
+      <rect x={-24} y={-34} width={48} height={56} fill={SOUL} {...thin} />
+      <path transform="translate(0 -4) scale(0.8)" d={CUTOUTS[3]} fill={INK} />
+      <rect x={-30} y={-42} width={60} height={9} fill={ALT} {...thin} />
+      <rect x={-30} y={21} width={60} height={9} fill={ALT} {...thin} />
+    </>
+  ),
 };
 
 export const WorldMark: React.FC<{ id: WorldId }> = ({ id }) => (
   <span className="world-mark grid place-items-center w-9 h-9 shrink-0 border-[1.5px] border-ink bg-accent overflow-hidden" aria-hidden="true">
     <svg viewBox="-46 -54 92 92" className="w-8 h-8">
-      {id === 'mid-autumn' && MARK_ACCESSORY[id]}
-      <Hon x={0} y={0} s={0.95} eyes={MARK_EYES[id]} />
-      {id !== 'mid-autumn' && MARK_ACCESSORY[id]}
+      {MARK[id]}
     </svg>
   </span>
 );
