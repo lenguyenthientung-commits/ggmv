@@ -11,6 +11,8 @@ import { AddMovieModal } from './components/AddMovieModal';
 import { CinemaScreenModal } from './components/CinemaScreenModal';
 import { MovieStats } from './components/MovieStats';
 import { CinemaRulesModal } from './components/CinemaRulesModal';
+import { SeasonalBanner } from './components/SeasonalBanner';
+import { getActiveCampaign } from './data/seasonalCampaigns';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string>(() => {
@@ -23,6 +25,14 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [cinemaModalMovie, setCinemaModalMovie] = useState<Movie | null>(null);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [campaign] = useState(() => getActiveCampaign());
+
+  // Seasonal theme: CSS keys off <html data-season="...">
+  useEffect(() => {
+    if (campaign) {
+      document.documentElement.dataset.season = campaign.id;
+    }
+  }, [campaign]);
 
   // Persist user selection
   const handleSetUser = (name: string) => {
@@ -315,7 +325,7 @@ export default function App() {
   const selectedWeekendMovie = movies.find(m => m.id === upcomingSession?.selectedMovieId);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="season-backdrop min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200">
       {/* Top Bar */}
       <Header
         activeTab={activeTab}
@@ -328,6 +338,8 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+        {campaign && <SeasonalBanner campaign={campaign} />}
+
         {/* Hero Section displayed on movies and wheel tabs */}
         {(activeTab === 'movies' || activeTab === 'wheel') && (
           <HeroBanner

@@ -12,7 +12,7 @@
     background-color: #0b0908;
     color: #ede8e3;
     background-image: 
-      radial-gradient(ellipse at 50% 0%, rgba(217, 119, 6, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-amber-600) 8%, transparent) 0%, transparent 60%),
       radial-gradient(circle at 100% 100%, rgba(69, 10, 10, 0.08) 0%, transparent 50%);
     min-height: 100vh;
   }
@@ -31,11 +31,11 @@
 
 /* Vintage Brass & Tungsten Sconce Glow */
 .cinema-glow {
-  box-shadow: 0 0 50px -10px rgba(217, 119, 6, 0.25);
+  box-shadow: 0 0 50px -10px color-mix(in srgb, var(--color-amber-600) 25%, transparent);
 }
 
 .brass-border {
-  border: 1px solid rgba(217, 119, 6, 0.35);
+  border: 1px solid color-mix(in srgb, var(--color-amber-600) 35%, transparent);
   box-shadow: inset 0 1px 0 0 rgba(254, 243, 199, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.6);
 }
 
@@ -49,7 +49,7 @@
   left: 4px;
   right: 4px;
   bottom: 4px;
-  border: 1px solid rgba(217, 119, 6, 0.15);
+  border: 1px solid color-mix(in srgb, var(--color-amber-600) 15%, transparent);
   pointer-events: none;
   border-radius: inherit;
 }
@@ -70,9 +70,107 @@
 ::-webkit-scrollbar-thumb {
   background: #2a221c;
   border-radius: 9999px;
-  border: 1px solid rgba(217, 119, 6, 0.15);
+  border: 1px solid color-mix(in srgb, var(--color-amber-600) 15%, transparent);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #44352b;
+}
+
+/* ===== Seasonal campaigns (ported from GGMV) =====
+   The whole UI uses Tailwind's amber scale as its accent, so each campaign
+   re-tints that scale and the page backdrop. The wheel's own colors stay untouched. */
+html[data-season="tet"] {
+  --color-amber-100: #fdf0d2; --color-amber-200: #fbe2ad; --color-amber-300: #f8d38a; --color-amber-400: #f4c46c;
+  --color-amber-500: #e8a94a; --color-amber-600: #d55337; --color-amber-700: #b23a2e; --color-amber-800: #8e2528; --color-amber-900: #5c1a1c;
+  --season-backdrop: radial-gradient(circle at 13% 5%, rgba(190,35,38,.22), transparent 26%), radial-gradient(circle at 88% 8%, rgba(242,198,109,.15), transparent 27%), #10090b;
+}
+html[data-season="valentine"] {
+  --color-amber-100: #fde8ee; --color-amber-200: #fbd3dd; --color-amber-300: #f7b8c8; --color-amber-400: #f4a0b4;
+  --color-amber-500: #e07996; --color-amber-600: #b94f72; --color-amber-700: #943d5c; --color-amber-800: #702b45; --color-amber-900: #4a1c2f;
+  --season-backdrop: radial-gradient(circle at 14% 4%, rgba(190,63,100,.18), transparent 29%), radial-gradient(circle at 86% 5%, rgba(241,162,176,.12), transparent 26%), #10090e;
+}
+html[data-season="mid-autumn"] {
+  --color-amber-100: #fdf0d6; --color-amber-200: #fbe0b0; --color-amber-300: #f6cd85; --color-amber-400: #f2bd68;
+  --color-amber-500: #e59a50; --color-amber-600: #e17d4d; --color-amber-700: #b45f38; --color-amber-800: #864530; --color-amber-900: #4e2a24;
+  --season-backdrop: radial-gradient(circle at 18% 4%, rgba(225,127,67,.18), transparent 28%), radial-gradient(circle at 86% 5%, rgba(242,189,104,.14), transparent 25%), #100b0a;
+}
+html[data-season="halloween"] {
+  --color-amber-100: #ffe8d2; --color-amber-200: #ffd2a6; --color-amber-300: #ffb877; --color-amber-400: #ffa04f;
+  --color-amber-500: #f0843a; --color-amber-600: #c8642c; --color-amber-700: #7a4a9a; --color-amber-800: #5b3a78; --color-amber-900: #3a2450;
+  --season-backdrop: radial-gradient(circle at 15% 6%, rgba(173,71,31,.18), transparent 29%), radial-gradient(circle at 88% 4%, rgba(111,56,125,.16), transparent 27%), #0b090d;
+}
+html[data-season="christmas"] {
+  --color-amber-100: #f7edd2; --color-amber-200: #f3e3b9; --color-amber-300: #efd9a0; --color-amber-400: #e6c982;
+  --color-amber-500: #d4ae5e; --color-amber-600: #b54b3d; --color-amber-700: #8e3034; --color-amber-800: #2f5a45; --color-amber-900: #1d3a2c;
+  --season-backdrop: radial-gradient(circle at 14% 5%, rgba(40,111,77,.18), transparent 28%), radial-gradient(circle at 87% 5%, rgba(160,48,53,.15), transparent 27%), #080d0c;
+}
+html[data-season] .season-backdrop { background: var(--season-backdrop); }
+
+/* Campaign banner */
+.season-banner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 132px;
+  border: 1px solid color-mix(in srgb, var(--color-amber-400) 22%, transparent);
+  border-left: 3px solid var(--color-amber-400);
+  box-shadow: 0 12px 28px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.045);
+}
+.season-banner::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: .35;
+  background-image: repeating-linear-gradient(115deg, transparent 0 15px, rgba(255,255,255,.035) 16px, transparent 17px 32px);
+}
+.season-art-wrap {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 150px;
+  height: 110px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.season-art { width: 100%; height: 100%; overflow: visible; }
+@media (max-width: 640px) {
+  .season-art-wrap { width: 110px; height: 82px; right: 4px; }
+}
+
+html[data-season="tet"] .season-banner { border-radius: 4px 20px 4px 20px; background: radial-gradient(ellipse at 92% 50%, rgba(238,184,87,.2), transparent 24%), linear-gradient(105deg, #170c0c, #281311 70%, #351718); }
+html[data-season="tet"] .season-banner::before { background-image: radial-gradient(circle, rgba(244,196,108,.43) 1px, transparent 2px), radial-gradient(circle, rgba(230,83,70,.34) 1px, transparent 2px); background-size: 31px 31px, 49px 49px; animation: season-petals 15s linear infinite; }
+html[data-season="tet"] .season-art { animation: season-sway 4.5s ease-in-out infinite; }
+
+html[data-season="valentine"] .season-banner { border-radius: 20px; background: radial-gradient(ellipse at 92% 50%, rgba(241,133,164,.2), transparent 26%), linear-gradient(105deg, #150b11, #24121d 70%, #351526); }
+html[data-season="valentine"] .season-banner::before { background-image: radial-gradient(circle, rgba(244,160,180,.45) 1px, transparent 2px), radial-gradient(circle, rgba(185,79,114,.36) 1px, transparent 2px); background-size: 29px 29px, 47px 47px; animation: season-petals 19s linear infinite reverse; }
+html[data-season="valentine"] .season-art { animation: season-heartbeat 3s ease-in-out infinite; }
+
+html[data-season="mid-autumn"] .season-banner { border-radius: 18px 4px 18px 4px; background: radial-gradient(ellipse at 92% 50%, rgba(242,189,104,.2), transparent 25%), linear-gradient(105deg, #100c10, #211a27 70%, #38251a); }
+html[data-season="mid-autumn"] .season-banner::before { background-image: radial-gradient(circle, rgba(242,189,104,.62) 1px, transparent 2px), radial-gradient(circle, rgba(225,125,77,.34) 1px, transparent 2px); background-size: 37px 37px, 59px 59px; animation: season-snow 21s linear infinite; }
+html[data-season="mid-autumn"] .season-art { animation: season-moon 7s ease-in-out infinite; }
+
+html[data-season="halloween"] .season-banner { border-radius: 4px; background: radial-gradient(ellipse at 94% 30%, rgba(241,130,59,.18), transparent 23%), radial-gradient(ellipse at 86% 100%, rgba(147,91,176,.2), transparent 38%), linear-gradient(105deg, #0e0b13, #1a1120 70%, #25152a); }
+html[data-season="halloween"] .season-banner::before { opacity: .7; background-image: radial-gradient(ellipse at 83% 110%, rgba(145,91,171,.29), transparent 48%), radial-gradient(ellipse at 96% 40%, rgba(239,145,72,.15), transparent 30%), repeating-linear-gradient(115deg, transparent 0 18px, rgba(255,255,255,.035) 19px, transparent 20px 38px); animation: season-fog 14s ease-in-out infinite alternate; }
+html[data-season="halloween"] .season-art .bat-one { transform-box: fill-box; transform-origin: center; animation: bat-cross 7s ease-in-out infinite; }
+html[data-season="halloween"] .season-art .bat-two { transform-box: fill-box; transform-origin: center; animation: bat-cross 5.5s ease-in-out -2s infinite; }
+html[data-season="halloween"] .season-art .pumpkin-art { animation: pumpkin-flicker 3s ease-in-out infinite; }
+
+html[data-season="christmas"] .season-banner { border-radius: 16px 16px 4px 4px; background: radial-gradient(ellipse at 92% 50%, rgba(222,241,226,.17), transparent 24%), linear-gradient(105deg, #0c1110, #142019 70%, #1a2a20); }
+html[data-season="christmas"] .season-banner::before { background-image: radial-gradient(circle, rgba(237,247,241,.75) 1px, transparent 2px), radial-gradient(circle, rgba(215,233,217,.45) 1px, transparent 2px); background-size: 27px 27px, 43px 43px; animation: season-snow 14s linear infinite; }
+html[data-season="christmas"] .season-art { animation: season-sparkle 4s ease-in-out infinite; }
+
+@keyframes season-sway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: translateY(-3px) rotate(2deg); } }
+@keyframes season-petals { from { background-position: 0 -12px, 13px 13px; } to { background-position: 0 45px, 13px 70px; } }
+@keyframes season-heartbeat { 0%, 72%, 100% { transform: scale(1); } 78% { transform: scale(1.06); } 84% { transform: scale(1); } 91% { transform: scale(1.04); } }
+@keyframes season-moon { 0%, 100% { transform: translateY(1px); filter: drop-shadow(0 0 7px rgba(242,189,104,.35)); } 50% { transform: translateY(-4px); filter: drop-shadow(0 0 14px rgba(242,189,104,.7)); } }
+@keyframes season-fog { from { background-position: 0 0, 0 0, 0 0; transform: translateX(-5px); } to { background-position: -23px 0, 18px 0, 16px 0; transform: translateX(5px); } }
+@keyframes season-snow { from { background-position: 0 -24px, 13px 17px; } to { background-position: 0 48px, 13px 87px; } }
+@keyframes season-sparkle { 0%, 100% { filter: drop-shadow(0 0 4px rgba(215,233,217,.12)); } 50% { filter: drop-shadow(0 0 12px rgba(215,233,217,.5)); } }
+@keyframes bat-cross { 0%, 100% { translate: 0 0; } 50% { translate: 8px -4px; } }
+@keyframes pumpkin-flicker { 0%, 100% { filter: drop-shadow(0 0 3px rgba(255,158,70,.3)); } 50% { filter: drop-shadow(0 0 11px rgba(255,158,70,.85)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .season-banner::before, .season-art, .season-art * { animation: none !important; }
 }
 
