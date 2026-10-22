@@ -132,7 +132,7 @@ const HalloweenArt = () => (
       <g transform="translate(276 92) rotate(20)">
         <ellipse cx={0} cy={0} rx={25} ry={29} fill={BODY} {...line} />
         <path d="M-15 -6 l8 8 M-7 -6 l-8 8 M7 -6 l8 8 M15 -6 l-8 8 M-10 14 h20 M-6 10 v8 M0 10 v8 M6 10 v8" fill="none" {...line} strokeWidth={2.5} />
-        <path d="M-4 30 q-2 10 4 18 q4 -10 -4 -18" fill={ACCENT} {...line} strokeWidth={2} />
+        <path d="M-4 30 q-2 10 4 18 q4 -10 -4 -18" fill={ALT} {...line} strokeWidth={2} />
       </g>
     </g>
   </>
@@ -145,7 +145,7 @@ const Spiral = ({ x, y, r = 0 }: { x: number; y: number; r?: number }) => (
 const Blossom = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
   <g transform={`translate(${x} ${y}) scale(${s})`}>
     {[0, 72, 144, 216, 288].map((a) => (
-      <ellipse key={a} cx={0} cy={-8} rx={5.5} ry={8} fill={ACCENT} transform={`rotate(${a})`} {...line} strokeWidth={2} />
+      <ellipse key={a} cx={0} cy={-8} rx={5.5} ry={8} fill={ALT} transform={`rotate(${a})`} {...line} strokeWidth={2} />
     ))}
     <circle r={3.5} fill={BODY} {...line} strokeWidth={2} />
   </g>
@@ -174,7 +174,7 @@ const TetArt = () => (
       </g>
       {/* front pocket with the seal */}
       <path d="M120 236 L200 262 L280 236 V342 a6 6 0 0 1 -6 6 H126 a6 6 0 0 1 -6 -6 Z" fill={ACCENT} {...line} />
-      <circle cx={200} cy={302} r={26} fill={BG} {...line} />
+      <circle cx={200} cy={302} r={26} fill={ALT} {...line} />
       <circle cx={200} cy={302} r={20} fill="none" stroke={INK} strokeWidth={1.5} />
       <text x={200} y={308} textAnchor="middle" {...display} fontSize={15}>LỘC</text>
     </g>
@@ -290,7 +290,7 @@ const MidAutumnArt = () => (
     <Star x={292} y={70} /><Star x={330} y={150} s={0.7} /><Star x={60} y={190} s={0.6} /><Star x={170} y={60} s={0.5} /><Star x={320} y={232} s={0.6} />
     <circle cx={92} cy={96} r={40} fill={ACCENT} {...line} />
     <circle cx={78} cy={86} r={7} fill={INK} fillOpacity={0.15} /><circle cx={104} cy={110} r={9} fill={INK} fillOpacity={0.12} />
-    <path d="M34 330 C100 316 160 334 230 324 C300 314 340 330 366 324 L366 366 L34 366 Z" fill={ALT} {...line} />
+    <path d="M34 330 C100 316 160 334 230 324 C300 314 340 330 366 324 L366 366 L34 366 Z" fill={INK} {...line} />
     {/* the lantern's glow lands on the ground like a screen */}
     <path d="M150 310 L250 310 L300 352 L100 352 Z" fill={ACCENT} fillOpacity={0.22} />
     <path d="M200 34 V138" stroke={INK} strokeWidth={2.5} />
@@ -347,7 +347,7 @@ const MARK: Record<WorldId, React.ReactNode> = {
     <>
       <rect x={-14} y={-42} width={28} height={30} fill={BODY} {...thin} />
       <rect x={-24} y={-24} width={48} height={56} rx={3} fill={ACCENT} {...thin} />
-      <circle cx={0} cy={6} r={10} fill={BG} {...thin} />
+      <circle cx={0} cy={6} r={10} fill={ALT} {...thin} />
     </>
   ),
   valentine: (

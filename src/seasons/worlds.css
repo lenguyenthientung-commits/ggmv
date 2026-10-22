@@ -12,27 +12,27 @@ html[data-world="halloween"] {
   color-scheme: dark;
   --color-paper: #16101c; --color-card: #201828; --color-sunk: #2b2134; --color-line: #3d3149;
   --color-ink: #efe8da; --color-ink-2: #bdb2c4; --color-ink-3: #8a7f94;
-  --color-accent: #b8ff3b; --color-on-accent: #16101c;
+  --color-accent: #ff7a1a; --color-on-accent: #16101c;
   --color-shadow: #6b3fd4;
   --color-night: #08060b; --color-night-2: #15101b; --color-night-line: #3d3149;
   --color-go: #7dff9e; --color-late: #ffcf5a; --color-stop: #ff6a5a;
-  --art-ink: #0b080e; --art-body: #efe8da; --art-soul: #e2ffb8; --art-accent: #b8ff3b; --art-alt: #ff6a3d; --art-bg: #6b3fd4; --art-hole: #0b080e;
+  --art-ink: #0b080e; --art-body: #efe8da; --art-soul: #e2ffb8; --art-accent: #ff7a1a; --art-alt: #b8ff3b; --art-bg: #6b3fd4; --art-hole: #0b080e;
   --radius-card: 16px 4px 18px 6px; --radius-btn: 12px 3px 13px 4px;
   --display-stretch: 62%; --display-tracking: 0.01em; --hero-size: clamp(56px, 10vw, 140px);
-  --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M8 8l6 6M14 8l-6 6M30 28l5 5M35 28l-5 5' stroke='%23b8ff3b' stroke-opacity='.10' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Cpath d='M8 8l6 6M14 8l-6 6M30 28l5 5M35 28l-5 5' stroke='%23ff7a1a' stroke-opacity='.10' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 /* ---------- Tết · Mở Hàng (light, woodblock) ---------- */
 html[data-world="tet"] {
   color-scheme: light;
-  --color-paper: #f3ecdc; --color-card: #fbf6ea; --color-sunk: #e8dfca; --color-line: #d4c7a8;
-  --color-ink: #1c2541; --color-ink-2: #4a5170; --color-ink-3: #868aa0;
-  --color-accent: #d6336c; --color-on-accent: #ffffff;
-  --color-shadow: #1c2541;
-  --art-ink: #1c2541; --art-body: #fbf6ea; --art-soul: #fff1f6; --art-accent: #d6336c; --art-alt: #2f6b45; --art-bg: #f6e2b8; --art-hole: #1c2541;
+  --color-paper: #f4ecd8; --color-card: #fbf6ea; --color-sunk: #ebe0c6; --color-line: #d8c8a4;
+  --color-ink: #2a1d17; --color-ink-2: #5a4637; --color-ink-3: #8f7b66;
+  --color-accent: #c62a1f; --color-on-accent: #fff7e6;
+  --color-shadow: #2a1d17;
+  --art-ink: #2a1d17; --art-body: #fbf6ea; --art-soul: #fff1d6; --art-accent: #c62a1f; --art-alt: #eab21b; --art-bg: #f3dfae; --art-hole: #2a1d17;
   --radius-card: 2px; --radius-btn: 2px;
   --display-stretch: 100%; --display-tracking: 0.02em; --hero-size: clamp(52px, 9vw, 128px);
-  --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cpath d='M18 36a8 8 0 1 1 8 8a5 5 0 1 1-5-5M54 12a6 6 0 1 1 6 6' fill='none' stroke='%231c2541' stroke-opacity='.08' stroke-width='1.5'/%3E%3C/svg%3E");
+  --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cpath d='M18 36a8 8 0 1 1 8 8a5 5 0 1 1-5-5M54 12a6 6 0 1 1 6 6' fill='none' stroke='%232a1d17' stroke-opacity='.08' stroke-width='1.5'/%3E%3C/svg%3E");
 }
 /* woodblock print: every sheet gets an inner second rule */
 html[data-world="tet"] .panel { box-shadow: inset 0 0 0 4px var(--color-card), inset 0 0 0 5px var(--color-ink); }
@@ -42,22 +42,22 @@ html[data-world="valentine"] {
   color-scheme: light;
   --color-paper: #fbe9e4; --color-card: #fff6f3; --color-sunk: #f6d9d2; --color-line: #ebc2b9;
   --color-ink: #3b0d1d; --color-ink-2: #6e3a48; --color-ink-3: #a5737e;
-  --color-accent: #ff2e63; --color-on-accent: #ffffff;
+  --color-accent: #d81e48; --color-on-accent: #ffffff;
   --color-shadow: #3b0d1d;
-  --art-ink: #3b0d1d; --art-body: #fff6f3; --art-soul: #ffd1dc; --art-accent: #ff2e63; --art-alt: #7a1fa2; --art-bg: #ffd9e0; --art-hole: #3b0d1d;
+  --art-ink: #3b0d1d; --art-body: #fff6f3; --art-soul: #ffd1dc; --art-accent: #d81e48; --art-alt: #7c1630; --art-bg: #ffd9e0; --art-hole: #3b0d1d;
   --radius-card: 22px; --radius-btn: 999px;
   --display-stretch: 70%; --display-skew: -8deg; --hero-size: clamp(52px, 8.4vw, 116px);
-  --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M10 30c6-12 14 12 20 0s14 12 20 0' fill='none' stroke='%23ff2e63' stroke-opacity='.09' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M10 30c6-12 14 12 20 0s14 12 20 0' fill='none' stroke='%23d81e48' stroke-opacity='.09' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 /* ---------- Giáng sinh · Chiếu Lại (light) ---------- */
 html[data-world="christmas"] {
   color-scheme: light;
-  --color-paper: #eaf2f4; --color-card: #f7fbfc; --color-sunk: #d9e7ea; --color-line: #bdd3d8;
-  --color-ink: #0f2a24; --color-ink-2: #3d5a52; --color-ink-3: #7c948f;
-  --color-accent: #ff7a1a; --color-on-accent: #0f2a24;
-  --color-shadow: #0f2a24;
-  --art-ink: #0f2a24; --art-body: #ffffff; --art-soul: #e3f6ff; --art-accent: #ff7a1a; --art-alt: #1f5c4a; --art-bg: #cfe6ec; --art-hole: #0f2a24;
+  --color-paper: #f5efe4; --color-card: #fcf9f3; --color-sunk: #ebe2d2; --color-line: #d9cdb8;
+  --color-ink: #12302a; --color-ink-2: #3f5a52; --color-ink-3: #7f918a;
+  --color-accent: #c0272d; --color-on-accent: #ffffff;
+  --color-shadow: #12302a;
+  --art-ink: #12302a; --art-body: #ffffff; --art-soul: #fff4e0; --art-accent: #c0272d; --art-alt: #1f5c4a; --art-bg: #f1e2c6; --art-hole: #12302a;
   --radius-card: 24px; --radius-btn: 16px;
   --display-stretch: 92%; --hero-size: clamp(46px, 7.6vw, 104px);
   --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='52'%3E%3Cpath d='M12 18v-8m-3 3l3-3l3 3M38 44v-8m-3 3l3-3l3 3' fill='none' stroke='%230f2a24' stroke-opacity='.08' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -69,10 +69,10 @@ html[data-world="mid-autumn"] {
   --color-paper: #0d1330; --color-card: #151d45; --color-sunk: #1d2756; --color-line: #2e3a73;
   --color-ink: #f1ead8; --color-ink-2: #bcc0d6; --color-ink-3: #8088ad;
   --color-accent: #ffc857; --color-on-accent: #0d1330;
-  --color-shadow: #3aa6a4;
+  --color-shadow: #c8352e;
   --color-night: #050817; --color-night-2: #0f1533; --color-night-line: #2e3a73;
   --color-go: #6fe3a8; --color-late: #ffc857; --color-stop: #ff7a6b;
-  --art-ink: #070a1c; --art-body: #f1ead8; --art-soul: #fff4d6; --art-accent: #ffc857; --art-alt: #1f6f73; --art-bg: #1b2a6b; --art-hole: #070a1c;
+  --art-ink: #070a1c; --art-body: #f1ead8; --art-soul: #fff4d6; --art-accent: #ffc857; --art-alt: #c8352e; --art-bg: #1b2a6b; --art-hole: #070a1c;
   --radius-card: 0px; --radius-btn: 0px;
   --display-stretch: 62%; --display-tracking: 0.03em; --hero-size: clamp(52px, 9vw, 120px);
   --world-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M16 14l1.5 3.5L21 19l-3.5 1.5L16 24l-1.5-3.5L11 19l3.5-1.5zM60 54l1 2.5l2.5 1l-2.5 1L60 61l-1-2.5l-2.5-1l2.5-1z' fill='%23f1ead8' fill-opacity='.12'/%3E%3C/svg%3E");

@@ -29,7 +29,7 @@ export const WORLDS: World[] = [
     tagline: 'Đêm nay có một khán giả không mua vé. Nó ngồi ghế giữa, và nó vote rồi.',
     signoff: 'Không ai rời rạp lúc tắt đèn. Có thứ gì đó vừa vào.',
     dark: true,
-    swatch: ['#16101c', '#b8ff3b'],
+    swatch: ['#16101c', '#ff7a1a'],
   },
   {
     id: 'tet',
@@ -40,7 +40,7 @@ export const WORLDS: World[] = [
     tagline: 'Suất chiếu đầu năm là suất mở hàng. Mở hàng phim hay thì cả năm chọn gì cũng trúng.',
     signoff: 'Năm mới, kho phim mới, ghế cũ. Chúc cả hội phim hay vạn sự.',
     dark: false,
-    swatch: ['#f3ecdc', '#d6336c'],
+    swatch: ['#f4ecd8', '#c62a1f'],
   },
   {
     id: 'valentine',
@@ -51,7 +51,7 @@ export const WORLDS: World[] = [
     tagline: 'Không cần người yêu. Chỉ cần một người chịu ngồi xem hết credit cùng bạn.',
     signoff: 'Tim đập theo nhịp 24 khung hình mỗi giây.',
     dark: false,
-    swatch: ['#fbe9e4', '#ff2e63'],
+    swatch: ['#fbe9e4', '#d81e48'],
   },
   {
     id: 'christmas',
@@ -62,7 +62,7 @@ export const WORLDS: World[] = [
     tagline: 'Giáng sinh là mùa được phép xem lại phim đã thuộc thoại. Không ai phàn nàn, vì ai cũng thuộc.',
     signoff: 'Quà lớn nhất năm: một bộ phim đã biết kết mà vẫn khóc.',
     dark: false,
-    swatch: ['#eaf2f4', '#ff7a1a'],
+    swatch: ['#f5efe4', '#c0272d'],
   },
   {
     id: 'mid-autumn',
