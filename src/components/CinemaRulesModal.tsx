@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import {
-  BookOpen,
-  Shield,
-  Flame,
-  Star,
-  CheckCircle2,
-  Search,
-  X,
-} from 'lucide-react';
+import { Search } from 'lucide-react';
+import { Modal, ModalHeader } from './ui';
 
 export interface CinemaRuleItem {
   id: string;
@@ -166,6 +159,16 @@ interface CinemaRulesModalProps {
   onClose: () => void;
 }
 
+// Badges in the data start with an emoji; the chip shows the words only
+const badgeText = (badge: string) => badge.replace(/^[^\p{L}\p{N}]+/u, '');
+
+const CHAPTERS = [
+  { id: 0, label: 'Tất cả' },
+  { id: 1, label: 'I · Đề xuất' },
+  { id: 2, label: 'II · Vòng quay' },
+  { id: 3, label: 'III · Chấm điểm' },
+] as const;
+
 export const CinemaRulesModal: React.FC<CinemaRulesModalProps> = ({ isOpen, onClose }) => {
   const [selectedChapter, setSelectedChapter] = useState<0 | 1 | 2 | 3>(0);
   const [searchTerm, setSearchTerm] = useState('');
@@ -188,173 +191,63 @@ export const CinemaRulesModal: React.FC<CinemaRulesModalProps> = ({ isOpen, onCl
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-[#120d0a] border-2 border-amber-600/50 shadow-[0_0_80px_color-mix(in_srgb,var(--color-amber-600)_25%,transparent)] overflow-hidden">
-        {/* Header - Vintage Gold Seal */}
-        <div className="px-5 sm:px-8 py-5 border-b border-amber-800/40 bg-gradient-to-r from-[#1c140f] via-[#241a13] to-[#1c140f] flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-neutral-950 font-black shadow-md border border-amber-300/40 shrink-0">
-              <BookOpen className="w-5 h-5 text-neutral-950 stroke-[2.5]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-widest">
-                <span>Rạp Chiếu Phim Gay Gang</span>
-                <span aria-hidden="true">·</span>
-                <span>Văn Bản Chính Quy</span>
-              </div>
-              <h2 className="text-lg sm:text-2xl font-black text-[#fdf8f0] font-cinema tracking-wide">
-                Bộ Quy Chuẩn Điện Ảnh & Điều Lệ Hoạt Động
-              </h2>
-            </div>
-          </div>
+    <Modal onClose={onClose} size="lg" label="Điều lệ rạp">
+      <ModalHeader jp="ルール" kicker="Văn bản chính quy · 3 chương" title="12 điều lệ" onClose={onClose} />
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-[#231a15] hover:bg-[#31251e] text-stone-400 hover:text-white transition-colors border border-amber-900/40"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      <div className="px-5 sm:px-7 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-[1.5px] border-ink">
+        <div className="seg">
+          {CHAPTERS.map((c) => (
+            <button key={c.id} aria-pressed={selectedChapter === c.id} onClick={() => setSelectedChapter(c.id)}>
+              {c.label}
+            </button>
+          ))}
         </div>
-
-        {/* 4 Golden Pillars Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-4 sm:px-8 sm:pt-6 bg-[#0e0a08] border-b border-amber-900/30">
-          <div className="p-3 rounded-xl bg-[#1a130f] border border-amber-800/30 text-center">
-            <div className="text-[11px] text-amber-400/80 font-semibold uppercase tracking-wider flex items-center justify-center gap-1">
-              <BookOpen className="w-3 h-3" />
-              <span>Tổng Điều Lệ</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono mt-0.5">12</div>
-            <div className="text-[10px] text-stone-400">3 Chương chính quy</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#1a130f] border border-amber-800/30 text-center">
-            <div className="text-[11px] text-amber-400/80 font-semibold uppercase tracking-wider flex items-center justify-center gap-1">
-              <Shield className="w-3 h-3 text-red-400" />
-              <span>Lá Bài Veto</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-red-400 font-mono mt-0.5">3 Thẻ / Tháng</div>
-            <div className="text-[10px] text-stone-400">Teng, Lộc, Thành</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#1a130f] border border-amber-800/30 text-center">
-            <div className="text-[11px] text-amber-400/80 font-semibold uppercase tracking-wider flex items-center justify-center gap-1">
-              <Flame className="w-3 h-3 text-orange-400" />
-              <span>Buff Luck</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-orange-400 font-mono mt-0.5">x2 Tỷ Lệ</div>
-            <div className="text-[10px] text-stone-400">Sau 3 tuần chờ</div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-[#1a130f] border border-amber-800/30 text-center">
-            <div className="text-[11px] text-amber-400/80 font-semibold uppercase tracking-wider flex items-center justify-center gap-1">
-              <Star className="w-3 h-3 text-amber-400" />
-              <span>Thang Điểm</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono mt-0.5">0.0 - 10.0</div>
-            <div className="text-[10px] text-stone-400">Thẩm định 6 phương diện</div>
-          </div>
-        </div>
-
-        {/* Filter bar: Search + Chapter switcher */}
-        <div className="px-4 sm:px-8 py-3 bg-[#16100d] border-b border-amber-900/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            {[
-              { id: 0, label: 'Toàn Bộ 12 Điều' },
-              { id: 1, label: 'Chương I (1.1 - 1.4)' },
-              { id: 2, label: 'Chương II (2.1 - 2.4)' },
-              { id: 3, label: 'Chương III (3.1 - 3.4)' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedChapter(tab.id as 0 | 1 | 2 | 3)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
-                  selectedChapter === tab.id
-                    ? 'bg-amber-500 text-neutral-950 shadow-md font-bold'
-                    : 'bg-[#221914] text-stone-300 hover:text-white border border-stone-800'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative min-w-[200px] sm:w-64">
-            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm điều lệ, cơ chế..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-[#0e0a08] border border-amber-900/40 text-xs text-stone-200 placeholder-stone-500 focus:outline-none focus:border-amber-400"
-            />
-          </div>
-        </div>
-
-        {/* Rule Items Scrollable List */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-4">
-          {filteredRules.length > 0 ? (
-            filteredRules.map((rule) => (
-              <div
-                key={rule.id}
-                className="rounded-2xl bg-[#18110d] border border-amber-900/40 p-4 sm:p-5 hover:border-amber-600/60 transition-all shadow-sm"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-amber-900/20">
-                  <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono font-bold text-xs">
-                      Điều {rule.code}
-                    </span>
-                    <h3 className="text-base font-bold text-[#fdf8f0] font-cinema">
-                      {rule.title}
-                    </h3>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-md bg-[#251a14] border border-amber-700/30 text-amber-200 text-[11px] font-semibold">
-                      {rule.badge}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-3 space-y-2">
-                  <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-                    {rule.summary}
-                  </p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs">
-                    <div className="p-2 rounded-lg bg-[#0e0a08]/80 border border-stone-800/80">
-                      <span className="text-stone-400 text-[11px] block">Cơ Chế Vận Hành:</span>
-                      <span className="text-amber-200 font-medium">{rule.mechanism}</span>
-                    </div>
-
-                    <div className="p-2 rounded-lg bg-[#0e0a08]/80 border border-stone-800/80">
-                      <span className="text-stone-400 text-[11px] block">Đối Tượng Áp Dụng:</span>
-                      <span className="text-stone-200 font-medium">{rule.target}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-12 text-stone-500 text-xs">
-              Không tìm thấy quy chuẩn nào khớp với từ khóa tìm kiếm.
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-3.5 border-t border-amber-900/40 bg-[#16100d] flex items-center justify-between text-xs text-stone-400">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>Đã ban hành & có hiệu lực thi hành đối với toàn bộ thành viên Gay Gang.</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="px-5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold transition-colors"
-          >
-            Đã Rõ
-          </button>
+        <div className="relative sm:w-56">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Tìm điều lệ…"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="input !h-9 !pl-9 text-[13px]"
+            aria-label="Tìm điều lệ"
+          />
         </div>
       </div>
-    </div>
+
+      <ol className="max-h-[62vh] overflow-y-auto divide-y divide-line">
+        {filteredRules.length > 0 ? (
+          filteredRules.map((rule) => (
+            <li key={rule.id} className="grid grid-cols-[64px_1fr] sm:grid-cols-[88px_1fr] gap-4 px-5 sm:px-7 py-5">
+              <div className="display text-[40px] sm:text-[52px] leading-[0.85] text-accent">{rule.code}</div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-[17px] font-bold leading-snug">{rule.title}</h4>
+                  <span className="chip">{badgeText(rule.badge)}</span>
+                </div>
+                <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-2">{rule.summary}</p>
+                <dl className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-2 text-[13px]">
+                  <div>
+                    <dt className="label !text-[10px]">Cơ chế</dt>
+                    <dd className="mt-0.5">{rule.mechanism}</dd>
+                  </div>
+                  <div>
+                    <dt className="label !text-[10px]">Áp dụng</dt>
+                    <dd className="mt-0.5">{rule.target}</dd>
+                  </div>
+                </dl>
+              </div>
+            </li>
+          ))
+        ) : (
+          <li className="px-7 py-12 text-center text-[14px] text-ink-3">Không có điều lệ nào khớp từ khóa.</li>
+        )}
+      </ol>
+
+      <div className="flex items-center justify-between gap-3 px-5 sm:px-7 py-4 border-t-[1.5px] border-ink">
+        <span className="text-[13px] text-ink-2">Có hiệu lực với toàn bộ thành viên.</span>
+        <button onClick={onClose} className="btn btn-primary btn-sm">Đã rõ</button>
+      </div>
+    </Modal>
   );
 };

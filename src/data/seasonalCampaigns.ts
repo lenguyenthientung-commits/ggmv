@@ -63,7 +63,7 @@ export function getActiveCampaign(date: Date = new Date()): SeasonalCampaign | n
   return SEASONAL_CAMPAIGNS.find((c) => c.month === date.getMonth() + 1) ?? null;
 }
 
-// "01–31 tháng 10" (shown uppercase by the banner)
+// "01–31 tháng 10"
 export function getCampaignPeriod(campaign: SeasonalCampaign, date: Date = new Date()): string {
   const daysInMonth = new Date(date.getFullYear(), campaign.month, 0).getDate();
   return `01–${daysInMonth} tháng ${campaign.month}`;

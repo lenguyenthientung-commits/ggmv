@@ -98,36 +98,28 @@ interface SeasonalBannerProps {
 export const SeasonalBanner: React.FC<SeasonalBannerProps> = ({ campaign }) => {
   return (
     <section
-      className="season-banner relative overflow-hidden mb-6 rounded-2xl brass-border shadow-2xl pl-5 pr-28 py-4 sm:pl-6 sm:pr-44 sm:py-5"
+      className="panel overflow-hidden mb-10 flex items-stretch"
       aria-label="Chương trình điện ảnh theo mùa"
     >
-      <div className="absolute inset-0 rounded-2xl film-grain pointer-events-none" />
+      <div className="hidden sm:flex flex-col justify-between shrink-0 w-24 p-3 bg-accent text-on-accent border-r-[1.5px] border-ink">
+        <span className="label !text-current !text-[10px]">Campaign</span>
+        <span className="display text-[56px] leading-[0.8]">{campaign.code}</span>
+      </div>
 
-      <div className="relative z-10 max-w-2xl">
-        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-400 tracking-widest uppercase">
-          <span>Campaign {campaign.code}</span>
-          <span aria-hidden="true" className="text-amber-800">·</span>
-          <span>{getCampaignPeriod(campaign)}</span>
-        </div>
-        <h3 className="mt-1.5 font-cinema text-xl sm:text-2xl font-bold text-[#fdf8f0] leading-tight">
-          {campaign.title}
-        </h3>
-        <p className="mt-1 text-xs sm:text-sm text-stone-400 leading-relaxed">
-          {campaign.deck}
-        </p>
-        <details className="group mt-2 text-xs">
-          <summary className="w-max max-w-full cursor-pointer list-none font-medium text-amber-400 hover:text-amber-300 transition-colors">
+      <div className="flex-1 min-w-0 px-4 sm:px-6 py-4">
+        <div className="label">{getCampaignPeriod(campaign)}</div>
+        <h3 className="display mt-1.5 text-[clamp(24px,3.4vw,34px)]">{campaign.title}</h3>
+        <p className="mt-1.5 text-[14px] leading-relaxed text-ink-2 line-clamp-2">{campaign.deck}</p>
+        <details className="group mt-2 text-[13px]">
+          <summary className="w-max max-w-full cursor-pointer list-none font-semibold text-ink hover:text-accent transition-colors">
             <span className="inline-block transition-transform group-open:rotate-90" aria-hidden="true">›</span> Ghi chú mật
           </summary>
-          <p className="mt-1 text-amber-200/80 italic">{campaign.note}</p>
+          <p className="mt-1 text-ink-2 italic">{campaign.note}</p>
         </details>
       </div>
 
-      <div
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-24 h-[70px] sm:right-5 sm:w-36 sm:h-[104px] pointer-events-none"
-        aria-hidden="true"
-      >
-        {SEASON_ART[campaign.id]}
+      <div className="shrink-0 w-28 sm:w-48 bg-night border-l-[1.5px] border-ink grid place-items-center p-3" aria-hidden="true">
+        <div className="w-full h-[78px] sm:h-[112px]">{SEASON_ART[campaign.id]}</div>
       </div>
     </section>
   );

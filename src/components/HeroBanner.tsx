@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import vintageCinemaImg from '../assets/images/vintage_art_deco_cinema_1790903079535.jpg';
-import { Sparkles, Plus, Calendar, Lamp, Film } from 'lucide-react';
+import React from 'react';
+import { Shuffle, Plus, ArrowUpRight } from 'lucide-react';
 import { Movie, WeekendSession } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
+import { Stat, formatSessionDate } from './ui';
 
 interface HeroBannerProps {
   moviesCount: number;
+  watchedCount: number;
   upcomingSession?: WeekendSession;
   selectedMovie?: Movie;
+  featuredMovies: Movie[]; // top-voted queue, shown when nothing is booked yet
   onSpinClick: () => void;
   onAddMovieClick: () => void;
   onOpenSession: () => void;
@@ -15,131 +17,116 @@ interface HeroBannerProps {
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
   moviesCount,
+  watchedCount,
   upcomingSession,
   selectedMovie,
+  featuredMovies,
   onSpinClick,
   onAddMovieClick,
   onOpenSession,
 }) => {
-  const [isLightsDimmed, setIsLightsDimmed] = useState(false);
-
-  const toggleLights = () => {
-    sounds.playVintageSwitch();
-    setIsLightsDimmed(!isLightsDimmed);
-  };
+  const when = upcomingSession ? formatSessionDate(upcomingSession.date) : null;
 
   return (
-    <div className={`relative overflow-hidden rounded-3xl border brass-border bg-[#120d0a] shadow-2xl mb-8 art-deco-frame transition-all duration-700 ${isLightsDimmed ? 'shadow-[0_0_90px_rgba(0,0,0,0.95)]' : ''}`}>
-      {/* 35mm Film Grain Overlay */}
-      <div className="absolute inset-0 rounded-3xl film-grain pointer-events-none z-10" />
-
-      {/* Dimmed Lights Overlay */}
-      <div className={`absolute inset-0 bg-black transition-opacity duration-700 pointer-events-none z-10 ${isLightsDimmed ? 'opacity-50' : 'opacity-0'}`} />
-
-      {/* Background Vintage Art Deco Cinema Image with Directional Tungsten Scrim */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={vintageCinemaImg}
-          alt="Vintage Art Deco private screening room"
-          className="w-full h-full object-cover object-center filter brightness-90 contrast-105"
-        />
-        {/* Optical Projector Beam Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0e0b09] via-[#0e0b09]/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0e0b09] via-[#0e0b09]/60 to-transparent" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-20 p-6 sm:p-10 lg:p-12 max-w-3xl flex flex-col justify-end min-h-[360px] sm:min-h-[420px]">
-        {/* Top Controls: Kicker & Dim The Lights Toggle */}
-        <div className="flex items-center justify-between gap-4 mb-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 tracking-widest uppercase">
-            <span>Rạp Chiếu Riêng Tư</span>
-            <span aria-hidden="true" className="text-amber-800">·</span>
-            <span>{moviesCount} cuộn phim chờ tời</span>
-            {upcomingSession && (
-              <>
-                <span aria-hidden="true" className="text-amber-800">·</span>
-                <span className="text-emerald-400">Kèo {upcomingSession.date}</span>
-              </>
-            )}
-          </div>
-
-          {/* Tactical Cafe Dim-Lights Switch */}
-          <button
-            onClick={toggleLights}
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-medium transition-colors ${
-              isLightsDimmed
-                ? 'bg-amber-500/20 border-amber-500/60 text-amber-200'
-                : 'bg-[#18120e]/80 border-amber-900/40 text-stone-300 hover:text-white'
-            }`}
-            title="Hạ độ sáng không gian (Mô phỏng tắt đèn rạp)"
-          >
-            <Lamp className="w-3.5 h-3.5 text-amber-400" />
-            <span>{isLightsDimmed ? 'Bật lại đèn rạp' : 'Hạ đèn rạp chiếu'}</span>
-          </button>
+    <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center mb-14 sm:mb-20 pt-2 sm:pt-6">
+      {/* Headline */}
+      <div className="lg:col-span-7">
+        <div className="flex items-center gap-3">
+          <span className="jp text-[13px]">シネマクラブ</span>
+          <span className="label">Câu lạc bộ chiếu phim của hội</span>
         </div>
 
-        {/* Main Title */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#fdf8f0] tracking-tight leading-tight font-cinema text-balance drop-shadow-md">
-          Thánh Đường Điện Ảnh Của Hội Anh Em
+        <h1 className="display mt-8 sm:mt-10 text-[clamp(64px,12.5vw,168px)] leading-[0.98]">
+          <span className="reveal">Tối nay</span>
+          <span className="reveal text-accent" style={{ animationDelay: '90ms' }}>xem gì?</span>
         </h1>
 
-        {/* Description */}
-        <p className="mt-3 text-xs sm:text-sm text-[#d4c6b8] max-w-xl leading-relaxed">
-          Gác lại ồn ào quán xá. Bỏ vào những thước phim kinh điển, xoay trục tời cơ khí 35mm để số phận quyết định buổi chiếu cuối tuần cùng anh em!
+        <p className="mt-6 max-w-md text-[16px] leading-relaxed text-ink-2">
+          Bỏ phim vào kho, cả hội vote, vòng quay chốt hạ. Không còn 45 phút cãi nhau chọn phim nữa.
         </p>
 
-        {/* Up Next Preview if session exists */}
-        {upcomingSession && selectedMovie && (
-          <div
-            onClick={onOpenSession}
-            className="mt-4 p-3.5 rounded-2xl bg-[#16110e]/90 border border-amber-600/35 backdrop-blur-md flex items-center justify-between gap-4 max-w-lg cursor-pointer hover:border-amber-400/70 transition-colors group shadow-lg"
-          >
-            <div className="flex items-center gap-3.5 truncate">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <div className="truncate">
-                <div className="text-[10px] text-amber-400 font-bold uppercase tracking-widest font-cinema">
-                  Tác phẩm đã chốt tuần này
-                </div>
-                <div className="text-sm font-bold text-white truncate group-hover:text-amber-300 transition-colors font-cinema">
-                  {selectedMovie.title}
-                </div>
-              </div>
-            </div>
-            <div className="text-xs text-stone-400 shrink-0 flex items-center gap-1 font-mono">
-              <span>{upcomingSession.time}</span>
-              <span className="text-amber-400">→</span>
-            </div>
-          </div>
-        )}
-
-        {/* CTAs */}
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center gap-3">
           <button
             onClick={() => {
               sounds.playVintageSwitch();
               onSpinClick();
             }}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-black text-xs sm:text-sm shadow-[0_0_30px_color-mix(in_srgb,var(--color-amber-600)_50%,transparent)] active:scale-95 transition-all uppercase tracking-wider font-cinema"
+            className="btn btn-primary btn-lg"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Tời Phim Bốc Thăm Ngay</span>
+            <Shuffle className="w-[18px] h-[18px]" strokeWidth={2.5} />
+            Quay chọn phim
           </button>
-
           <button
             onClick={() => {
               sounds.playVintageSwitch();
               onAddMovieClick();
             }}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#1c1511]/90 hover:bg-[#281f19] text-[#ede4da] border border-amber-800/50 hover:border-amber-600/60 font-bold text-xs sm:text-sm transition-all shadow-md"
+            className="btn btn-lg btn-quiet"
           >
-            <Plus className="w-4 h-4 text-amber-400" />
-            <span>Bỏ Cuộn Phim Mới Vào Kho</span>
+            <Plus className="w-[18px] h-[18px]" strokeWidth={2.5} />
+            Thêm phim
           </button>
         </div>
+
+        <dl className="mt-12 grid grid-cols-3 gap-6 max-w-lg pt-5 border-t-[1.5px] border-ink">
+          <Stat value={moviesCount} label="Chờ chiếu" />
+          <Stat value={watchedCount} label="Đã xem" />
+          <Stat value={when ? when.dayMonth : '—'} label={when ? `Kèo ${when.weekday}` : 'Chưa có kèo'} accent />
+        </dl>
       </div>
-    </div>
+
+      {/* Next screening */}
+      <div className="lg:col-span-5">
+        <div className="panel relative overflow-hidden shadow-[6px_6px_0_var(--color-ink)]">
+          <div className="flex items-center justify-between px-5 h-12 border-b-[1.5px] border-ink">
+            <span className="label !text-ink">Suất chiếu kế tiếp</span>
+            <span className="jp text-[11px]">ネクスト</span>
+          </div>
+
+          {selectedMovie && upcomingSession ? (
+            <button onClick={onOpenSession} className="group block w-full text-left">
+              <div className="relative screentone">
+                <img
+                  src={selectedMovie.posterUrl}
+                  alt={selectedMovie.title}
+                  referrerPolicy="no-referrer"
+                  className="relative mx-auto h-[300px] sm:h-[340px] w-auto object-cover border-x-[1.5px] border-ink"
+                />
+              </div>
+              <div className="flex items-end justify-between gap-4 p-5 border-t-[1.5px] border-ink">
+                <div className="min-w-0">
+                  <div className="label">
+                    {when?.weekday} {when?.dayMonth} · {upcomingSession.time} · {selectedMovie.platform}
+                  </div>
+                  <div className="mt-1.5 text-[19px] font-bold leading-snug line-clamp-2">{selectedMovie.title}</div>
+                </div>
+                <span className="grid place-items-center w-10 h-10 shrink-0 rounded-full border-[1.5px] border-ink group-hover:bg-accent group-hover:text-on-accent transition-colors">
+                  <ArrowUpRight className="w-5 h-5" />
+                </span>
+              </div>
+            </button>
+          ) : (
+            <div>
+              <div className="relative h-[300px] sm:h-[340px] screentone flex items-center justify-center">
+                {featuredMovies.slice(0, 3).map((m, i) => (
+                  <img
+                    key={m.id}
+                    src={m.posterUrl}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="absolute h-[220px] sm:h-[250px] w-auto rounded-md border-[1.5px] border-ink shadow-[4px_4px_0_var(--color-ink)]"
+                    style={{ transform: `translateX(${(i - 1) * 78}px) rotate(${(i - 1) * 7}deg)`, zIndex: i === 1 ? 2 : 1 }}
+                  />
+                ))}
+              </div>
+              <div className="p-5 border-t-[1.5px] border-ink">
+                <div className="label">Chưa chốt phim</div>
+                <div className="mt-1.5 text-[19px] font-bold leading-snug">Top vote đang chờ vòng quay.</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 };

@@ -323,9 +323,13 @@ export default function App() {
 
   const upcomingSession = sessions[0];
   const selectedWeekendMovie = movies.find(m => m.id === upcomingSession?.selectedMovieId);
+  const featuredMovies = movies
+    .filter(m => !m.watched)
+    .sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0))
+    .slice(0, 3);
 
   return (
-    <div className="season-backdrop min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="min-h-screen flex flex-col">
       {/* Top Bar */}
       <Header
         activeTab={activeTab}
@@ -337,20 +341,22 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
-        {campaign && <SeasonalBanner campaign={campaign} />}
-
-        {/* Hero Section displayed on movies and wheel tabs */}
-        {(activeTab === 'movies' || activeTab === 'wheel') && (
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Hero: home tab only */}
+        {activeTab === 'movies' && (
           <HeroBanner
             moviesCount={movies.filter(m => !m.watched).length}
+            watchedCount={movies.filter(m => m.watched).length}
             upcomingSession={upcomingSession}
             selectedMovie={selectedWeekendMovie}
+            featuredMovies={featuredMovies}
             onSpinClick={() => setActiveTab('wheel')}
             onAddMovieClick={() => setIsAddModalOpen(true)}
             onOpenSession={() => setActiveTab('sessions')}
           />
         )}
+
+        {campaign && activeTab === 'movies' && <SeasonalBanner campaign={campaign} />}
 
         {/* Tab 1: Kho Phim (Watchlist Vault) */}
         {activeTab === 'movies' && (
@@ -369,7 +375,7 @@ export default function App() {
 
         {/* Tab 2: Vòng Quay May Mắn (Interactive Canvas Wheel) */}
         {activeTab === 'wheel' && (
-          <div className="space-y-8">
+          <div>
             <RandomWheel
               movies={movies}
               currentUser={currentUser}
@@ -411,16 +417,15 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-neutral-900 bg-neutral-950/80 py-8 px-4 sm:px-6 text-center text-xs text-neutral-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-cinema font-bold text-amber-500">GAY GANG CINEMA</span>
-            <span aria-hidden="true">·</span>
-            <span>Bảng thông tin suất chiếu &amp; Đặt vé Premiere</span>
+      {/* Footer: the wordmark as the closing title card */}
+      <footer className="mt-16 border-t-[1.5px] border-ink overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="jp text-[12px]">シネマクラブ</span>
+            <span className="label">Cùng xem · Cùng vote · Hết cãi nhau chọn phim</span>
           </div>
-          <div className="text-neutral-500">
-            Cùng xem · Cùng bình chọn · Không lo tranh cãi xem phim gì
+          <div className="display mt-6 text-[clamp(56px,15.5vw,210px)] leading-[0.82] select-none">
+            Gay Gang <span className="text-accent">Cinema</span>
           </div>
         </div>
       </footer>

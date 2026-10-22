@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Film, Sparkles, X, Clapperboard, Search, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Search, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Movie } from '../types/cinema';
 import { BROTHERS_LIST } from './Header';
 import { sounds } from '../utils/soundEffects';
+import { Modal, ModalHeader } from './ui';
 
 interface AddMovieModalProps {
   isOpen: boolean;
@@ -187,375 +188,209 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-[#140f0c] border brass-border shadow-[0_0_80px_rgba(0,0,0,0.9)] overflow-hidden my-6 art-deco-frame">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-amber-900/30 bg-[#0e0b09]/80">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">
-              <Clapperboard className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-[#faf5ee] font-cinema">
-                Bỏ Cuộn Phim Mới Vào Kho
-              </h2>
-              <p className="text-[11px] text-stone-400 font-sans">
-                Tự động điền qua IMDb/OMDB hoặc tùy chỉnh thủ công
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              sounds.playVintageSwitch();
-              onClose();
+    <Modal onClose={onClose} size="lg" label="Thêm phim vào kho">
+      <ModalHeader jp="ライブラリ" kicker="Phim mới" title="Thêm vào kho" onClose={() => { sounds.playVintageSwitch(); onClose(); }} />
+
+      {/* Smart autofill search */}
+      <div className="px-5 sm:px-7 pb-5 border-b-[1.5px] border-ink">
+        <label className="field-label" htmlFor="omdb-search">Tìm trên IMDb để tự điền</label>
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3 pointer-events-none" />
+          <input
+            id="omdb-search"
+            type="text"
+            placeholder="Inception, Dune, Parasite…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => {
+              if (searchResults.length > 0) setShowDropdown(true);
             }}
-            className="text-stone-400 hover:text-white p-1 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+            className="input !h-12 !pl-10 !pr-12 !border-ink text-[15px]"
+            autoComplete="off"
+          />
+          <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
+            {isSearching || isLoadingDetails ? (
+              <Loader2 className="w-4 h-4 text-accent animate-spin" />
+            ) : (
+              <span className="label !text-[10px]">IMDb</span>
+            )}
+          </span>
 
-        {/* SMART AUTOFILL SEARCH BAR */}
-        <div className="px-6 py-4 bg-gradient-to-b from-[#1a130f] to-[#140f0c] border-b border-amber-900/40 relative">
-          <div className="flex items-center gap-2 mb-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-300 font-cinema">
-              Tìm kiếm thông minh & Tự động điền (OMDB API):
-            </span>
-          </div>
-
-          <div className="relative">
-            <div className="relative flex items-center">
-              <Search className="absolute left-3.5 w-4 h-4 text-stone-400 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Gõ tên phim bất kỳ... (VD: Inception, Dune, Oppenheimer, Shutter Island, Parasite...)"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => {
-                  if (searchResults.length > 0) setShowDropdown(true);
-                }}
-                className="w-full bg-[#0b0806] border border-amber-600/50 rounded-xl pl-10 pr-24 py-2.5 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 shadow-inner"
-              />
-              <div className="absolute right-3 flex items-center gap-1.5">
-                {isSearching || isLoadingDetails ? (
-                  <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
-                ) : (
-                  <span className="text-[10px] font-mono text-stone-500 bg-[#1c1511] px-2 py-0.5 rounded border border-stone-800">
-                    IMDb
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Autofill Search Results Dropdown */}
-            {showDropdown && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 rounded-2xl bg-[#0e0b09] border border-amber-500/50 shadow-2xl z-30 max-h-64 overflow-y-auto divide-y divide-stone-800/60">
-                {searchResults.map((item) => (
+          {showDropdown && searchResults.length > 0 && (
+            <ul className="enter absolute top-full left-0 right-0 mt-2 panel shadow-[4px_4px_0_var(--color-ink)] z-30 max-h-72 overflow-y-auto p-1.5">
+              {searchResults.map((item) => (
+                <li key={item.imdbID}>
                   <button
-                    key={item.imdbID}
                     type="button"
                     onClick={() => handleSelectMovie(item)}
-                    className="w-full text-left p-2.5 flex items-center gap-3 hover:bg-amber-500/10 transition-colors group"
+                    className="w-full text-left flex items-center gap-3 p-2 rounded-md hover:bg-sunk transition-colors group"
                   >
                     {item.poster ? (
-                      <img
-                        src={item.poster}
-                        alt={item.title}
-                        className="w-8 h-12 object-cover rounded shadow border border-stone-700 shrink-0"
-                      />
+                      <img src={item.poster} alt="" className="w-9 h-[54px] object-cover rounded border border-ink shrink-0" />
                     ) : (
-                      <div className="w-8 h-12 bg-stone-900 rounded flex items-center justify-center shrink-0 border border-stone-800">
-                        <Film className="w-4 h-4 text-stone-600" />
-                      </div>
+                      <span className="w-9 h-[54px] rounded border border-line screentone shrink-0" />
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-stone-200 group-hover:text-amber-300 truncate">
-                        {item.title}
-                      </div>
-                      <div className="text-[11px] text-stone-400 font-mono flex items-center gap-2 mt-0.5">
-                        <span>{item.year}</span>
-                        <span>·</span>
-                        <span className="text-amber-500/90 font-mono text-[10px]">{item.imdbID}</span>
-                      </div>
-                    </div>
-                    <div className="text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[11px] font-semibold pr-2">
-                      <span>Điền ngay</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[14px] font-semibold truncate">{item.title}</span>
+                      <span className="block label !text-[10px] mt-0.5">{item.year} · {item.imdbID}</span>
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-ink-3 group-hover:text-accent transition-colors shrink-0" />
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Autofill Success Banner */}
-          {autofillSuccess && (
-            <div className="mt-2.5 p-2 rounded-lg bg-emerald-950/70 border border-emerald-500/40 flex items-center gap-2 text-xs text-emerald-200 animate-in fade-in slide-in-from-top-1">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="truncate">{autofillSuccess}</span>
-            </div>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[62vh] overflow-y-auto">
-          {/* Row 1: Title & Original Title */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Tên phim tiếng Việt / Tên hiển thị *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="VD: Kỵ Sĩ Bóng Đêm"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Tên gốc (Original Title)
-              </label>
-              <input
-                type="text"
-                placeholder="VD: The Dark Knight (2008)"
-                value={originalTitle}
-                onChange={(e) => setOriginalTitle(e.target.value)}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-              />
-            </div>
+        {autofillSuccess && (
+          <div className="enter mt-3 flex items-center gap-2 text-[13px] font-medium text-go">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span className="truncate">{autofillSuccess}</span>
           </div>
-
-          {/* Row 2: Year, Duration, Director */}
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Năm phát hành
-              </label>
-              <input
-                type="number"
-                min="1920"
-                max="2035"
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Thời lượng (phút)
-              </label>
-              <input
-                type="number"
-                min="15"
-                max="400"
-                value={durationMinutes}
-                onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Đạo diễn
-              </label>
-              <input
-                type="text"
-                placeholder="VD: Christopher Nolan"
-                value={director}
-                onChange={(e) => setDirector(e.target.value)}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-              />
-            </div>
-          </div>
-
-          {/* Row 3: Genres interactive buttons */}
-          <div>
-            <label className="block text-xs font-semibold text-stone-300 mb-1.5">
-              Thể loại (chọn ít nhất 1)
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {COMMON_GENRES.map((g) => {
-                const isSelected = selectedGenres.includes(g);
-                return (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => toggleGenre(g)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors border ${
-                      isSelected
-                        ? 'bg-amber-500/25 border-amber-400 text-amber-200 font-bold'
-                        : 'bg-[#18120e] border-stone-800 text-stone-400 hover:text-stone-200'
-                    }`}
-                  >
-                    {g}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Row 4: Suggested By & Platform & Vibe */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Người đề xuất *
-              </label>
-              <select
-                value={suggestedBy}
-                onChange={(e) => setSuggestedBy(e.target.value)}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-              >
-                {BROTHERS_LIST.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Xem trên nền tảng
-              </label>
-              <select
-                value={platform}
-                onChange={(e) => setPlatform(e.target.value as Movie['platform'])}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-              >
-                <option value="Netflix">Netflix</option>
-                <option value="HBO Max">HBO Max</option>
-                <option value="VieON">VieON</option>
-                <option value="FPT Play">FPT Play</option>
-                <option value="Torrent/Stremio">Torrent / Stremio</option>
-                <option value="Rạp">Chiếu rạp</option>
-                <option value="Khác">Khác / Web lậu</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-1">
-                Vibe / Cảm xúc
-              </label>
-              <select
-                value={vibe}
-                onChange={(e) => setVibe(e.target.value)}
-                className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-              >
-                <option value="Hành động đỉnh cao">Hành động đỉnh cao</option>
-                <option value="Hài bựa">Hài bựa giải trí</option>
-                <option value="Căng não">Căng não hại não</option>
-                <option value="Kinh dị thót tim">Kinh dị thót tim</option>
-                <option value="Ấm áp hoài niệm">Ấm áp hoài niệm</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Row 5: URLs (Poster & Trailer) with Live Poster Preview */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-            <div className="sm:col-span-8 space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  Link ảnh Poster (URL hình ảnh)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={posterUrl}
-                  onChange={(e) => setPosterUrl(e.target.value)}
-                  className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  Link YouTube Trailer (tùy chọn)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  value={trailerUrl}
-                  onChange={(e) => setTrailerUrl(e.target.value)}
-                  className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-                />
-              </div>
-            </div>
-
-            {/* Poster Thumbnail Preview */}
-            <div className="sm:col-span-4 flex justify-center">
-              {posterUrl ? (
-                <img
-                  src={posterUrl}
-                  alt="Poster preview"
-                  className="h-28 w-20 object-cover rounded-lg border border-amber-600/40 shadow-lg"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-              ) : (
-                <div className="h-28 w-20 rounded-lg border border-dashed border-stone-800 flex flex-col items-center justify-center text-stone-600 text-[10px] text-center p-1">
-                  <Film className="w-5 h-5 mb-1" />
-                  <span>Chưa có poster</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Row 6: Synopsis */}
-          <div>
-            <label className="block text-xs font-semibold text-stone-300 mb-1">
-              Tóm tắt nội dung ngắn
-            </label>
-            <textarea
-              rows={2}
-              placeholder="Vài câu giới thiệu cốt truyện..."
-              value={synopsis}
-              onChange={(e) => setSynopsis(e.target.value)}
-              className="w-full bg-[#0b0806] border border-amber-900/40 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 resize-none leading-relaxed"
-            />
-          </div>
-
-          {/* Row 7: Why Watch (Brotherly pitch) */}
-          <div>
-            <label className="block text-xs font-semibold text-amber-300 mb-1">
-              Lý do khuyên anh em nên xem (Pitch của bạn) *
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="VD: Cảnh rượt đuổi đỉnh nóc kịch trần, xem uống bia cuối tuần thì hết nước chấm!"
-              value={whyWatch}
-              onChange={(e) => setWhyWatch(e.target.value)}
-              className="w-full bg-[#0b0806] border border-amber-500/50 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
-            />
-          </div>
-
-          {/* Submit buttons */}
-          <div className="pt-4 border-t border-amber-900/30 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                sounds.playVintageSwitch();
-                onClose();
-              }}
-              className="px-4 py-2 text-xs font-medium text-stone-400 hover:text-white transition-colors"
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-bold text-xs shadow-lg transition-all uppercase tracking-wider font-cinema active:scale-95"
-            >
-              Thêm Vào Kho Phim
-            </button>
-          </div>
-        </form>
+        )}
       </div>
-    </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="px-5 sm:px-7 py-6 space-y-5 max-h-[60vh] overflow-y-auto">
+        <div className="grid sm:grid-cols-[1fr_96px] gap-5">
+          <div className="space-y-4 min-w-0">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="field-label" htmlFor="m-title">Tên phim *</label>
+                <input id="m-title" type="text" required placeholder="Kỵ Sĩ Bóng Đêm" value={title} onChange={(e) => setTitle(e.target.value)} className="input" />
+              </div>
+              <div>
+                <label className="field-label" htmlFor="m-orig">Tên gốc</label>
+                <input id="m-orig" type="text" placeholder="The Dark Knight" value={originalTitle} onChange={(e) => setOriginalTitle(e.target.value)} className="input" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="field-label" htmlFor="m-year">Năm</label>
+                <input id="m-year" type="number" min="1920" max="2035" value={year} onChange={(e) => setYear(Number(e.target.value))} className="input num" />
+              </div>
+              <div>
+                <label className="field-label" htmlFor="m-dur">Phút</label>
+                <input id="m-dur" type="number" min="15" max="400" value={durationMinutes} onChange={(e) => setDurationMinutes(Number(e.target.value))} className="input num" />
+              </div>
+              <div>
+                <label className="field-label" htmlFor="m-dir">Đạo diễn</label>
+                <input id="m-dir" type="text" placeholder="Nolan" value={director} onChange={(e) => setDirector(e.target.value)} className="input" />
+              </div>
+            </div>
+          </div>
+
+          {/* Poster preview */}
+          <div className="hidden sm:block">
+            <div className="field-label">Poster</div>
+            {posterUrl ? (
+              <img
+                src={posterUrl}
+                alt="Xem trước poster"
+                className="w-24 aspect-[2/3] object-cover rounded-md border-[1.5px] border-ink"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.visibility = 'hidden';
+                }}
+              />
+            ) : (
+              <div className="w-24 aspect-[2/3] rounded-md border-[1.5px] border-dashed border-line screentone" />
+            )}
+          </div>
+        </div>
+
+        <div>
+          <div className="field-label">Thể loại</div>
+          <div className="flex flex-wrap gap-1.5">
+            {COMMON_GENRES.map((g) => {
+              const isSelected = selectedGenres.includes(g);
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => toggleGenre(g)}
+                  className={`h-8 px-3 rounded-full border-[1.5px] text-[13px] font-semibold transition-colors ${
+                    isSelected ? 'bg-ink text-paper border-ink' : 'border-line text-ink-2 hover:border-ink hover:text-ink'
+                  }`}
+                >
+                  {g}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-3">
+          <div>
+            <label className="field-label" htmlFor="m-by">Người đề xuất *</label>
+            <select id="m-by" value={suggestedBy} onChange={(e) => setSuggestedBy(e.target.value)} className="input">
+              {BROTHERS_LIST.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="field-label" htmlFor="m-platform">Xem trên</label>
+            <select id="m-platform" value={platform} onChange={(e) => setPlatform(e.target.value as Movie['platform'])} className="input">
+              <option value="Netflix">Netflix</option>
+              <option value="HBO Max">HBO Max</option>
+              <option value="VieON">VieON</option>
+              <option value="FPT Play">FPT Play</option>
+              <option value="Torrent/Stremio">Torrent / Stremio</option>
+              <option value="Rạp">Chiếu rạp</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div>
+            <label className="field-label" htmlFor="m-vibe">Vibe</label>
+            <select id="m-vibe" value={vibe} onChange={(e) => setVibe(e.target.value)} className="input">
+              <option value="Hành động đỉnh cao">Hành động đỉnh cao</option>
+              <option value="Hài bựa">Hài bựa</option>
+              <option value="Căng não">Căng não</option>
+              <option value="Kinh dị thót tim">Kinh dị thót tim</option>
+              <option value="Ấm áp hoài niệm">Ấm áp hoài niệm</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="field-label" htmlFor="m-poster">Link poster</label>
+            <input id="m-poster" type="url" placeholder="https://…" value={posterUrl} onChange={(e) => setPosterUrl(e.target.value)} className="input" />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="m-trailer">Link trailer YouTube</label>
+            <input id="m-trailer" type="url" placeholder="https://youtube.com/watch?v=…" value={trailerUrl} onChange={(e) => setTrailerUrl(e.target.value)} className="input" />
+          </div>
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="m-syn">Tóm tắt</label>
+          <textarea id="m-syn" rows={2} placeholder="Vài câu về cốt truyện…" value={synopsis} onChange={(e) => setSynopsis(e.target.value)} className="input" />
+        </div>
+
+        <div>
+          <label className="field-label !text-ink" htmlFor="m-why">Vì sao cả hội nên xem? *</label>
+          <input
+            id="m-why"
+            type="text"
+            required
+            placeholder="Rượt đuổi đỉnh nóc, xem với bia cuối tuần là hết nước chấm!"
+            value={whyWatch}
+            onChange={(e) => setWhyWatch(e.target.value)}
+            className="input !border-ink"
+          />
+        </div>
+
+        <div className="flex items-center justify-end gap-2.5 pt-2">
+          <button type="button" onClick={() => { sounds.playVintageSwitch(); onClose(); }} className="btn btn-quiet">
+            Hủy
+          </button>
+          <button type="submit" className="btn btn-primary">
+            Thêm vào kho
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 };

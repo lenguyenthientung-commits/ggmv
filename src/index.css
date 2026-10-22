@@ -1,129 +1,265 @@
 @import "tailwindcss";
 
+/* =====================================================================
+   GGMV design system: "Storyboard"
+   The club as an anime production sheet. Daylight is paper + ink with ONE
+   signal color; screenings (trailer, wheel result) switch to night.
+   ===================================================================== */
+
 @theme {
-  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'Space Grotesk', ui-monospace, monospace;
+  --font-display: 'Archivo', 'Be Vietnam Pro', system-ui, sans-serif;
+  --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-jp: 'Dela Gothic One', 'Yu Gothic', 'Hiragino Sans', sans-serif;
+
+  /* Surfaces */
+  --color-paper: #f2eee6;   /* page */
+  --color-card: #fbf9f4;    /* raised sheet */
+  --color-sunk: #e7e1d4;    /* inset, hover */
+  --color-line: #d6cfbf;    /* hairlines */
+  --color-night: #100f0d;   /* screening surfaces */
+  --color-night-2: #1d1b17;
+  --color-night-line: #3a362f;
+
+  /* Ink */
+  --color-ink: #16140f;
+  --color-ink-2: #57524a;
+  --color-ink-3: #8c8578;
+
+  /* Signal: the only accent. Seasons swap it. */
+  --color-accent: #ff4a1c;
+  --color-on-accent: #ffffff;
+
+  /* Status (used as small dots and text only) */
+  --color-go: #13834a;
+  --color-late: #b87a00;
+  --color-stop: #d0281c;
+
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
+/* Seasons re-color the signal only; layout and type never change. */
+html[data-season="tet"] { --color-accent: #e0302b; }
+html[data-season="valentine"] { --color-accent: #ea4c84; }
+html[data-season="mid-autumn"] { --color-accent: #e8a01b; --color-on-accent: #16140f; }
+html[data-season="halloween"] { --color-accent: #6b3fd4; }
+html[data-season="christmas"] { --color-accent: #1d8a54; }
 
 @layer base {
+  html { background: var(--color-paper); }
   body {
     font-family: var(--font-sans);
-    background-color: #0b0908;
-    color: #ede8e3;
-    background-image: 
-      radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-amber-600) 8%, transparent) 0%, transparent 60%),
-      radial-gradient(circle at 100% 100%, rgba(69, 10, 10, 0.08) 0%, transparent 50%);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
     min-height: 100vh;
   }
+  ::selection { background: var(--color-accent); color: var(--color-on-accent); }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  input[type="range"] { accent-color: var(--color-accent); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-ink-3); }
+}
 
-  h1, h2, h3, .font-cinema {
+@layer components {
+  /* ---------- Type ---------- */
+  .display {
     font-family: var(--font-display);
-    letter-spacing: normal;
+    font-stretch: 68%;
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
   }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-2);
+  }
+  .jp {
+    font-family: var(--font-jp);
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    color: var(--color-accent);
+  }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Surfaces ---------- */
+  .panel {
+    background: var(--color-card);
+    border: 1.5px solid var(--color-ink);
+    border-radius: 10px;
+  }
+  .panel-soft {
+    background: var(--color-card);
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+  }
+  .screentone {
+    background-image: radial-gradient(color-mix(in srgb, var(--color-ink) 26%, transparent) 1.1px, transparent 1.4px);
+    background-size: 7px 7px;
+  }
+
+  /* ---------- Buttons ----------
+     One shape. Primary carries a hard ink shadow that collapses on press. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 42px;
+    padding: 0 18px;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 8px;
+    background: var(--color-card);
+    color: var(--color-ink);
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 120ms var(--ease-snap), box-shadow 120ms var(--ease-snap), background-color 200ms, color 200ms;
+  }
+  .btn:hover { background: var(--color-sunk); }
+  .btn:disabled { opacity: 0.4; pointer-events: none; }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: 3px 3px 0 var(--color-ink);
+  }
+  .btn-primary:hover { background: var(--color-accent); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--color-ink); }
+  .btn-primary:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--color-ink); }
+  .btn-ink { background: var(--color-ink); color: var(--color-paper); }
+  .btn-ink:hover { background: #2b2822; }
+  .btn-quiet { border-color: transparent; background: transparent; }
+  .btn-quiet:hover { background: var(--color-sunk); }
+  .btn-sm { height: 34px; padding: 0 12px; font-size: 13px; border-radius: 7px; }
+  .btn-lg { height: 52px; padding: 0 26px; font-size: 15px; }
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 7px;
+    color: var(--color-ink-2);
+    transition: background-color 200ms, color 200ms;
+  }
+  .btn-icon:hover { background: var(--color-sunk); color: var(--color-ink); }
+
+  /* Night variants for screening surfaces */
+  .on-night .btn { background: transparent; color: var(--color-paper); border-color: var(--color-night-line); }
+  .on-night .btn:hover { background: var(--color-night-2); }
+  .on-night .btn-primary { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); box-shadow: 3px 3px 0 var(--color-paper); }
+  .on-night .btn-primary:hover { background: var(--color-accent); box-shadow: 4px 4px 0 var(--color-paper); }
+  .on-night .btn-primary:active { box-shadow: 0 0 0 var(--color-paper); }
+
+  /* ---------- Controls ---------- */
+  .input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    background: var(--color-card);
+    border: 1.5px solid var(--color-line);
+    border-radius: 8px;
+    color: var(--color-ink);
+    font-size: 14px;
+    transition: border-color 200ms, box-shadow 200ms;
+  }
+  textarea.input { height: auto; padding: 10px 12px; line-height: 1.55; resize: none; }
+  .input::placeholder { color: var(--color-ink-3); }
+  .input:focus { outline: none; border-color: var(--color-ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 28%, transparent); }
+  .field-label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--color-ink-2); }
+
+  /* Segmented control */
+  .seg {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 999px;
+    background: var(--color-card);
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .seg > button {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink-2);
+    white-space: nowrap;
+    transition: background-color 200ms, color 200ms;
+  }
+  .seg > button:hover { color: var(--color-ink); }
+  .seg > button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-paper); }
+
+  /* Chips and stamps */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 5px;
+    border: 1px solid var(--color-ink);
+    background: var(--color-card);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .chip-accent { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-ink); }
+  .stamp {
+    display: inline-block;
+    padding: 3px 8px 2px;
+    border: 2px solid currentColor;
+    border-radius: 4px;
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transform: rotate(-6deg);
+  }
+
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; }
+
+  .scroll-x { overflow-x: auto; scrollbar-width: none; }
+  .scroll-x::-webkit-scrollbar { display: none; }
 }
 
-/* Subtle 35mm film grain overlay */
-.film-grain {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events: none;
-}
+/* ---------- Motion ----------
+   snap   120ms  press feedback (buttons)
+   ease   200ms  hover color / surface
+   enter  320ms  sheets and modals rising in
+   reveal 700ms  hero headline, once per load */
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+@keyframes fade { from { opacity: 0; } }
+/* negative insets keep Vietnamese diacritics above the cap height visible */
+@keyframes reveal { from { clip-path: inset(0 0 100% 0); transform: translateY(18%); } to { clip-path: inset(-40% -5% -20% -5%); } }
+@keyframes float { 50% { transform: translateY(-3px); } }
 
-/* Vintage Brass & Tungsten Sconce Glow */
-.cinema-glow {
-  box-shadow: 0 0 50px -10px color-mix(in srgb, var(--color-amber-600) 25%, transparent);
-}
+.enter { animation: rise 320ms var(--ease-snap) both; }
+.overlay-enter { animation: fade 200ms ease-out both; }
+.reveal { display: block; animation: reveal 700ms var(--ease-snap) both; }
+.season-art { width: 100%; height: 100%; overflow: visible; animation: float 6s ease-in-out infinite; }
 
-.brass-border {
-  border: 1px solid color-mix(in srgb, var(--color-amber-600) 35%, transparent);
-  box-shadow: inset 0 1px 0 0 rgba(254, 243, 199, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.6);
-}
+/* Poster: lifts onto a hard shadow, same language as the primary button */
+.poster-lift { transition: transform 200ms var(--ease-snap), box-shadow 200ms var(--ease-snap); }
+.group:hover .poster-lift { transform: translate(-3px, -3px); box-shadow: 5px 5px 0 var(--color-ink); }
 
-.art-deco-frame {
-  position: relative;
-}
-.art-deco-frame::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  right: 4px;
-  bottom: 4px;
-  border: 1px solid color-mix(in srgb, var(--color-amber-600) 15%, transparent);
-  pointer-events: none;
-  border-radius: inherit;
-}
-
-/* Dim The Lights transition */
-.transition-lighting {
-  transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1), background-color 0.8s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #110e0c;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a221c;
-  border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--color-amber-600) 15%, transparent);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #44352b;
-}
-
-/* ===== Seasonal campaigns =====
-   Rules (keep every season on the same footing):
-   1. A season only re-colors. The UI accent is Tailwind's amber scale, so each season swaps
-      it for ONE hue family, light (100) to dark (900) — never mix hues inside the scale,
-      or gradients like amber-700 → amber-600 turn multicolored.
-   2. The second festive hue lives only in --season-glow (page + banner light) and the SVG art.
-   3. Motion: the art's gentle float is the only ambient loop; everything else stays still.
-      Interaction feedback keeps the site's own transition-colors / active:scale-95. */
-html[data-season="tet"] {
-  --color-amber-100: #fdf0d2; --color-amber-200: #fbe2ad; --color-amber-300: #f8d38a; --color-amber-400: #f4c46c;
-  --color-amber-500: #ea9f4c; --color-amber-600: #d4683a; --color-amber-700: #b2442e; --color-amber-800: #8a2a26; --color-amber-900: #5c1a1c;
-  --season-glow: rgba(196, 40, 40, .16);
-}
-html[data-season="valentine"] {
-  --color-amber-100: #fde8ee; --color-amber-200: #fbd3dd; --color-amber-300: #f7b8c8; --color-amber-400: #f4a0b4;
-  --color-amber-500: #e07996; --color-amber-600: #b94f72; --color-amber-700: #943d5c; --color-amber-800: #702b45; --color-amber-900: #4a1c2f;
-  --season-glow: rgba(190, 63, 100, .14);
-}
-html[data-season="mid-autumn"] {
-  --color-amber-100: #fdf0d6; --color-amber-200: #fbe0b0; --color-amber-300: #f6cd85; --color-amber-400: #f2bd68;
-  --color-amber-500: #e59a50; --color-amber-600: #d07a45; --color-amber-700: #a85c34; --color-amber-800: #7c4129; --color-amber-900: #4e2a1e;
-  --season-glow: rgba(72, 70, 140, .16);
-}
-html[data-season="halloween"] {
-  --color-amber-100: #ffe8d2; --color-amber-200: #ffd2a6; --color-amber-300: #ffb877; --color-amber-400: #ffa04f;
-  --color-amber-500: #f0843a; --color-amber-600: #c8642c; --color-amber-700: #a14a22; --color-amber-800: #7a3518; --color-amber-900: #4a2212;
-  --season-glow: rgba(120, 60, 150, .17);
-}
-html[data-season="christmas"] {
-  --color-amber-100: #f7edd2; --color-amber-200: #f3e3b9; --color-amber-300: #efd9a0; --color-amber-400: #e6c982;
-  --color-amber-500: #cfa95a; --color-amber-600: #b08638; --color-amber-700: #8a6629; --color-amber-800: #5e461e; --color-amber-900: #3a2b14;
-  --season-glow: rgba(40, 120, 80, .16);
-}
-
-/* Same single top-down light as the base body background, tinted by the season */
-html[data-season] .season-backdrop {
-  background: radial-gradient(ellipse at 50% 0%, var(--season-glow), transparent 60%), var(--color-neutral-950);
-}
-
-/* Banner: same card material as the rest of the site, lit from the art's side */
-.season-banner {
-  background: radial-gradient(ellipse at 100% 50%, var(--season-glow), transparent 55%), #130f0d;
-}
-.season-art { width: 100%; height: 100%; overflow: visible; animation: season-float 6s ease-in-out infinite; }
-@keyframes season-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
 @media (prefers-reduced-motion: reduce) {
-  .season-art { animation: none; }
+  .enter, .overlay-enter, .reveal, .season-art { animation: none; }
+  .btn, .poster-lift { transition: background-color 200ms, color 200ms; }
+  .btn-primary:hover, .btn-primary:active, .group:hover .poster-lift { transform: none; }
 }
