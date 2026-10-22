@@ -14,6 +14,8 @@ import { CinemaRulesModal } from './components/CinemaRulesModal';
 import { SeasonalBanner } from './components/SeasonalBanner';
 import { getActiveCampaign } from './data/seasonalCampaigns';
 import { ThemeId, Mode, loadTheme, loadMode, saveAppearance, applyAppearance } from './theme';
+import { EggEvent, EggId, DEFAULT_HOUSE_NOTE, takeUnseenEvents, markSurface, hasCrossSurfaceVisit } from './easterEggs';
+import { ProjectorDust, IntermissionCard, UnlockToast } from './components/EasterEggs';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string>(() => {
@@ -70,6 +72,39 @@ export default function App() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Easter eggs: shared ledger + a toast the first time this viewer meets each achievement
+  const [eggEvents, setEggEvents] = useState<EggEvent[]>([]);
+  const [toastQueue, setToastQueue] = useState<EggId[]>([]);
+  const [creditShifted, setCreditShifted] = useState(() => hasCrossSurfaceVisit());
+  const dismissToast = useCallback(() => setToastQueue(q => q.slice(1)), []);
+
+  const fetchEggs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/eggs');
+      if (!res.ok) return;
+      const events: EggEvent[] = await res.json();
+      setEggEvents(events);
+      const unseen = takeUnseenEvents(events);
+      const unseenKeys = new Set(unseen.map(e => e.key));
+      const known = new Set(events.filter(e => !unseenKeys.has(e.key)).map(e => e.eggId));
+      const firsts = [...new Set(unseen.map(e => e.eggId))].filter(id => !known.has(id));
+      if (firsts.length) setToastQueue(q => [...q, ...firsts]);
+    } catch {
+      // eggs are optional: never surface an error for them
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEggs();
+  }, [fetchEggs]);
+
+  // C4 footer credit: the wheel and the archive both visited in one sitting
+  useEffect(() => {
+    if (activeTab === 'wheel' || activeTab === 'archive') {
+      if (markSurface(activeTab)) setCreditShifted(true);
+    }
+  }, [activeTab]);
 
   // Handle add movie
   const handleAddMovie = async (movieData: Partial<Movie>) => {
@@ -167,6 +202,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ watched: updatedWatched }),
       });
+      fetchEggs();
     } catch {
       fetchData();
     }
@@ -212,6 +248,7 @@ export default function App() {
       if (res.ok) {
         const updated = await res.json();
         setMovies(prev => prev.map(m => (m.id === movieId ? updated : m)));
+        fetchEggs();
       } else {
         const data = await res.json().catch(() => ({}));
         alert(data.error || 'Không lưu được điểm, hãy thử lại.');
@@ -350,6 +387,7 @@ export default function App() {
         mode={mode}
         setMode={setMode}
         seasonName={campaign?.title}
+        houseNote={campaign?.note ?? DEFAULT_HOUSE_NOTE}
       />
 
       {/* Main Container */}
@@ -393,6 +431,7 @@ export default function App() {
               currentUser={currentUser}
               onSelectForWeekend={handleSelectForWeekend}
               onOpenTrailer={(m) => setCinemaModalMovie(m)}
+              onEggsChanged={fetchEggs}
             />
           </div>
         )}
@@ -418,8 +457,12 @@ export default function App() {
             onOpenRules={() => setIsRulesOpen(true)}
             onSubmitReview={handleSubmitReview}
             onUpdateJudgesScore={handleUpdateJudgesScore}
+            eggEvents={eggEvents}
+            onEggsChanged={fetchEggs}
           />
         )}
+        {activeTab === 'archive' && <ProjectorDust />}
+        {activeTab === 'archive' && <IntermissionCard movies={movies} />}
 
         {/* Tab 5: Thống Kê Điện Ảnh (MovieStats with Recharts) */}
         {activeTab === 'stats' && (
@@ -434,7 +477,11 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="jp text-[12px]">シネマクラブ</span>
-            <span className="label">Cùng xem · Cùng vote · Hết cãi nhau chọn phim</span>
+            <span className="label">
+              {creditShifted
+                ? 'Continuity supervised by three people who disagree about everything.'
+                : 'Cùng xem · Cùng vote · Hết cãi nhau chọn phim'}
+            </span>
           </div>
           <div className="display mt-6 text-[clamp(56px,15.5vw,210px)] leading-[0.82] select-none">
             Gay Gang <span className="text-accent">Cinema</span>
@@ -456,6 +503,10 @@ export default function App() {
         onClose={() => setCinemaModalMovie(null)}
         currentUser={currentUser}
       />
+
+      {toastQueue.length > 0 && (
+        <UnlockToast key={toastQueue[0]} eggId={toastQueue[0]} onDone={dismissToast} />
+      )}
 
       {/* Cinema Rules Modal */}
       <CinemaRulesModal isOpen={isRulesOpen} onClose={() => setIsRulesOpen(false)} />

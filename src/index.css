@@ -306,8 +306,36 @@ html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-
 .poster-lift { transition: transform 200ms var(--ease-snap), box-shadow 200ms var(--ease-snap); }
 .group:hover .poster-lift { transform: translate(-3px, -3px); box-shadow: 5px 5px 0 var(--color-shadow); }
 
+/* ---------- Easter eggs: one reveal at a time, never looping ---------- */
+@keyframes dust-resolve {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  35% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(1.1); }
+}
+.egg-dust {
+  position: fixed;
+  z-index: 15;
+  pointer-events: none;
+  color: var(--color-accent);
+  font-size: 13px;
+  animation: dust-resolve 1.2s ease-out forwards;
+}
+@keyframes stamp-land { from { opacity: 0; transform: rotate(-6deg) scale(1.6); } }
+.stamp-land { animation: stamp-land 260ms var(--ease-snap) both; }
+@keyframes slate-in { from { opacity: 0; transform: translateY(-4px); } }
+.egg-slate { animation: slate-in 250ms var(--ease-snap) both; }
+.egg-toast { animation: rise 320ms var(--ease-snap) both; }
+@keyframes sleeve-in { from { transform: translateY(-101%); } }
+/* L2 witness protection: a striped sleeve over the poster art, never the record */
+.witness-sleeve {
+  background: repeating-linear-gradient(-45deg, var(--color-ink) 0 10px, var(--color-accent) 10px 20px);
+  animation: sleeve-in 500ms var(--ease-snap) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .enter, .overlay-enter, .reveal, .season-art { animation: none; }
+  .egg-dust { animation: none; opacity: 0.35; transform: translate(-50%, -50%); }
+  .stamp-land, .egg-slate, .egg-toast, .witness-sleeve { animation: none; }
   .btn, .poster-lift { transition: background-color 200ms, color 200ms; }
   .btn-primary:hover, .btn-primary:active, .group:hover .poster-lift { transform: none; }
 }

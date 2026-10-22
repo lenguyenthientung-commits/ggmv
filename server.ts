@@ -40,6 +40,54 @@ db.settings({ ignoreUndefinedProperties: true });
 const moviesCol = db.collection('movies');
 const sessionsCol = db.collection('sessions');
 const vetoDoc = db.collection('meta').doc('veto');
+const eggsCol = db.collection('easterEggs');
+
+// ---------- Easter egg ledger (ported from GGMV "GGMV Easter Egg Events") ----------
+// Eggs only decorate: they never change the drawn movie, a score, a rank or a veto.
+// One document per "<eggId>:<operationId>", so the same event can never be recorded twice.
+const EGG_IDS = ['NEAR_MISS', 'DOUBLE_FEATURE', 'DIVIDED_HOUSE', 'WITNESS_PROTECTION', 'EMPTY_REEL', 'CENTURY_ROOM', 'END_CREDIT_SURVIVOR'] as const;
+type EggId = typeof EGG_IDS[number];
+
+interface EggEvent {
+  key: string;
+  eggId: EggId;
+  operationId: string;
+  movieId: string;
+  createdAt: string;
+  evidence: Record<string, unknown>;
+}
+
+async function recordEgg(eggId: EggId, operationId: string, movieId: string, evidence: Record<string, unknown>) {
+  const key = `${eggId}:${operationId}`;
+  const event: EggEvent = { key, eggId, operationId, movieId, createdAt: new Date().toISOString(), evidence };
+  try {
+    await eggsCol.doc(key).create(event); // fails if it already exists
+    return true;
+  } catch (err) {
+    if ((err as { code?: number }).code !== 6) console.error(`Easter egg ledger write failed: ${eggId}`, err); // 6 = ALREADY_EXISTS
+    return false;
+  }
+}
+
+// Archive milestones, evaluated after a movie becomes watched or is scored
+async function evaluateArchiveEggs(movie: Movie) {
+  const scores = [movie.scoreTeng, movie.scoreLoc, movie.scoreThanh].filter((s): s is number => typeof s === 'number');
+  if (scores.length === 3) {
+    const spread = Math.max(...scores) - Math.min(...scores);
+    if (spread >= 6) await recordEgg('DIVIDED_HOUSE', movie.id, movie.id, { scores, spread });
+  }
+  if (scores.length >= 2 && typeof movie.scoreAvg === 'number' && movie.scoreAvg <= 2) {
+    await recordEgg('WITNESS_PROTECTION', movie.id, movie.id, { scores, average: movie.scoreAvg });
+  }
+  if (!movie.watched) return;
+  const [unwatched, watched] = await Promise.all([
+    moviesCol.where('watched', '==', false).limit(1).get(),
+    moviesCol.where('watched', '==', true).count().get(),
+  ]);
+  if (unwatched.empty) await recordEgg('EMPTY_REEL', 'series-01', movie.id, { watchedMovieId: movie.id });
+  const totalScreenings = watched.data().count;
+  if (totalScreenings >= 100) await recordEgg('CENTURY_ROOM', 'milestone-century', movie.id, { totalScreenings });
+}
 
 // Each document carries an internal `_order` field (higher = shown first) to keep list order
 function stripOrder<T>(data: DocumentData): T {
@@ -343,6 +391,7 @@ async function startServer() {
       res.status(404).json({ error: 'Không tìm thấy phim' });
       return;
     }
+    await evaluateArchiveEggs(movie).catch(err => console.error('Easter egg evaluation failed', err));
     res.json(movie);
   }));
 
@@ -370,7 +419,47 @@ async function startServer() {
       res.status(404).json({ error: 'Không tìm thấy phim' });
       return;
     }
+    await evaluateArchiveEggs(movie).catch(err => console.error('Easter egg evaluation failed', err));
     res.json(movie);
+  }));
+
+  // Easter eggs: the shared ledger (seen-state is kept per viewer in the browser)
+  app.get('/api/eggs', asyncHandler(async (_req, res) => {
+    const snap = await eggsCol.orderBy('createdAt').get();
+    res.json(snap.docs.map(d => d.data()));
+  }));
+
+  // A finished spin: NEAR_MISS when the fake-victory flourish played, DOUBLE_FEATURE when
+  // the movie just vetoed came straight back. Presentation records only.
+  app.post('/api/eggs/spin', asyncHandler(async (req, res) => {
+    const { operationId, movieId, movieTitle, showedFakeVictory, vetoedMovieId } = req.body;
+    if (typeof operationId !== 'string' || typeof movieId !== 'string') {
+      res.status(400).json({ error: 'Thiếu operationId hoặc movieId' });
+      return;
+    }
+    const recorded: EggId[] = [];
+    if (showedFakeVictory === true && await recordEgg('NEAR_MISS', operationId, movieId, { title: String(movieTitle), presentationOnly: true })) {
+      recorded.push('NEAR_MISS');
+    }
+    if (vetoedMovieId && String(vetoedMovieId) === movieId &&
+      await recordEgg('DOUBLE_FEATURE', operationId, movieId, { title: String(movieTitle), vetoedMovieId: String(vetoedMovieId) })) {
+      recorded.push('DOUBLE_FEATURE');
+    }
+    res.json({ recorded });
+  }));
+
+  // Third distinct screening scored from the same browser
+  app.post('/api/eggs/end-credit', asyncHandler(async (req, res) => {
+    const { operationId, movieIds } = req.body;
+    if (typeof operationId !== 'string' || !Array.isArray(movieIds) || new Set(movieIds).size < 3) {
+      res.status(400).json({ error: 'Cần 3 phim khác nhau' });
+      return;
+    }
+    const recorded = await recordEgg('END_CREDIT_SURVIVOR', operationId, 'end-credit-survivor', {
+      screenedMovieIds: movieIds.slice(-3).map(String),
+      browserProfileScoped: true,
+    });
+    res.json({ recorded });
   }));
 
   // Veto cards: 3 per judge per month, shared by everyone (resets when the month changes)
@@ -485,9 +574,9 @@ async function startServer() {
     res.json(session);
   }));
 
-  // Reset demo data: wipes movies, sessions and veto cards, then writes the sample data
+  // Reset demo data: wipes movies, sessions, veto cards and the easter egg ledger, then writes the sample data
   app.post('/api/reset', asyncHandler(async (_req, res) => {
-    await Promise.all([db.recursiveDelete(moviesCol), db.recursiveDelete(sessionsCol), vetoDoc.delete()]);
+    await Promise.all([db.recursiveDelete(moviesCol), db.recursiveDelete(sessionsCol), db.recursiveDelete(eggsCol), vetoDoc.delete()]);
     await writeAll({ movies: INITIAL_MOVIES, sessions: INITIAL_SESSIONS });
     res.json({ success: true, message: 'Đã khôi phục dữ liệu mẫu thành công' });
   }));

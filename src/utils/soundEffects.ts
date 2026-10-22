@@ -228,6 +228,31 @@ class VintageSoundEngine {
     }
   }
 
+  // 5. Dry game-show buzzer for the fake-victory "CLAIM DENIED" gag (two short low blasts)
+  playTrollBuzzer() {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getContext();
+      if (!ctx || !this.masterGain) return;
+      const now = ctx.currentTime;
+      [0, 0.22].forEach((offset) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(118, now + offset);
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.09, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18);
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.2);
+      });
+    } catch {
+      // Fallback
+    }
+  }
+
   // Legacy compatibility
   playTick() {
     this.playMechanicalTick();

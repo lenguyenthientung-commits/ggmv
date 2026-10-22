@@ -4,6 +4,17 @@ import { BookOpen, MessageSquarePlus, SlidersHorizontal } from 'lucide-react';
 import { BROTHERS_LIST } from './Header';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader, SectionHeader, Stat } from './ui';
+import { EggEvent, movieStories, classifiedStories, recordScoredScreening } from '../easterEggs';
+import { ClassifiedArchive, AchievementHall } from './EasterEggs';
+
+// Short archive tags for per-movie stories (the full copy lives in the classified archive)
+const STORY_TAGS: Record<string, string> = {
+  'witness-protection': 'Bảo vệ nhân chứng',
+  'divided-house': 'Hội đồng tan vỡ',
+  'final-frame': 'Khung hình chốt sổ',
+  'near-miss': 'Suýt trúng jackpot',
+  'double-feature': 'Sold out · technically',
+};
 
 interface WatchedArchiveProps {
   movies: Movie[];
@@ -17,6 +28,8 @@ interface WatchedArchiveProps {
     scoreThanh: number,
     adminNote: string
   ) => void;
+  eggEvents?: EggEvent[];
+  onEggsChanged?: () => void;
 }
 
 export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
@@ -25,6 +38,8 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
   onOpenRules,
   onSubmitReview,
   onUpdateJudgesScore,
+  eggEvents = [],
+  onEggsChanged,
 }) => {
   // Filter watched movies and sort by scoreAvg (or review average) descending (Hall of Fame Rule 3.4)
   const watchedMovies = movies
@@ -75,6 +90,17 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
     if (!scoringMovie) return;
     sounds.playWinnerFanfare();
     onUpdateJudgesScore?.(scoringMovie.id, tengScore, locScore, thanhScore, judgeNote);
+    // R7 End-credit survivor: the third distinct screening scored in this browser
+    const award = recordScoredScreening(scoringMovie.id);
+    if (award) {
+      fetch('/api/eggs/end-credit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operationId: `${Date.now().toString(36)}-credits`, movieIds: award }),
+      })
+        .then(() => onEggsChanged?.())
+        .catch(() => {});
+    }
     setScoringMovie(null);
   };
 
@@ -125,6 +151,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
         <ol className="border-t-[1.5px] border-ink">
           {watchedMovies.map((movie, index) => {
             const rank = index + 1;
+            const stories = movieStories(movie, eggEvents);
             const avgScore = movie.scoreAvg ?? (
               movie.reviews && movie.reviews.length > 0
                 ? Number((movie.reviews.reduce((acc, r) => acc + r.rating, 0) / movie.reviews.length).toFixed(2))
@@ -142,12 +169,15 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                   {String(rank).padStart(2, '0')}
                 </div>
 
-                <img
-                  src={movie.posterUrl}
-                  alt={movie.title}
-                  referrerPolicy="no-referrer"
-                  className="hidden md:block w-[120px] aspect-[2/3] object-cover rounded-md border-[1.5px] border-ink"
-                />
+                <div className="hidden md:block relative w-[120px] aspect-[2/3] rounded-md border-[1.5px] border-ink overflow-hidden">
+                  <img src={movie.posterUrl} alt={movie.title} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
+                  {/* L2 Witness protection: a sleeve over the art; title and scores stay readable */}
+                  {stories.some(st => st.id === 'witness-protection') && (
+                    <div className="witness-sleeve absolute inset-0 grid place-items-center p-2" title="Identity retained for legal and comedic reasons.">
+                      <span className="bg-ink text-paper label !text-paper !text-[9px] text-center px-1.5 py-1 rounded-sm">Witness protection</span>
+                    </div>
+                  )}
+                </div>
 
                 <div className="min-w-0 col-start-2 md:col-start-3 row-start-1">
                   <div className="flex flex-wrap items-start justify-between gap-4">
@@ -162,6 +192,9 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                       <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {movie.statusBadge && <span className="chip chip-accent">Vé vàng VIP</span>}
                         {movie.legacySeason === 'legacy' && <span className="chip">Mùa khởi đầu</span>}
+                        {stories.filter(st => STORY_TAGS[st.id]).map(st => (
+                          <span key={st.id} className="chip !border-accent !text-accent" title={st.detail}>{STORY_TAGS[st.id]}</span>
+                        ))}
                       </div>
                     </div>
 
@@ -171,6 +204,10 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                         {avgScore !== null ? avgScore.toFixed(2) : '—'}
                       </div>
                       <div className="label mt-1.5">Điểm TB</div>
+                      {/* C6 The exact average: the score is untouched, the committee just declines comment */}
+                      {stories.some(st => st.id === 'exact-average') && (
+                        <span className="stamp stamp-land text-accent mt-2" title="The committee has declined to interpret this.">Under review</span>
+                      )}
                     </div>
                   </div>
 
@@ -239,6 +276,9 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
           </div>
         </div>
       )}
+
+      <ClassifiedArchive stories={classifiedStories(movies, eggEvents)} />
+      <AchievementHall events={eggEvents} />
 
       {/* Judges scoring sheet (Rule 3.1 & 3.2) */}
       {scoringMovie && (

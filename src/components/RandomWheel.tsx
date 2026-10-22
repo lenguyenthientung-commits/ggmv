@@ -11,6 +11,7 @@ interface RandomWheelProps {
   onOpenRules?: () => void;
   onSelectForWeekend: (movie: Movie) => void;
   onOpenTrailer: (movie: Movie) => void;
+  onEggsChanged?: () => void;
 }
 
 // Logical canvas size; drawn at 2x for sharp edges on high-DPI screens
@@ -45,6 +46,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   movies,
   onSelectForWeekend,
   onOpenTrailer,
+  onEggsChanged,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -63,6 +65,13 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   const [vetoCounts, setVetoCounts] = useState<{ [judge: string]: number }>({});
   const [isVetoing, setIsVetoing] = useState(false);
   const [vetoNotice, setVetoNotice] = useState<string | null>(null);
+
+  // Easter eggs (presentation only, the drawn movie never changes):
+  // R1 near-miss: 10% of spins play a fake jackpot, a buzzer, then land on the same movie.
+  // R2 double feature: the movie just vetoed comes straight back.
+  const [fakeStage, setFakeStage] = useState<'jackpot' | 'denied' | null>(null);
+  const [nearMiss, setNearMiss] = useState(false);
+  const vetoedMovieRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetch('/api/veto')
@@ -331,34 +340,104 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
-        setIsSpinning(false);
         sounds.stopProjectorWhir();
 
         const winningSlice = slices.find(
           (s) => pointerAngle >= s.startAngle && pointerAngle < s.endAngle
         ) || slices[0];
 
-        if (winningSlice) {
-          setWinnerMovie(winningSlice.movie);
-          sounds.playVintageWinnerFanfare();
-
-          if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            confetti({
-              particleCount: 90,
-              spread: 70,
-              origin: { y: 0.55 },
-              colors: [token('--color-accent') || '#ff4a1c', '#16140f', '#f2eee6'],
-            });
-          }
-
-          setTimeout(() => {
-            setShowWinnerModal(true);
-          }, 350);
+        if (!winningSlice) {
+          setIsSpinning(false);
+          return;
         }
+
+        // The result is fixed here; everything after is presentation
+        const movie = winningSlice.movie;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const fakeVictory = !reducedMotion && Math.random() < 0.1;
+        recordSpin(movie, fakeVictory);
+        setWinnerMovie(movie);
+        setNearMiss(fakeVictory);
+
+        if (fakeVictory) {
+          runFakeVictory(newAngle, () => {
+            setIsSpinning(false);
+            setTimeout(() => setShowWinnerModal(true), 250);
+          });
+          return;
+        }
+
+        setIsSpinning(false);
+        celebrate();
+        setTimeout(() => {
+          setShowWinnerModal(true);
+        }, 350);
       }
     };
 
     animationFrameRef.current = requestAnimationFrame(animate);
+  };
+
+  const celebrate = (particles = 90) => {
+    sounds.playVintageWinnerFanfare();
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      confetti({
+        particleCount: particles,
+        spread: 70,
+        origin: { y: 0.55 },
+        colors: [token('--color-accent') || '#ff4a1c', '#16140f', '#f2eee6'],
+      });
+    }
+  };
+
+  // R1 "Near-miss insurance": jackpot, buzzer, the reel rocks back and returns to the SAME angle
+  const runFakeVictory = (finalAngle: number, done: () => void) => {
+    setFakeStage('jackpot');
+    celebrate(40);
+    setTimeout(() => {
+      sounds.playTrollBuzzer();
+      setFakeStage('denied');
+      const start = performance.now();
+      const duration = 1600;
+      const rock = (now: number) => {
+        const t = Math.min((now - start) / duration, 1);
+        const angle = finalAngle - 0.9 * Math.sin(Math.PI * t); // sin(pi) = 0: ends exactly where it stopped
+        currentAngleRef.current = t < 1 ? angle : finalAngle;
+        drawWheel(currentAngleRef.current);
+        if (t < 1) {
+          animationFrameRef.current = requestAnimationFrame(rock);
+        } else {
+          setTimeout(() => {
+            setFakeStage(null);
+            done();
+          }, 450);
+        }
+      };
+      animationFrameRef.current = requestAnimationFrame(rock);
+    }, 1100);
+  };
+
+  // Ledger write for the spin (never blocks or changes the result)
+  const recordSpin = (movie: Movie, showedFakeVictory: boolean) => {
+    const vetoedMovieId = vetoedMovieRef.current;
+    vetoedMovieRef.current = null;
+    if (!showedFakeVictory && vetoedMovieId !== movie.id) return;
+    fetch('/api/eggs/spin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        operationId: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        movieId: movie.id,
+        movieTitle: movie.title,
+        showedFakeVictory,
+        vetoedMovieId,
+      }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.recorded?.length) onEggsChanged?.();
+      })
+      .catch(() => {});
   };
 
   // Rule 2.4: a judge burns a veto card -> cancel this result and spin again
@@ -378,6 +457,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
         return;
       }
       setShowWinnerModal(false);
+      vetoedMovieRef.current = winnerMovie?.id ?? null;
       handleSpin();
       setVetoNotice(`${judge} đã dùng Lá Bài Veto. Kết quả trước bị hủy, quay lại!`);
     } catch {
@@ -418,7 +498,22 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Wheel stage */}
-        <div className="lg:col-span-7 panel screentone overflow-hidden px-4 py-8 sm:p-10 flex flex-col items-center">
+        <div className="relative lg:col-span-7 panel screentone overflow-hidden px-4 py-8 sm:p-10 flex flex-col items-center">
+          {fakeStage && winnerMovie && (
+            <div className="absolute inset-x-4 top-6 z-20 flex justify-center pointer-events-none" role="status" aria-live="polite">
+              {fakeStage === 'jackpot' ? (
+                <div className="enter bg-accent text-on-accent border-[1.5px] border-ink rounded-lg px-5 py-3 shadow-[4px_4px_0_var(--color-shadow)] text-center">
+                  <div className="display text-[40px] leading-none">Jackpot?!</div>
+                  <div className="text-[13px] font-semibold mt-1 max-w-[260px] truncate">{winnerMovie.title}</div>
+                </div>
+              ) : (
+                <div className="enter bg-card border-[1.5px] border-ink rounded-lg px-5 py-3 shadow-[4px_4px_0_var(--color-shadow)] text-center">
+                  <span className="stamp stamp-land text-stop !text-[20px]">Claim denied</span>
+                  <div className="label mt-2">Not legally binding · đảo reel…</div>
+                </div>
+              )}
+            </div>
+          )}
           <div
             className="relative z-10 -mb-5 pointer-events-none"
             style={{ transform: `rotate(${pawlAngle}rad)`, transformOrigin: 'top center', transition: 'transform 75ms' }}
@@ -553,6 +648,12 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                   <span className="label !text-night-ink/60">Phim tuần này là</span>
                 </div>
                 <h3 className="display mt-3 text-[clamp(40px,6.5vw,68px)]">{winnerMovie.title}</h3>
+                {nearMiss && (
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <span className="stamp stamp-land text-accent">Near-miss insurance · Claim denied</span>
+                    <span className="text-[13px] text-night-ink/70">Your prize is the film you were going to watch anyway.</span>
+                  </div>
+                )}
                 <div className="label !text-night-ink/60 mt-3">
                   {winnerMovie.year} · {winnerMovie.durationMinutes} phút · {winnerMovie.platform}
                 </div>

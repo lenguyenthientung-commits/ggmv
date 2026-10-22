@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Volume2, VolumeX, BookOpen, Check, ChevronDown } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
 import { AppearanceMenu } from './AppearanceMenu';
@@ -18,6 +18,7 @@ interface HeaderProps {
   mode: Mode;
   setMode: (m: Mode) => void;
   seasonName?: string;
+  houseNote: string;
 }
 
 export const BROTHERS_LIST = [
@@ -49,6 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   mode,
   setMode,
   seasonName,
+  houseNote,
 }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [customNameInput, setCustomNameInput] = useState('');
@@ -62,6 +64,31 @@ export const Header: React.FC<HeaderProps> = ({
       sounds.playVintageSwitch();
     }
   };
+
+  // C1 "The House Is Listening": linger on the wordmark and the venue speaks, once per session
+  const [slate, setSlate] = useState<string | null>(null);
+  const slateTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const scheduleHouseNote = () => {
+    try {
+      if (sessionStorage.getItem('ggmv_house_note')) return;
+    } catch {
+      return;
+    }
+    clearTimeout(slateTimer.current);
+    slateTimer.current = setTimeout(() => {
+      try {
+        sessionStorage.setItem('ggmv_house_note', '1');
+      } catch {
+        // storage blocked
+      }
+      setSlate(`HOUSE NOTE / ${houseNote}  ⌁`);
+      slateTimer.current = setTimeout(() => setSlate(null), 2650);
+    }, 900);
+  };
+  const cancelHouseNote = () => {
+    if (!slate) clearTimeout(slateTimer.current);
+  };
+  useEffect(() => () => clearTimeout(slateTimer.current), []);
 
   const goTo = (tab: Tab) => {
     sounds.playVintageSwitch();
@@ -87,9 +114,22 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-paper border-b-[1.5px] border-ink">
+      {slate && (
+        <div className="egg-slate absolute left-4 sm:left-6 top-full mt-2 max-w-[calc(100vw-32px)] bg-night text-night-ink border-[1.5px] border-night-line border-l-[3px] !border-l-accent rounded-md px-3 py-2 label !text-night-ink !text-[10.5px] !normal-case !tracking-[0.06em]" role="status">
+          {slate}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* Wordmark */}
-        <button onClick={() => goTo('movies')} className="flex items-center gap-2.5 min-w-0" aria-label="Về Kho phim">
+        <button
+          onClick={() => goTo('movies')}
+          onMouseEnter={scheduleHouseNote}
+          onMouseLeave={cancelHouseNote}
+          onFocus={scheduleHouseNote}
+          onBlur={cancelHouseNote}
+          className="flex items-center gap-2.5 min-w-0"
+          aria-label="Về Kho phim"
+        >
           <span className="grid place-items-center w-9 h-9 shrink-0 rounded-md bg-accent text-on-accent border-[1.5px] border-ink display text-[17px] leading-none">
             GG
           </span>
