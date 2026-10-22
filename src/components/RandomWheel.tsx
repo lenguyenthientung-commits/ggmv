@@ -392,8 +392,8 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     const roll = Math.random();
     let ending: SpinEnding = 'settle';
     if (!reducedMotion && slices.length > 1) {
-      if (roll < 0.45 && sinceEntered < 0.6) ending = 'creep';
-      else if (roll < 0.8 && beforeLeaving < 0.35) ending = 'tip';
+      if (roll < 0.1 && sinceEntered < 0.6) ending = 'creep';
+      else if (roll < 0.2 && beforeLeaving < 0.35) ending = 'tip';
     }
     const stall = ending === 'creep' ? target - sinceEntered - 0.06 : ending === 'tip' ? target + beforeLeaving + 0.07 : target;
 
