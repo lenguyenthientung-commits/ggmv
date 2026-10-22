@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Movie } from '../types/cinema';
-import { BookOpen, MessageSquarePlus, SlidersHorizontal } from 'lucide-react';
+import { BookOpen, MessageSquarePlus, SlidersHorizontal, Search } from 'lucide-react';
 import { BROTHERS_LIST } from './Header';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader, SectionHeader, Stat } from './ui';
-import { EggEvent, movieStories, classifiedStories, recordScoredScreening, rankScore, houseEdge } from '../easterEggs';
-import { ClassifiedArchive, AchievementHall } from './EasterEggs';
+import {
+  EggEvent, movieStories, classifiedStories, recordScoredScreening, rankScore, houseEdge,
+  missingFields, missingFrameRecords, isMissingFrameQuery, firstScreeningDate, a13Movie, creditsEvent,
+  loadChainUnlocks, saveChainUnlock,
+} from '../easterEggs';
+import { ClassifiedArchive, AchievementHall, EndCard } from './EasterEggs';
 
 // Short archive tags for per-movie stories (the full copy lives in the classified archive)
 const STORY_TAGS: Record<string, string> = {
@@ -49,6 +53,41 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
 
   // Chain B "The House Edge": which clues are currently visible
   const edge = houseEdge(movies, eggEvents);
+
+  // Archive search (+ chain A / C clues). Ranks always come from the full list.
+  const [query, setQuery] = useState('');
+  const [chains, setChains] = useState(() => loadChainUnlocks());
+  const [openSignal, setOpenSignal] = useState(0);
+  const [frameOpenId, setFrameOpenId] = useState<string | null>(null);
+  const [a13Open, setA13Open] = useState(false);
+  const [showEndCard, setShowEndCard] = useState(false);
+
+  const rankById = new Map(watchedMovies.map((m, i) => [m.id, i + 1]));
+  const frameMode = isMissingFrameQuery(query);
+  const q = query.trim().toLowerCase();
+  const visibleMovies = frameMode
+    ? missingFrameRecords(watchedMovies)
+    : q
+      ? watchedMovies.filter((m) =>
+          [m.title, m.originalTitle, m.suggestedBy, m.director, ...m.genres]
+            .some((v) => v && v.toLowerCase().includes(q)))
+      : watchedMovies;
+  const witnessHint = q.includes('witness') &&
+    watchedMovies.some((m) => movieStories(m, []).some((st) => st.id === 'witness-protection'));
+  const firstDate = firstScreeningDate(movies);
+  const credits = creditsEvent(eggEvents);
+  const a13 = credits ? a13Movie(movies) : null;
+
+  const unlockChain = (chain: 'missingFrame' | 'roomStayed') => {
+    setChains(saveChainUnlock(chain));
+    setOpenSignal((n) => n + 1);
+  };
+  const finishEndCard = useCallback(() => {
+    setShowEndCard(false);
+    setA13Open(false);
+    setChains(saveChainUnlock('roomStayed'));
+    setOpenSignal((n) => n + 1);
+  }, []);
 
   // Judges scoring sheet (Rule 3.1 & 3.2)
   const [scoringMovie, setScoringMovie] = useState<Movie | null>(null);
@@ -147,10 +186,33 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
         <Stat value={`${totalHours}h`} label="Thời lượng" />
       </dl>
 
-      {watchedMovies.length > 0 ? (
+      <div className="flex items-center gap-3 mb-6">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3 pointer-events-none" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Tìm trong bảng vàng…"
+            className="input !pl-9"
+            aria-label="Tìm trong bảng vàng"
+          />
+        </div>
+        {/* Chain C, step 1: a barely visible frame counter left by the end-credit survivors */}
+        {credits && <span className="label !text-[10px] opacity-30 select-none" title="A frame counter">A-13</span>}
+      </div>
+
+      {witnessHint && (
+        <p className="mb-4 label !text-accent">A clerk heard that. Classified results may now be available.</p>
+      )}
+      {frameMode && visibleMovies.length > 0 && (
+        <p className="mb-4 label !text-accent">⌁ {visibleMovies.length} frame(s) escaped the archive.</p>
+      )}
+
+      {visibleMovies.length > 0 ? (
         <ol className="border-t-[1.5px] border-ink">
-          {watchedMovies.map((movie, index) => {
-            const rank = index + 1;
+          {visibleMovies.map((movie) => {
+            const rank = rankById.get(movie.id) ?? 0;
             const stories = movieStories(movie, eggEvents);
             const avgScore = movie.scoreAvg ?? (
               movie.reviews && movie.reviews.length > 0
@@ -184,7 +246,37 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                     <div className="min-w-0">
                       <div className="label">
                         {movie.watchedDate ? `Chiếu ${movie.watchedDate}` : 'Đã chiếu'} · {movie.genres.slice(0, 2).join(', ')}
+                        {/* Chain C, step 2: the same counter on a film released in a year ending in 13 */}
+                        {a13?.id === movie.id && (
+                          <button onClick={() => setA13Open(!a13Open)} className="ml-1 text-accent hover:underline" aria-expanded={a13Open}>
+                            · A-13
+                          </button>
+                        )}
                       </div>
+                      {a13?.id === movie.id && a13Open && credits && (
+                        <div className="enter mt-2 text-[13px] text-ink-2 border-l-[3px] border-accent pl-3">
+                          Chiếu ngày {movie.watchedDate}. Sổ rạp ghi: “the credits noticed” lúc {new Date(credits.createdAt).toLocaleString('vi-VN')}.
+                          <button onClick={() => setShowEndCard(true)} className="ml-2 font-semibold text-ink hover:text-accent">
+                            Ở lại xem hết credit →
+                          </button>
+                        </div>
+                      )}
+                      {/* Chain A, steps 2-3: FRAME 02 on every incomplete record */}
+                      {frameMode && (
+                        <div className="mt-2">
+                          <button onClick={() => setFrameOpenId(frameOpenId === movie.id ? null : movie.id)} className="chip !border-accent !text-accent" aria-expanded={frameOpenId === movie.id}>
+                            Frame 02 · thiếu {missingFields(movie).join(', ')}
+                          </button>
+                          {frameOpenId === movie.id && (
+                            <div className="enter mt-2 text-[13px] text-ink-2 border-l-[3px] border-accent pl-3">
+                              FRAME 03 · {movie.suggestedBy.charAt(0).toUpperCase()} / {firstDate ?? '—'}: người đề xuất và đêm chiếu đầu tiên của hội.
+                              <button onClick={() => unlockChain('missingFrame')} className="ml-2 font-semibold text-ink hover:text-accent">
+                                Mở hồ sơ mật →
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <h3 className="mt-1.5 text-[22px] sm:text-[26px] font-bold leading-tight">{movie.title}</h3>
                       {/* A real tie for #1: the ranking order is untouched, the jury just declines */}
                       {edge.tieIds.includes(movie.id) && (
@@ -280,13 +372,24 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
       ) : (
         <div className="panel screentone py-16 grid place-items-center">
           <div className="bg-card border-[1.5px] border-ink rounded-md px-6 py-5 text-center max-w-sm">
-            <div className="font-bold">Bảng vàng còn trống</div>
-            <p className="mt-1 text-[14px] text-ink-2">Xem xong phim nào, đánh dấu “Đã xem” để đưa lên đây.</p>
+            <div className="font-bold">
+              {frameMode ? 'No frame is missing.' : query ? 'Nothing found.' : 'Bảng vàng còn trống'}
+            </div>
+            <p className="mt-1 text-[14px] text-ink-2">
+              {frameMode
+                ? 'The archive is complete, for now.'
+                : query
+                  ? 'The archive is being deliberately unhelpful.'
+                  : 'Xem xong phim nào, đánh dấu “Đã xem” để đưa lên đây.'}
+            </p>
           </div>
         </div>
       )}
 
-      <ClassifiedArchive stories={classifiedStories(movies, eggEvents)} />
+      <ClassifiedArchive stories={classifiedStories(movies, eggEvents, chains)} openSignal={openSignal} />
+      {showEndCard && (
+        <EndCard onDone={finishEndCard} />
+      )}
       <AchievementHall events={eggEvents} />
 
       {/* Judges scoring sheet (Rule 3.1 & 3.2) */}

@@ -177,7 +177,55 @@ export function houseEdge(movies: Movie[], events: EggEvent[]): HouseEdge {
 }
 
 // Everything that belongs in the classified archive
-export function classifiedStories(movies: Movie[], events: EggEvent[]): Story[] {
+// ---------- Chain A: The Missing Frame ----------
+// 1. The house note carries ⌁.  2. Searching the archive for ⌁ / "missing frame" lists real
+// records with incomplete metadata, each marked FRAME 02.  3. Opening FRAME 02 shows FRAME 03
+// (proposer initial + the archive's first screening date) and unlocks the ending: an honest
+// contact sheet of records that need correcting. Nothing is edited by the reveal.
+const PLACEHOLDER_SYNOPSES = ['Chưa có tóm tắt chi tiết.', 'Một bộ phim xuất sắc do anh em đề xuất.'];
+const DEFAULT_POSTER = 'photo-1489599849927-2ee91cede3ba';
+
+export function missingFields(movie: Movie): string[] {
+  const missing: string[] = [];
+  if (!movie.director) missing.push('đạo diễn');
+  if (!movie.synopsis || PLACEHOLDER_SYNOPSES.includes(movie.synopsis)) missing.push('tóm tắt');
+  if (!movie.posterUrl || movie.posterUrl.includes(DEFAULT_POSTER)) missing.push('poster');
+  if (!movie.watchedDate) missing.push('ngày chiếu');
+  if (judgeScores(movie).length < 3) missing.push('điểm giám khảo');
+  return missing;
+}
+
+export const missingFrameRecords = (movies: Movie[]) =>
+  movies.filter((m) => m.watched && missingFields(m).length > 0);
+
+export const isMissingFrameQuery = (q: string) => {
+  const t = q.trim().toLowerCase();
+  return t === '⌁' || t.includes('missing frame');
+};
+
+export function firstScreeningDate(movies: Movie[]): string | null {
+  const ordered = byWatchDate(movies);
+  return ordered.length ? (ordered[0].watchedDate as string) : null;
+}
+
+// ---------- Chain C: After the Credits ----------
+// 1. END_CREDIT_SURVIVOR leaves a faint A-13 counter on the archive.  2. The same counter sits
+// on the date of a watched film released in a year ending in 13 (none = no clue).  3. Opening it
+// links the screening date to the ledger timestamp, then a silent 13-frame end card plays and
+// THE ROOM STAYED joins the classified archive.
+export function a13Movie(movies: Movie[]): Movie | null {
+  const candidates = byWatchDate(movies).filter((m) => m.year % 100 === 13);
+  return candidates.length ? candidates[candidates.length - 1] : null;
+}
+
+export const creditsEvent = (events: EggEvent[]) => events.find((e) => e.eggId === 'END_CREDIT_SURVIVOR') ?? null;
+
+export interface ChainUnlocks {
+  missingFrame: boolean;
+  roomStayed: boolean;
+}
+
+export function classifiedStories(movies: Movie[], events: EggEvent[], chains: ChainUnlocks = { missingFrame: false, roomStayed: false }): Story[] {
   const watched = movies.filter((m) => m.watched);
   const stories: Story[] = [];
 
@@ -214,6 +262,26 @@ export function classifiedStories(movies: Movie[], events: EggEvent[]): Story[] 
   if (hasThreeCardMonte(watched)) {
     stories.push({ id: 'three-card-monte', label: 'The House Always Wins · Three-Card Monte', title: 'Three judges. Three clean alibis.', detail: 'Each judge was the sole high scorer once across three consecutive screenings.' });
   }
+  const missing = missingFrameRecords(movies);
+  if (chains.missingFrame && missing.length > 0) {
+    stories.push({
+      id: 'missing-frame',
+      label: '⌁ The Cut That Never Existed · Khung hình mất tích',
+      title: `${missing.length} hồ sơ cần bổ sung`,
+      detail: missing.map((m) => `${m.title}: thiếu ${missingFields(m).join(', ')}`).join(' · '),
+    });
+  }
+  const credits = creditsEvent(events);
+  const a13 = a13Movie(movies);
+  if (chains.roomStayed && credits && a13) {
+    stories.push({
+      id: 'room-stayed',
+      label: 'A-13 · The Room Stayed',
+      title: `${a13.title}, ${a13.watchedDate}`,
+      detail: `Thirteen frames, no sound. The credits were noticed on ${credits.createdAt.slice(0, 10)}; the room stayed for this night.`,
+      movieId: a13.id,
+    });
+  }
   const edge = houseEdge(movies, events);
   if (edge.step === 3 && edge.plaqueMovie) {
     const m = edge.plaqueMovie;
@@ -249,6 +317,18 @@ export function latestLegendaryDate(movies: Movie[]): string | null {
 // ---------- Per-viewer state (browser only) ----------
 
 const SEEN_KEY = 'ggmv_eggs_seen';
+const CHAINS_KEY = 'ggmv_chains';
+
+// Per-viewer chain progress: once you solve a chain, its ending stays open for you
+export function loadChainUnlocks(): ChainUnlocks {
+  return { missingFrame: false, roomStayed: false, ...readJson<Partial<ChainUnlocks>>(CHAINS_KEY, {}) };
+}
+
+export function saveChainUnlock(chain: keyof ChainUnlocks): ChainUnlocks {
+  const next = { ...loadChainUnlocks(), [chain]: true };
+  writeJson(CHAINS_KEY, next);
+  return next;
+}
 const SURFACE_KEY = 'ggmv_egg_surfaces';
 const CREDITS_KEY = 'ggmv_end_credit';
 

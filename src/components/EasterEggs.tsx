@@ -104,12 +104,21 @@ export const UnlockToast: React.FC<{ eggId: EggId; onDone: () => void }> = ({ eg
 };
 
 // ARCHIVE // CLASSIFIED: the hidden chapter of the hall of fame
-export const ClassifiedArchive: React.FC<{ stories: Story[] }> = ({ stories }) => {
+export const ClassifiedArchive: React.FC<{ stories: Story[]; openSignal?: number }> = ({ stories, openSignal = 0 }) => {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+
+  // A solved chain opens the archive and brings it into view
+  useEffect(() => {
+    if (!openSignal) return;
+    setOpen(true);
+    setTimeout(() => ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }, [openSignal]);
+
   if (stories.length === 0) return null;
 
   return (
-    <section className="mt-16" aria-label="Hồ sơ mật">
+    <section ref={ref} className="mt-16 scroll-mt-24" aria-label="Hồ sơ mật">
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
@@ -186,5 +195,59 @@ export const AchievementHall: React.FC<{ events: EggEvent[] }> = ({ events }) =>
         })}
       </div>
     </section>
+  );
+};
+
+// Chain C ending: a silent 13-frame end card, then THE ROOM STAYED. Click or Esc skips it.
+export const EndCard: React.FC<{ onDone: () => void }> = ({ onDone }) => {
+  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [lit, setLit] = useState(reduced ? 13 : 0);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onDone();
+    window.addEventListener('keydown', onKey);
+    let timer: ReturnType<typeof setTimeout>;
+    if (!reduced) {
+      let n = 0;
+      const step = () => {
+        n += 1;
+        setLit(n);
+        timer = setTimeout(n < 13 ? step : onDone, n < 13 ? 130 : 2600);
+      };
+      timer = setTimeout(step, 300);
+    } else {
+      timer = setTimeout(onDone, 3200);
+    }
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onDone, reduced]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] bg-night text-night-ink grid place-items-center overlay-enter cursor-pointer"
+      onClick={onDone}
+      role="dialog"
+      aria-label="The room stayed"
+    >
+      <div className="text-center px-6">
+        <div className="flex justify-center gap-1.5" aria-hidden="true">
+          {Array.from({ length: 13 }, (_, i) => (
+            <span
+              key={i}
+              className="w-4 h-6 sm:w-6 sm:h-9 rounded-[2px] border border-night-line transition-colors duration-100"
+              style={{ background: i < lit ? 'var(--color-night-ink)' : 'transparent' }}
+            />
+          ))}
+        </div>
+        <div className={`display mt-8 text-[clamp(44px,8vw,96px)] transition-opacity duration-500 ${lit >= 13 ? 'opacity-100' : 'opacity-0'}`}>
+          The room stayed
+        </div>
+        <div className={`label !text-night-ink/50 mt-4 transition-opacity duration-500 ${lit >= 13 ? 'opacity-100' : 'opacity-0'}`}>
+          A-13 · 13 frames · no sound
+        </div>
+      </div>
+    </div>
   );
 };
