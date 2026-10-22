@@ -85,7 +85,8 @@ html[data-mode="dark"] {
   --color-night: #050505;
   --color-night-2: #161514;
   --color-night-line: #34312c;
-  --color-shadow: #000000;
+  /* Black is invisible on a dark page: cast hard shadows in a deep shade of the accent */
+  --color-shadow: color-mix(in srgb, var(--color-accent) 45%, #000000);
   --color-go: #3fbf78;
   --color-late: #e0a92e;
   --color-stop: #ff5a4e;
