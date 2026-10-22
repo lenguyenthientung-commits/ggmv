@@ -243,6 +243,32 @@ class VintageSoundEngine {
     }
   }
 
+  // 6. Heartbeat for the last seconds of a spin: a soft "lub-dub" of two low thumps
+  playHeartbeat() {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getContext();
+      if (!ctx || !this.masterGain) return;
+      const now = ctx.currentTime;
+      [[0, 0.26], [0.16, 0.18]].forEach(([offset, level]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(70, now + offset);
+        osc.frequency.exponentialRampToValueAtTime(38, now + offset + 0.14);
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(level, now + offset + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.16);
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.18);
+      });
+    } catch {
+      // Fallback
+    }
+  }
+
   // Legacy compatibility
   playTick() {
     this.playMechanicalTick();

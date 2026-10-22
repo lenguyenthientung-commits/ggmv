@@ -22,6 +22,28 @@ const DPR = 2;
 // Read a design token so the wheel follows the theme's accent
 const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+// The pointer sits at the top (3π/2); returns the wheel-space angle under it
+const TAU = Math.PI * 2;
+const pointerAt = (rotation: number) => (1.5 * Math.PI - (((rotation % TAU) + TAU) % TAU) + TAU) % TAU;
+
+const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
+const easeOutRebound = (t: number) => {
+  const p = 1 - Math.pow(1 - t, 4);
+  return t > 0.95 ? p - Math.sin(((t - 0.95) / 0.05) * Math.PI) * 0.003 : p;
+};
+
+type SpinEnding = 'creep' | 'tip' | 'settle';
+type SpinPhase = 'coast' | 'stall' | 'tip' | 'creep' | 'landed';
+const PHASE_LABEL: Record<SpinPhase, string> = {
+  coast: 'Đang lướt qua',
+  stall: 'Dừng ở đây…?',
+  tip: 'Lố mất rồi…?',
+  creep: 'Khoan đã…',
+  landed: 'Chốt!',
+};
+
 // Radiating speed lines behind the result reveal (static, decorative)
 const SpeedLines: React.FC = () => (
   <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.13]" viewBox="-500 -500 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -91,6 +113,9 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
 
   // Pointer flick on every slice boundary
   const [pawlAngle, setPawlAngle] = useState(0);
+  // Live readout under the pointer
+  const [phase, setPhase] = useState<SpinPhase>('coast');
+  const [passing, setPassing] = useState('');
 
   // The soundtrack steps back while the reel turns
   useEffect(() => {
@@ -165,8 +190,9 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     });
   }, [eligibleMovies, weightedByVotes, recentThreeProposers]);
 
-  // Draw the wheel: four flat tones (ink, accent, card, sunk) split by ink rules
-  const drawWheel = (rotationAngle: number) => {
+  // Draw the wheel: four flat tones (ink, accent, card, sunk) split by ink rules.
+  // spot (0..1) dims every slice except the one under the pointer.
+  const drawWheel = (rotationAngle: number, spot = 0) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -245,6 +271,33 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
       }
     });
 
+    if (spot > 0) {
+      const pointer = pointerAt(rotationAngle);
+      const lit = slices.findIndex((s) => pointer >= s.startAngle && pointer < s.endAngle);
+      slices.forEach((slice, i) => {
+        if (i === lit) return;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, slice.startAngle, slice.endAngle);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(0, 0, 0, ${0.5 * spot})`;
+        ctx.fill();
+      });
+      if (lit !== -1) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, slices[lit].startAngle, slices[lit].endAngle);
+        ctx.closePath();
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 6 * spot;
+        ctx.strokeStyle = accent;
+        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = ink;
+        ctx.stroke();
+      }
+    }
+
     ctx.restore();
 
     // Dial ticks on the rim
@@ -294,7 +347,12 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     return () => observer.disconnect();
   }, [slices]);
 
-  // Spin with friction and a micro rebound at the end
+  // The draw is fixed the moment Quay! is pressed: a uniformly random landing angle.
+  // Everything after only shapes the path to it, for suspense:
+  //   wind-up -> long coast with a spotlight closing in -> one of three endings
+  //   'creep'  stalls just short of the winning slice, then creeps over the line
+  //   'tip'    rolls past into the next slice, hangs there, then rolls back
+  //   'settle' a plain long stop with a small rebound
   const handleSpin = () => {
     if (isSpinning || slices.length === 0) return;
 
@@ -318,88 +376,121 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     }
     setGuessId('');
 
-    // Rotations: 6 to 9 full turns + random landing angle
-    const extraRotations = (6 + Math.random() * 3.5) * (2 * Math.PI);
-    const targetOffset = Math.random() * (2 * Math.PI);
-    const totalDelta = extraRotations + targetOffset;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const startAngle = currentAngleRef.current;
-    const duration = 4800; // ms
+    // Rotations: 7 to 10 full turns + random landing angle
+    const start = currentAngleRef.current;
+    const target = start + (7 + Math.random() * 3) * (2 * Math.PI) + Math.random() * (2 * Math.PI);
+
+    // Where the pointer lands inside its slice. Turning the wheel forward moves the pointer
+    // backwards through the slices: it entered through endAngle and would leave through startAngle.
+    const landing = pointerAt(target);
+    const landed = slices.find((s) => landing >= s.startAngle && landing < s.endAngle) ?? slices[0];
+    const sinceEntered = landed.endAngle - landing;
+    const beforeLeaving = landing - landed.startAngle;
+
+    const roll = Math.random();
+    let ending: SpinEnding = 'settle';
+    if (!reducedMotion && slices.length > 1) {
+      if (roll < 0.45 && sinceEntered < 0.6) ending = 'creep';
+      else if (roll < 0.8 && beforeLeaving < 0.35) ending = 'tip';
+    }
+    const stall = ending === 'creep' ? target - sinceEntered - 0.06 : ending === 'tip' ? target + beforeLeaving + 0.07 : target;
+
+    const windUp = reducedMotion ? 0 : 380;
+    const coast = reducedMotion ? 2600 : 5600;
+    const segments: { from: number; to: number; ms: number; ease: (t: number) => number; phase: SpinPhase }[] = [
+      { from: start, to: start - 0.22, ms: windUp, ease: easeInOutSine, phase: 'coast' },
+      { from: start - 0.22, to: stall, ms: coast, ease: ending === 'settle' ? easeOutRebound : easeOutQuint, phase: 'coast' },
+    ];
+    if (ending === 'creep') {
+      segments.push({ from: stall, to: stall, ms: 700, ease: (t) => t, phase: 'stall' });
+      segments.push({ from: stall, to: target, ms: 1100, ease: easeInOutSine, phase: 'creep' });
+    } else if (ending === 'tip') {
+      segments.push({ from: stall, to: stall, ms: 750, ease: (t) => t, phase: 'tip' });
+      segments.push({ from: stall, to: target, ms: 700, ease: easeInOutCubic, phase: 'creep' });
+    }
+    const total = segments.reduce((sum, s) => sum + s.ms, 0);
+    const spotFrom = windUp + coast * 0.5;
+    const spotTo = windUp + coast * 0.85;
+
     const startTime = performance.now();
+    let lastFrame = startTime;
+    let lastAngle = start;
+    let lastBeat = 0;
+    lastPegIndexRef.current = -1;
 
-    const easeOutWithRebound = (t: number) => {
-      const p = 1 - Math.pow(1 - t, 3.4);
-      if (t > 0.95) {
-        const subT = (t - 0.95) / 0.05;
-        const rebound = Math.sin(subT * Math.PI) * 0.003;
-        return p - rebound;
+    const animate = (now: number) => {
+      const elapsed = Math.min(now - startTime, total);
+
+      // Current segment and angle
+      let t0 = 0;
+      let seg = segments[segments.length - 1];
+      for (const s of segments) {
+        if (elapsed < t0 + s.ms || s === segments[segments.length - 1]) { seg = s; break; }
+        t0 += s.ms;
       }
-      return p;
-    };
+      const local = seg.ms > 0 ? Math.min((elapsed - t0) / seg.ms, 1) : 1;
+      let angle = seg.from + (seg.to - seg.from) * seg.ease(local);
+      // A stalled wheel is never quite still
+      if (seg.phase === 'stall' || seg.phase === 'tip') angle += Math.sin(local * Math.PI * 6) * 0.004;
+      if (elapsed >= total) angle = target;
 
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOutWithRebound(progress);
+      const spot = Math.min(1, Math.max(0, (elapsed - spotFrom) / (spotTo - spotFrom)));
+      currentAngleRef.current = angle;
+      drawWheel(angle, spot);
+      setPhase(seg.phase);
 
-      const newAngle = startAngle + totalDelta * easedProgress;
-      currentAngleRef.current = newAngle;
-
-      drawWheel(newAngle);
-
-      // Pointer is at the top (angle 3*PI/2)
-      const normalizedAngle = (newAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-      const pointerAngle = (3 * Math.PI / 2 - normalizedAngle + 2 * Math.PI) % (2 * Math.PI);
-
-      const currentSliceIndex = slices.findIndex(
-        (s) => pointerAngle >= s.startAngle && pointerAngle < s.endAngle
-      );
-
-      if (currentSliceIndex !== -1 && currentSliceIndex !== lastPegIndexRef.current) {
-        lastPegIndexRef.current = currentSliceIndex;
-        sounds.playMechanicalTick(1 - progress * 0.7);
+      // Ticks get heavier and slower with the wheel
+      const speed = Math.abs(angle - lastAngle) / Math.max(1, now - lastFrame);
+      lastAngle = angle;
+      lastFrame = now;
+      const pointer = pointerAt(angle);
+      const index = slices.findIndex((s) => pointer >= s.startAngle && pointer < s.endAngle);
+      if (index !== -1 && index !== lastPegIndexRef.current) {
+        lastPegIndexRef.current = index;
+        setPassing(slices[index].movie.title);
+        sounds.playMechanicalTick(Math.max(0.3, Math.min(1, speed / 0.03)));
         setPawlAngle(-0.25);
         setTimeout(() => setPawlAngle(0.08), 35);
         setTimeout(() => setPawlAngle(0), 75);
       }
 
-      if (progress < 1) {
+      // Heartbeat once the spotlight is closing in, faster while it hangs
+      const beatEvery = seg.phase === 'coast' ? 760 : 520;
+      if (spot > 0.3 && now - lastBeat > beatEvery) {
+        lastBeat = now;
+        sounds.playHeartbeat();
+      }
+
+      if (elapsed < total) {
         animationFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        sounds.stopProjectorWhir();
+        return;
+      }
 
-        const winningSlice = slices.find(
-          (s) => pointerAngle >= s.startAngle && pointerAngle < s.endAngle
-        ) || slices[0];
+      sounds.stopProjectorWhir();
+      // The result is fixed here; everything after is presentation
+      const movie = landed.movie;
+      const fakeVictory = !reducedMotion && Math.random() < 0.1;
+      recordSpin(movie, fakeVictory);
+      setWinnerMovie(movie);
+      setNearMiss(fakeVictory);
+      setProphecyBy(guessRef.current?.movieId === movie.id ? guessRef.current.member : null);
+      setPhase('landed');
 
-        if (!winningSlice) {
-          setIsSpinning(false);
-          return;
-        }
-
-        // The result is fixed here; everything after is presentation
-        const movie = winningSlice.movie;
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const fakeVictory = !reducedMotion && Math.random() < 0.1;
-        recordSpin(movie, fakeVictory);
-        setWinnerMovie(movie);
-        setNearMiss(fakeVictory);
-        setProphecyBy(guessRef.current?.movieId === movie.id ? guessRef.current.member : null);
-
+      // One beat of silence before the reveal
+      setTimeout(() => {
         if (fakeVictory) {
-          runFakeVictory(newAngle, () => {
+          runFakeVictory(target, () => {
             setIsSpinning(false);
             setTimeout(() => setShowWinnerModal(true), 250);
           });
           return;
         }
-
         setIsSpinning(false);
         celebrate();
-        setTimeout(() => {
-          setShowWinnerModal(true);
-        }, 350);
-      }
+        setTimeout(() => setShowWinnerModal(true), 450);
+      }, reducedMotion ? 0 : 420);
     };
 
     animationFrameRef.current = requestAnimationFrame(animate);
@@ -503,6 +594,9 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     };
   }, []);
 
+  const idlePointer = pointerAt(currentAngleRef.current);
+  const idleTitle = slices.find((s) => idlePointer >= s.startAngle && idlePointer < s.endAngle)?.movie.title ?? '';
+
   const oddsById = new Map(slices.map((s) => [s.movie.id, s.odds]));
 
   return (
@@ -561,13 +655,25 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
             aria-label={`Vòng quay với ${eligibleMovies.length} phim`}
           />
 
+          {/* Live readout: what the pointer is on right now */}
+          <div className="mt-6 h-[64px] w-full max-w-[440px] text-center" aria-live="off">
+            {isSpinning && phase !== 'coast' ? (
+              <span key={phase} className="chip chip-accent enter">{PHASE_LABEL[phase]}</span>
+            ) : (
+              <div className="label">{isSpinning ? PHASE_LABEL[phase] : 'Kim đang chỉ'}</div>
+            )}
+            <div className={`display truncate leading-tight mt-1 transition-[font-size] ${isSpinning && phase !== 'coast' ? 'text-[28px] text-accent' : 'text-[22px]'}`}>
+              {(isSpinning ? passing : idleTitle) || '—'}
+            </div>
+          </div>
+
           <button
             onClick={() => {
               setVetoNotice(null);
               handleSpin();
             }}
             disabled={isSpinning || eligibleMovies.length === 0}
-            className="btn btn-primary btn-lg mt-8 min-w-[220px]"
+            className="btn btn-primary btn-lg mt-4 min-w-[220px]"
           >
             <Shuffle className={`w-[18px] h-[18px] ${isSpinning ? 'animate-spin' : ''}`} strokeWidth={2.5} />
             {isSpinning ? 'Đang quay…' : 'Quay!'}
