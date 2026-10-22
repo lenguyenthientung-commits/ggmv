@@ -122,7 +122,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               sounds.playVintageSwitch();
               onSpinClick();
             }}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-black text-xs sm:text-sm shadow-[0_0_30px_rgba(217,119,6,0.5)] active:scale-95 transition-all uppercase tracking-wider font-cinema"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-black text-xs sm:text-sm shadow-[0_0_30px_color-mix(in_srgb,var(--color-amber-600)_50%,transparent)] active:scale-95 transition-all uppercase tracking-wider font-cinema"
           >
             <Sparkles className="w-4 h-4" />
             <span>Tời Phim Bốc Thăm Ngay</span>

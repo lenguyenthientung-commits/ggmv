@@ -189,7 +189,7 @@ export const CinemaRulesModal: React.FC<CinemaRulesModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-[#120d0a] border-2 border-amber-600/50 shadow-[0_0_80px_rgba(217,119,6,0.25)] overflow-hidden">
+      <div className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-3xl bg-[#120d0a] border-2 border-amber-600/50 shadow-[0_0_80px_color-mix(in_srgb,var(--color-amber-600)_25%,transparent)] overflow-hidden">
         {/* Header - Vintage Gold Seal */}
         <div className="px-5 sm:px-8 py-5 border-b border-amber-800/40 bg-gradient-to-r from-[#1c140f] via-[#241a13] to-[#1c140f] flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">

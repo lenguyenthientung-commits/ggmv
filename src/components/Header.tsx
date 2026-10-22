@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
             }}
             className="flex items-center gap-2 group text-white focus:outline-none shrink-0"
           >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-neutral-950 font-black shadow-[0_0_12px_rgba(217,119,6,0.5)] border border-amber-300/40 shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-neutral-950 font-black shadow-[0_0_12px_color-mix(in_srgb,var(--color-amber-600)_50%,transparent)] border border-amber-300/40 shrink-0">
               <Film className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-950 stroke-[2.5]" />
             </div>
             <span className="text-sm sm:text-base lg:text-lg font-black tracking-wider uppercase font-cinema text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 whitespace-nowrap">
@@ -159,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
             className={`p-1.5 sm:p-2 rounded-lg border transition-colors shrink-0 ${
               isMuted
                 ? 'bg-[#1a1411] border-stone-800 text-stone-500 hover:text-stone-300'
-                : 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_12px_rgba(217,119,6,0.25)]'
+                : 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-[0_0_12px_color-mix(in_srgb,var(--color-amber-600)_25%,transparent)]'
             }`}
             title={isMuted ? 'Bật âm thanh cơ học (Chế độ tai nghe)' : 'Tắt âm thanh (Chế độ quán cafe yên tĩnh)'}
           >
@@ -256,7 +256,7 @@ export const Header: React.FC<HeaderProps> = ({
               sounds.playVintageSwitch();
               onOpenAddModal();
             }}
-            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-bold text-xs shadow-[0_0_15px_rgba(217,119,6,0.4)] transition-all whitespace-nowrap uppercase tracking-wider font-cinema active:scale-95 shrink-0"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-bold text-xs shadow-[0_0_15px_color-mix(in_srgb,var(--color-amber-600)_40%,transparent)] transition-all whitespace-nowrap uppercase tracking-wider font-cinema active:scale-95 shrink-0"
           >
             <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
             <span className="hidden sm:inline">Bỏ Phim</span>

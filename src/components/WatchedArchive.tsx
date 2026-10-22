@@ -210,7 +210,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
             // Medal styling for Top 3
             const rankColors =
               rank === 1
-                ? 'from-amber-400 via-amber-200 to-amber-500 text-neutral-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.5)]'
+                ? 'from-amber-400 via-amber-200 to-amber-500 text-neutral-950 border-amber-300 shadow-[0_0_20px_color-mix(in_srgb,var(--color-amber-500)_50%,transparent)]'
                 : rank === 2
                 ? 'from-slate-200 via-stone-300 to-slate-400 text-neutral-950 border-stone-300 shadow-md'
                 : rank === 3
@@ -222,7 +222,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                 key={movie.id}
                 className={`rounded-3xl bg-[#140e0a] border-2 transition-all duration-300 p-5 sm:p-7 relative overflow-hidden ${
                   rank === 1
-                    ? 'border-amber-500/70 shadow-[0_15px_40px_rgba(217,119,6,0.2)]'
+                    ? 'border-amber-500/70 shadow-[0_15px_40px_color-mix(in_srgb,var(--color-amber-600)_20%,transparent)]'
                     : 'border-amber-900/40 hover:border-amber-700/70'
                 }`}
               >
@@ -300,7 +300,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
 
                       {/* Average Score Stamp */}
                       <div className="flex items-center gap-3 shrink-0">
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/20 border-2 border-amber-500/50 text-amber-300 shadow-[0_0_20px_rgba(217,119,6,0.25)]">
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/20 border-2 border-amber-500/50 text-amber-300 shadow-[0_0_20px_color-mix(in_srgb,var(--color-amber-600)_25%,transparent)]">
                           <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                           <div className="text-right">
                             <div className="text-lg font-black font-mono leading-none">{avgScore}</div>

@@ -495,7 +495,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
             }}
           >
             {/* Pawl Needle */}
-            <div className="w-0 h-0 border-l-[11px] border-l-transparent border-r-[11px] border-r-transparent border-t-[28px] border-t-amber-400 drop-shadow-[0_4px_12px_rgba(245,158,11,0.8)]" />
+            <div className="w-0 h-0 border-l-[11px] border-l-transparent border-r-[11px] border-r-transparent border-t-[28px] border-t-amber-400 drop-shadow-[0_4px_12px_color-mix(in_srgb,var(--color-amber-500)_80%,transparent)]" />
             <div className="w-3.5 h-3.5 rounded-full bg-amber-200 -mt-7 border-2 border-stone-900 shadow-md" />
           </div>
 
@@ -517,7 +517,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                 handleSpin();
               }}
               disabled={isSpinning || eligibleMovies.length === 0}
-              className="group relative px-9 py-3.5 rounded-xl font-extrabold text-neutral-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-[0_0_35px_-5px_rgba(217,119,6,0.6)] active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center gap-3 text-sm tracking-wider font-cinema uppercase"
+              className="group relative px-9 py-3.5 rounded-xl font-extrabold text-neutral-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-[0_0_35px_-5px_color-mix(in_srgb,var(--color-amber-600)_60%,transparent)] active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center gap-3 text-sm tracking-wider font-cinema uppercase"
             >
               <Sparkles className={`w-4 h-4 ${isSpinning ? 'animate-spin' : 'group-hover:rotate-45 transition-transform'}`} />
               <span>{isSpinning ? 'Đang tời phim 35mm...' : 'Lên Cót & Quay Phim!'}</span>
@@ -625,7 +625,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
       {/* WINNER MODAL: Authentic Vintage Letterpress Cinema Ticket */}
       {showWinnerModal && winnerMovie && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="relative w-full max-w-xl rounded-3xl bg-[#16110e] border-2 border-amber-500/60 shadow-[0_0_80px_rgba(217,119,6,0.35)] overflow-hidden">
+          <div className="relative w-full max-w-xl rounded-3xl bg-[#16110e] border-2 border-amber-500/60 shadow-[0_0_80px_color-mix(in_srgb,var(--color-amber-600)_35%,transparent)] overflow-hidden">
             {/* Vintage Ticket Perforated Header */}
             <div className="bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 px-6 py-4 flex items-center justify-between text-neutral-950">
               <div className="flex items-center gap-2.5">

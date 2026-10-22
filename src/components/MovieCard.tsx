@@ -80,7 +80,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   sounds.playVintageSwitch();
                   onOpenTrailer(movie);
                 }}
-                className="w-11 h-11 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 flex items-center justify-center shadow-[0_0_20px_rgba(217,119,6,0.6)] hover:scale-110 transition-transform"
+                className="w-11 h-11 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 flex items-center justify-center shadow-[0_0_20px_color-mix(in_srgb,var(--color-amber-600)_60%,transparent)] hover:scale-110 transition-transform"
                 title="Xem Trailer Trong Rạp"
               >
                 <Play className="w-4 h-4 fill-neutral-950 ml-0.5" />
@@ -157,7 +157,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 onMouseLeave={() => setShowVoters(false)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   hasVoted
-                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 shadow-[0_0_15px_rgba(217,119,6,0.5)] font-bold'
+                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 shadow-[0_0_15px_color-mix(in_srgb,var(--color-amber-600)_50%,transparent)] font-bold'
                     : 'bg-[#1e1713] hover:bg-[#281f1a] text-stone-300 hover:text-white border border-amber-900/40'
                 }`}
               >

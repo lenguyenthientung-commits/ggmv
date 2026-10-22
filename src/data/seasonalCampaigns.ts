@@ -17,7 +17,7 @@ export const SEASONAL_CAMPAIGNS: SeasonalCampaign[] = [
     id: 'tet',
     month: 1,
     code: '01',
-    title: 'TÂN NIÊN / MỞ MÀN NĂM MỚI',
+    title: 'Tân Niên · Mở Màn Năm Mới',
     deck: 'Đèn lồng gọi suất chiếu đầu năm. Lời chúc có thể màu mè; lượt chọn phim vẫn công bằng.',
     note: 'Lời chúc đầu năm: tối nay đừng veto cả rạp.',
   },
@@ -25,7 +25,7 @@ export const SEASONAL_CAMPAIGNS: SeasonalCampaign[] = [
     id: 'valentine',
     month: 2,
     code: '02',
-    title: 'LOVE LETTER / DOUBLE FEATURE',
+    title: 'Love Letter · Double Feature',
     deck: 'Một vé đôi cho hội đồng ba người: những bộ phim khiến cả hội rung động — hoặc bất đồng.',
     note: 'Tình yêu thì mù quáng. Bộ lọc phim thì không.',
   },
@@ -33,7 +33,7 @@ export const SEASONAL_CAMPAIGNS: SeasonalCampaign[] = [
     id: 'mid-autumn',
     month: 9,
     code: '09',
-    title: 'TRĂNG LÊN / MOONLIT SCREENING',
+    title: 'Trăng Lên · Moonlit Screening',
     deck: 'Trăng sáng, đèn lồng, phim chiếu ngoài hiên. Gu ai người nấy giữ đến hết credit.',
     note: 'Trăng tròn rồi. Đồng thuận của hội vẫn còn khuyết.',
   },
@@ -41,7 +41,7 @@ export const SEASONAL_CAMPAIGNS: SeasonalCampaign[] = [
     id: 'halloween',
     month: 10,
     code: '10',
-    title: 'THE LOST REEL / CUỘN PHIM THẤT LẠC',
+    title: 'The Lost Reel · Cuộn Phim Thất Lạc',
     deck: 'Rạp hồ sơ mở ca đêm. Trăng tím, sương sân khấu, đèn an toàn cam. Cuộn phim nào cũng có cơ hội như nhau.',
     note: 'Nếu nghe tiếng máy chiếu khi đã tắt rạp, đừng trả lời.',
   },
@@ -49,7 +49,7 @@ export const SEASONAL_CAMPAIGNS: SeasonalCampaign[] = [
     id: 'christmas',
     month: 12,
     code: '12',
-    title: 'WINTER PREMIERE / ĐÊM CÔNG CHIẾU',
+    title: 'Winter Premiere · Đêm Công Chiếu',
     deck: 'Dải phim quấn quanh cây thông. Đêm lạnh, ghế ấm, spoiler xin để ngoài cửa.',
     note: 'Quà lớn nhất là không ai spoiler phim.',
   },
@@ -63,10 +63,8 @@ export function getActiveCampaign(date: Date = new Date()): SeasonalCampaign | n
   return SEASONAL_CAMPAIGNS.find((c) => c.month === date.getMonth() + 1) ?? null;
 }
 
-// "EVENT WINDOW · 01—31 THÁNG MƯỜI 2026"
+// "01–31 tháng 10" (shown uppercase by the banner)
 export function getCampaignPeriod(campaign: SeasonalCampaign, date: Date = new Date()): string {
-  const year = date.getFullYear();
-  const daysInMonth = new Date(year, campaign.month, 0).getDate();
-  const monthLabel = new Date(year, campaign.month - 1, 1).toLocaleDateString('vi-VN', { month: 'long' }).toUpperCase();
-  return `EVENT WINDOW · 01—${daysInMonth} ${monthLabel} ${year}`;
+  const daysInMonth = new Date(date.getFullYear(), campaign.month, 0).getDate();
+  return `01–${daysInMonth} tháng ${campaign.month}`;
 }

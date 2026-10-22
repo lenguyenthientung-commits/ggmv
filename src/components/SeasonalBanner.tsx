@@ -64,10 +64,10 @@ const SEASON_ART: Record<SeasonId, React.ReactNode> = {
       <path d="M0 105q27-16 53-4t48 1 48 1 51-5v32H0z" fill="url(#hauntFog)" />
       <path d="M0 116q38-17 78-2t70-1 52 1" fill="none" stroke="#b17ac9" strokeOpacity=".58" strokeWidth="2" />
       <g fill="#d8c5e9">
-        <path className="bat-one" d="M70 25q-8-10-15-4l-7-6-1 12-7 6q11-4 18 1 7-5 18-1l-7-6-1-12z" />
-        <path className="bat-two" d="M106 17q-5-7-10-3l-5-5-1 9-5 4q8-3 13 1 5-4 13-1l-5-4-1-9z" />
+        <path d="M70 25q-8-10-15-4l-7-6-1 12-7 6q11-4 18 1 7-5 18-1l-7-6-1-12z" />
+        <path d="M106 17q-5-7-10-3l-5-5-1 9-5 4q8-3 13 1 5-4 13-1l-5-4-1-9z" />
       </g>
-      <g className="pumpkin-art">
+      <g>
         <path d="M142 84q-5-11 3-15 7 1 4 10" fill="#71814b" stroke="#b2a967" strokeWidth="1.4" />
         <path d="M128 88q13-13 27 0 10 2 7 16-4 13-21 12-17 1-21-12-3-12 8-16z" fill="#ed7b32" stroke="#ffc36b" strokeWidth="1.8" />
         <path d="M138 87q-7 9-5 24m12-26q-4 14 0 29m6-25q6 8 4 22" fill="none" stroke="#b94e2b" strokeWidth="2" />
@@ -98,29 +98,35 @@ interface SeasonalBannerProps {
 export const SeasonalBanner: React.FC<SeasonalBannerProps> = ({ campaign }) => {
   return (
     <section
-      className="season-banner mb-6 rounded-2xl pl-4 pr-32 py-4 sm:pl-6 sm:pr-48 sm:py-5"
+      className="season-banner relative overflow-hidden mb-6 rounded-2xl brass-border shadow-2xl pl-5 pr-28 py-4 sm:pl-6 sm:pr-44 sm:py-5"
       aria-label="Chương trình điện ảnh theo mùa"
     >
-      <div className="relative z-10 max-w-3xl">
-        <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">
-          GGMV / CAMPAIGN {campaign.code} · SEASON PROGRAMME
+      <div className="absolute inset-0 rounded-2xl film-grain pointer-events-none" />
+
+      <div className="relative z-10 max-w-2xl">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-amber-400 tracking-widest uppercase">
+          <span>Campaign {campaign.code}</span>
+          <span aria-hidden="true" className="text-amber-800">·</span>
+          <span>{getCampaignPeriod(campaign)}</span>
         </div>
-        <h3 className="mt-1 font-cinema text-xl sm:text-3xl font-bold uppercase tracking-wider text-[#fdf8f0] leading-tight">
+        <h3 className="mt-1.5 font-cinema text-xl sm:text-2xl font-bold text-[#fdf8f0] leading-tight">
           {campaign.title}
         </h3>
-        <p className="mt-1.5 text-xs sm:text-sm text-stone-300 leading-relaxed">{campaign.deck}</p>
-        <div className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.15em] text-amber-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_9px_var(--color-amber-400)]" />
-          {getCampaignPeriod(campaign)}
-        </div>
-        <details className="mt-2 font-mono text-[10px] tracking-wider text-stone-400">
-          <summary className="w-max max-w-full cursor-pointer uppercase text-amber-400">
-            UNSEALED NOTE / MỞ GHI CHÚ MẬT
+        <p className="mt-1 text-xs sm:text-sm text-stone-400 leading-relaxed">
+          {campaign.deck}
+        </p>
+        <details className="group mt-2 text-xs">
+          <summary className="w-max max-w-full cursor-pointer list-none font-medium text-amber-400 hover:text-amber-300 transition-colors">
+            <span className="inline-block transition-transform group-open:rotate-90" aria-hidden="true">›</span> Ghi chú mật
           </summary>
-          <p className="mt-1 text-amber-300">{campaign.note}</p>
+          <p className="mt-1 text-amber-200/80 italic">{campaign.note}</p>
         </details>
       </div>
-      <div className="season-art-wrap" aria-hidden="true">
+
+      <div
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-24 h-[70px] sm:right-5 sm:w-36 sm:h-[104px] pointer-events-none"
+        aria-hidden="true"
+      >
         {SEASON_ART[campaign.id]}
       </div>
     </section>

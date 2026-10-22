@@ -166,7 +166,7 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
             {selectedMovie && (
               <button
                 onClick={() => onOpenCinemaRoom(selectedMovie)}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-neutral-950 font-bold text-xs shadow-[0_0_25px_rgba(245,158,11,0.4)] active:scale-95 transition-all"
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-neutral-950 font-bold text-xs shadow-[0_0_25px_color-mix(in_srgb,var(--color-amber-500)_40%,transparent)] active:scale-95 transition-all"
               >
                 <Tv className="w-4 h-4" />
                 <span>Vào Phòng Chiếu Rạp</span>
