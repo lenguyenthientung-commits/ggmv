@@ -18,14 +18,14 @@ interface MovieStatsProps {
   movies: Movie[];
 }
 
-// Chart tokens (recharts needs literal values; accent follows the season via CSS var)
-const INK = '#16140f';
-const INK_3 = '#8c8578';
-const LINE = '#d6cfbf';
+// Chart colors read the design tokens, so charts follow theme and dark mode
+const INK = 'var(--color-ink)';
+const INK_3 = 'var(--color-ink-3)';
+const LINE = 'var(--color-line)';
 const ACCENT = 'var(--color-accent)';
 
 const ChartTooltip: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="panel px-3.5 py-2.5 text-[13px] shadow-[3px_3px_0_var(--color-ink)] max-w-xs">
+  <div className="panel px-3.5 py-2.5 text-[13px] shadow-[3px_3px_0_var(--color-shadow)] max-w-xs">
     <div className="font-bold">{title}</div>
     <div className="mt-1 text-ink-2">{children}</div>
   </div>
@@ -206,7 +206,7 @@ export const MovieStats: React.FC<MovieStatsProps> = ({ movies }) => {
               />
               <YAxis allowDecimals={false} {...axisProps} axisLine={false} width={36} />
               <Tooltip
-                cursor={{ fill: 'rgba(22,20,15,0.06)' }}
+                cursor={{ fill: 'var(--color-sunk)' }}
                 content={({ active, payload }) =>
                   active && payload?.length ? (
                     <ChartTooltip title={payload[0].payload.name}>{payload[0].payload.count} phim</ChartTooltip>
@@ -215,7 +215,7 @@ export const MovieStats: React.FC<MovieStatsProps> = ({ movies }) => {
               />
               <Bar dataKey="count" radius={[4, 4, 0, 0]} stroke={INK} strokeWidth={1.5}>
                 {genreData.map((_, index) => (
-                  <Cell key={index} fill={index === 0 ? ACCENT : index < 3 ? INK : '#fbf9f4'} />
+                  <Cell key={index} fill={index === 0 ? ACCENT : index < 3 ? INK : 'var(--color-card)'} />
                 ))}
               </Bar>
             </BarChart>

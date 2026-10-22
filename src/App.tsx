@@ -13,6 +13,7 @@ import { MovieStats } from './components/MovieStats';
 import { CinemaRulesModal } from './components/CinemaRulesModal';
 import { SeasonalBanner } from './components/SeasonalBanner';
 import { getActiveCampaign } from './data/seasonalCampaigns';
+import { ThemeId, Mode, loadTheme, loadMode, saveAppearance, applyAppearance } from './theme';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string>(() => {
@@ -26,13 +27,19 @@ export default function App() {
   const [cinemaModalMovie, setCinemaModalMovie] = useState<Movie | null>(null);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [campaign] = useState(() => getActiveCampaign());
+  const [themeId, setThemeId] = useState<ThemeId>(() => loadTheme());
+  const [mode, setMode] = useState<Mode>(() => loadMode());
 
-  // Seasonal theme: CSS keys off <html data-season="...">
+  // Appearance: CSS keys off <html data-theme / data-mode / data-season>
   useEffect(() => {
-    if (campaign) {
-      document.documentElement.dataset.season = campaign.id;
-    }
-  }, [campaign]);
+    applyAppearance(themeId, mode, campaign?.id ?? null);
+    saveAppearance(themeId, mode);
+    if (mode !== 'system') return;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const follow = () => applyAppearance(themeId, mode, campaign?.id ?? null);
+    media.addEventListener('change', follow);
+    return () => media.removeEventListener('change', follow);
+  }, [themeId, mode, campaign]);
 
   // Persist user selection
   const handleSetUser = (name: string) => {
@@ -338,6 +345,11 @@ export default function App() {
         setCurrentUser={handleSetUser}
         onOpenAddModal={() => setIsAddModalOpen(true)}
         onOpenRules={() => setIsRulesOpen(true)}
+        themeId={themeId}
+        setThemeId={setThemeId}
+        mode={mode}
+        setMode={setMode}
+        seasonName={campaign?.title}
       />
 
       {/* Main Container */}

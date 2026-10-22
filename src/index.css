@@ -30,6 +30,11 @@
   --color-accent: #ff4a1c;
   --color-on-accent: #ffffff;
 
+  /* Text on night surfaces: fixed, it does not flip with dark mode */
+  --color-night-ink: #f2eee6;
+  /* Hard offset shadows (buttons, sheets, posters) */
+  --color-shadow: #16140f;
+
   /* Status (used as small dots and text only) */
   --color-go: #13834a;
   --color-late: #b87a00;
@@ -38,12 +43,54 @@
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Seasons re-color the signal only; layout and type never change. */
+/* ---------- Color themes ----------
+   A theme is an accent + the ink it pairs with (light mode) + the base it
+   sits on (dark mode). Unlayered, so these beat the @theme defaults. */
+:root {
+  --theme-ink: #16140f;
+  --theme-base: #141310;
+  --color-ink: var(--theme-ink);
+  --color-ink-2: color-mix(in srgb, var(--theme-ink) 70%, #f2eee6);
+  --color-ink-3: color-mix(in srgb, var(--theme-ink) 48%, #f2eee6);
+  --color-shadow: var(--theme-ink);
+}
+html[data-theme="gold"] { --color-accent: #ffcc00; --color-on-accent: #111111; --theme-ink: #111111; --theme-base: #0e0e0d; }
+html[data-theme="redblue"] { --color-accent: #e63946; --color-on-accent: #ffffff; --theme-ink: #1d3557; --theme-base: #0d1828; }
+html[data-theme="ocean"] { --color-accent: #2f6bff; --color-on-accent: #ffffff; --theme-ink: #0f1d3a; --theme-base: #0a1222; }
+html[data-theme="matcha"] { --color-accent: #2f9e5b; --color-on-accent: #ffffff; --theme-ink: #17261c; --theme-base: #0d1510; }
+html[data-theme="sakura"] { --color-accent: #ff5c8a; --color-on-accent: #ffffff; --theme-ink: #2a1420; --theme-base: #170d13; }
+html[data-theme="neon"] { --color-accent: #8b5cf6; --color-on-accent: #ffffff; --theme-ink: #1c1233; --theme-base: #100b1e; }
+html[data-theme="mono"] { --color-accent: #16140f; --color-on-accent: #f2eee6; }
+
+/* Seasons re-color the signal only, and only while no theme is picked. */
 html[data-season="tet"] { --color-accent: #e0302b; }
 html[data-season="valentine"] { --color-accent: #ea4c84; }
 html[data-season="mid-autumn"] { --color-accent: #e8a01b; --color-on-accent: #16140f; }
 html[data-season="halloween"] { --color-accent: #6b3fd4; }
 html[data-season="christmas"] { --color-accent: #1d8a54; }
+
+/* ---------- Dark mode ----------
+   Paper becomes the theme's base, ink becomes paper-white. Every component
+   reads these tokens, so nothing else changes. Night surfaces get darker
+   than the page so screenings still read as "lights down". */
+html[data-mode="dark"] {
+  color-scheme: dark;
+  --color-paper: var(--theme-base);
+  --color-card: color-mix(in srgb, var(--theme-base) 91%, #ffffff);
+  --color-sunk: color-mix(in srgb, var(--theme-base) 83%, #ffffff);
+  --color-line: color-mix(in srgb, var(--theme-base) 74%, #ffffff);
+  --color-ink: #f2eee6;
+  --color-ink-2: #c3bcaf;
+  --color-ink-3: #8f887c;
+  --color-night: #050505;
+  --color-night-2: #161514;
+  --color-night-line: #34312c;
+  --color-shadow: #000000;
+  --color-go: #3fbf78;
+  --color-late: #e0a92e;
+  --color-stop: #ff5a4e;
+}
+html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-accent: #16140f; }
 
 @layer base {
   html { background: var(--color-paper); }
@@ -129,12 +176,12 @@ html[data-season="christmas"] { --color-accent: #1d8a54; }
   .btn-primary {
     background: var(--color-accent);
     color: var(--color-on-accent);
-    box-shadow: 3px 3px 0 var(--color-ink);
+    box-shadow: 3px 3px 0 var(--color-shadow);
   }
-  .btn-primary:hover { background: var(--color-accent); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--color-ink); }
-  .btn-primary:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--color-ink); }
+  .btn-primary:hover { background: var(--color-accent); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--color-shadow); }
+  .btn-primary:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--color-shadow); }
   .btn-ink { background: var(--color-ink); color: var(--color-paper); }
-  .btn-ink:hover { background: #2b2822; }
+  .btn-ink:hover { background: color-mix(in srgb, var(--color-ink) 86%, var(--color-paper)); }
   .btn-quiet { border-color: transparent; background: transparent; }
   .btn-quiet:hover { background: var(--color-sunk); }
   .btn-sm { height: 34px; padding: 0 12px; font-size: 13px; border-radius: 7px; }
@@ -152,11 +199,11 @@ html[data-season="christmas"] { --color-accent: #1d8a54; }
   .btn-icon:hover { background: var(--color-sunk); color: var(--color-ink); }
 
   /* Night variants for screening surfaces */
-  .on-night .btn { background: transparent; color: var(--color-paper); border-color: var(--color-night-line); }
+  .on-night .btn { background: transparent; color: var(--color-night-ink); border-color: var(--color-night-line); }
   .on-night .btn:hover { background: var(--color-night-2); }
-  .on-night .btn-primary { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); box-shadow: 3px 3px 0 var(--color-paper); }
-  .on-night .btn-primary:hover { background: var(--color-accent); box-shadow: 4px 4px 0 var(--color-paper); }
-  .on-night .btn-primary:active { box-shadow: 0 0 0 var(--color-paper); }
+  .on-night .btn-primary { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); box-shadow: 3px 3px 0 var(--color-night-ink); }
+  .on-night .btn-primary:hover { background: var(--color-accent); box-shadow: 4px 4px 0 var(--color-night-ink); }
+  .on-night .btn-primary:active { box-shadow: 0 0 0 var(--color-night-ink); }
 
   /* ---------- Controls ---------- */
   .input {
@@ -256,7 +303,7 @@ html[data-season="christmas"] { --color-accent: #1d8a54; }
 
 /* Poster: lifts onto a hard shadow, same language as the primary button */
 .poster-lift { transition: transform 200ms var(--ease-snap), box-shadow 200ms var(--ease-snap); }
-.group:hover .poster-lift { transform: translate(-3px, -3px); box-shadow: 5px 5px 0 var(--color-ink); }
+.group:hover .poster-lift { transform: translate(-3px, -3px); box-shadow: 5px 5px 0 var(--color-shadow); }
 
 @media (prefers-reduced-motion: reduce) {
   .enter, .overlay-enter, .reveal, .season-art { animation: none; }

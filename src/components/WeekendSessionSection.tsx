@@ -192,7 +192,7 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
         {/* Selected movie */}
         <div className="lg:col-span-5">
           {selectedMovie ? (
-            <div className="panel overflow-hidden flex shadow-[6px_6px_0_var(--color-ink)]">
+            <div className="panel overflow-hidden flex shadow-[6px_6px_0_var(--color-shadow)]">
               <img
                 src={selectedMovie.posterUrl}
                 alt={selectedMovie.title}

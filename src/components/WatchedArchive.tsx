@@ -136,7 +136,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                 {/* Rank numeral */}
                 <div
                   className={`display leading-[0.8] text-[64px] md:text-[112px] col-start-1 row-start-1 ${
-                    rank === 1 ? 'text-accent' : rank <= 3 ? 'text-ink' : 'text-transparent [-webkit-text-stroke:1.5px_var(--color-ink)]'
+                    rank === 1 ? 'text-accent' : rank <= 3 ? 'text-ink' : 'text-transparent [-webkit-text-stroke:1.5px_var(--color-shadow)]'
                   }`}
                 >
                   {String(rank).padStart(2, '0')}

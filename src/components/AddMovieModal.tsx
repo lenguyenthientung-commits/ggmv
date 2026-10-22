@@ -217,7 +217,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
           </span>
 
           {showDropdown && searchResults.length > 0 && (
-            <ul className="enter absolute top-full left-0 right-0 mt-2 panel shadow-[4px_4px_0_var(--color-ink)] z-30 max-h-72 overflow-y-auto p-1.5">
+            <ul className="enter absolute top-full left-0 right-0 mt-2 panel shadow-[4px_4px_0_var(--color-shadow)] z-30 max-h-72 overflow-y-auto p-1.5">
               {searchResults.map((item) => (
                 <li key={item.imdbID}>
                   <button

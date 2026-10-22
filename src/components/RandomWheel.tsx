@@ -267,6 +267,10 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     drawWheel(currentAngleRef.current);
     // Redraw once web fonts are ready so canvas text uses them
     document.fonts?.ready.then(() => drawWheel(currentAngleRef.current));
+    // Canvas does not follow CSS: redraw when theme / mode / season changes
+    const observer = new MutationObserver(() => drawWheel(currentAngleRef.current));
+    observer.observe(document.documentElement, { attributeFilter: ['data-theme', 'data-mode', 'data-season'] });
+    return () => observer.disconnect();
   }, [slices]);
 
   // Spin with friction and a micro rebound at the end
@@ -530,7 +534,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
             <SpeedLines />
             <button
               onClick={() => setShowWinnerModal(false)}
-              className="absolute top-3 right-3 z-10 grid place-items-center w-9 h-9 rounded-md text-paper/70 hover:text-paper hover:bg-night-2 transition-colors"
+              className="absolute top-3 right-3 z-10 grid place-items-center w-9 h-9 rounded-md text-night-ink/70 hover:text-night-ink hover:bg-night-2 transition-colors"
               aria-label="Đóng"
             >
               <X className="w-5 h-5" />
@@ -541,28 +545,28 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                 src={winnerMovie.posterUrl}
                 alt={winnerMovie.title}
                 referrerPolicy="no-referrer"
-                className="w-40 sm:w-full rounded-md border-[1.5px] border-paper shadow-[6px_6px_0_var(--color-accent)]"
+                className="w-40 sm:w-full rounded-md border-[1.5px] border-night-ink shadow-[6px_6px_0_var(--color-accent)]"
               />
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5">
                   <span className="jp text-[12px]">ケッテイ</span>
-                  <span className="label !text-paper/60">Phim tuần này là</span>
+                  <span className="label !text-night-ink/60">Phim tuần này là</span>
                 </div>
                 <h3 className="display mt-3 text-[clamp(40px,6.5vw,68px)]">{winnerMovie.title}</h3>
-                <div className="label !text-paper/60 mt-3">
+                <div className="label !text-night-ink/60 mt-3">
                   {winnerMovie.year} · {winnerMovie.durationMinutes} phút · {winnerMovie.platform}
                 </div>
-                <p className="mt-4 text-[14px] leading-relaxed text-paper/75 line-clamp-3">{winnerMovie.synopsis}</p>
+                <p className="mt-4 text-[14px] leading-relaxed text-night-ink/75 line-clamp-3">{winnerMovie.synopsis}</p>
                 <p className="mt-4 text-[14px]">
                   <span className="font-semibold">{winnerMovie.suggestedBy}:</span>{' '}
-                  <span className="text-paper/75">“{winnerMovie.whyWatch}”</span>
+                  <span className="text-night-ink/75">“{winnerMovie.whyWatch}”</span>
                 </p>
               </div>
             </div>
 
             {Object.keys(vetoCounts).length > 0 && (
               <div className="relative flex flex-wrap items-center gap-2 px-6 sm:px-9 py-4 border-t-[1.5px] border-night-line">
-                <span className="label !text-paper/60 mr-1">Lá bài veto</span>
+                <span className="label !text-night-ink/60 mr-1">Lá bài veto</span>
                 {Object.entries(vetoCounts).map(([judge, count]) => (
                   <button
                     key={judge}
@@ -572,7 +576,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                   >
                     <Shield className="w-3.5 h-3.5" />
                     {judge}
-                    <span className="num text-paper/60">{count}</span>
+                    <span className="num text-night-ink/60">{count}</span>
                   </button>
                 ))}
               </div>

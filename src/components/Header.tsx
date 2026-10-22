@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Volume2, VolumeX, BookOpen, Check, ChevronDown } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
+import { AppearanceMenu } from './AppearanceMenu';
+import { ThemeId, Mode } from '../theme';
 
 type Tab = 'movies' | 'wheel' | 'sessions' | 'archive' | 'stats';
 
@@ -11,6 +13,11 @@ interface HeaderProps {
   setCurrentUser: (user: string) => void;
   onOpenAddModal: () => void;
   onOpenRules: () => void;
+  themeId: ThemeId;
+  setThemeId: (t: ThemeId) => void;
+  mode: Mode;
+  setMode: (m: Mode) => void;
+  seasonName?: string;
 }
 
 export const BROTHERS_LIST = [
@@ -37,6 +44,11 @@ export const Header: React.FC<HeaderProps> = ({
   setCurrentUser,
   onOpenAddModal,
   onOpenRules,
+  themeId,
+  setThemeId,
+  mode,
+  setMode,
+  seasonName,
 }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [customNameInput, setCustomNameInput] = useState('');
@@ -103,7 +115,8 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <AppearanceMenu themeId={themeId} setThemeId={setThemeId} mode={mode} setMode={setMode} seasonName={seasonName} />
           <button
             onClick={handleToggleSound}
             className="btn-icon"
@@ -133,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {showUserDropdown && (
-              <div className="enter absolute right-0 mt-2 w-56 panel p-2 z-50 shadow-[4px_4px_0_var(--color-ink)]">
+              <div className="enter absolute right-0 mt-2 w-56 panel p-2 z-50 shadow-[4px_4px_0_var(--color-shadow)]">
                 <div className="label px-2 pt-1 pb-2">Bạn là ai?</div>
                 <div role="listbox">
                   {BROTHERS_LIST.map((name) => (

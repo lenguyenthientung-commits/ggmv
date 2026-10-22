@@ -139,7 +139,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 src={movie.posterUrl}
                 alt={movie.title}
                 referrerPolicy="no-referrer"
-                className="w-40 sm:w-full rounded-md border-[1.5px] border-ink shadow-[4px_4px_0_var(--color-ink)]"
+                className="w-40 sm:w-full rounded-md border-[1.5px] border-ink shadow-[4px_4px_0_var(--color-shadow)]"
               />
             </div>
             <div className="min-w-0">

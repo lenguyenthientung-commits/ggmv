@@ -77,7 +77,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
       {/* Next screening */}
       <div className="lg:col-span-5">
-        <div className="panel relative overflow-hidden shadow-[6px_6px_0_var(--color-ink)]">
+        <div className="panel relative overflow-hidden shadow-[6px_6px_0_var(--color-shadow)]">
           <div className="flex items-center justify-between px-5 h-12 border-b-[1.5px] border-ink">
             <span className="label !text-ink">Suất chiếu kế tiếp</span>
             <span className="jp text-[11px]">ネクスト</span>
@@ -114,7 +114,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                     src={m.posterUrl}
                     alt=""
                     referrerPolicy="no-referrer"
-                    className="absolute h-[220px] sm:h-[250px] w-auto rounded-md border-[1.5px] border-ink shadow-[4px_4px_0_var(--color-ink)]"
+                    className="absolute h-[220px] sm:h-[250px] w-auto rounded-md border-[1.5px] border-ink shadow-[4px_4px_0_var(--color-shadow)]"
                     style={{ transform: `translateX(${(i - 1) * 78}px) rotate(${(i - 1) * 7}deg)`, zIndex: i === 1 ? 2 : 1 }}
                   />
                 ))}

@@ -39,12 +39,12 @@ export const CinemaScreenModal: React.FC<CinemaScreenModalProps> = ({ movie, onC
     <Modal onClose={onClose} tone="night" size="xl" label={`Trailer ${movie.title}`}>
       <div className="flex items-center justify-between gap-4 px-5 sm:px-6 h-16 border-b-[1.5px] border-night-line">
         <div className="min-w-0">
-          <div className="label !text-paper/50 !text-[10px]">Phòng chiếu · {movie.platform}</div>
+          <div className="label !text-night-ink/50 !text-[10px]">Phòng chiếu · {movie.platform}</div>
           <div className="text-[16px] font-bold truncate">{movie.title}</div>
         </div>
         <button
           onClick={onClose}
-          className="grid place-items-center w-9 h-9 shrink-0 rounded-md text-paper/70 hover:text-paper hover:bg-night-2 transition-colors"
+          className="grid place-items-center w-9 h-9 shrink-0 rounded-md text-night-ink/70 hover:text-night-ink hover:bg-night-2 transition-colors"
           title="Đóng (Esc)"
           aria-label="Đóng phòng chiếu"
         >
@@ -64,18 +64,18 @@ export const CinemaScreenModal: React.FC<CinemaScreenModalProps> = ({ movie, onC
         ) : (
           <div className="absolute inset-0 grid place-items-center p-8 text-center">
             <div>
-              <div className="display text-[44px] text-paper/90">Chưa có trailer</div>
-              <p className="mt-2 text-[14px] text-paper/60">Mở thẳng {movie.platform} để xem phim nhé.</p>
+              <div className="display text-[44px] text-night-ink/90">Chưa có trailer</div>
+              <p className="mt-2 text-[14px] text-night-ink/60">Mở thẳng {movie.platform} để xem phim nhé.</p>
             </div>
           </div>
         )}
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 sm:px-6 py-4">
-        <p className="text-[14px] text-paper/75">
-          <span className="font-semibold text-paper">{movie.suggestedBy}:</span> “{movie.whyWatch}”
+        <p className="text-[14px] text-night-ink/75">
+          <span className="font-semibold text-night-ink">{movie.suggestedBy}:</span> “{movie.whyWatch}”
         </p>
-        <span className="label !text-paper/50 shrink-0">
+        <span className="label !text-night-ink/50 shrink-0">
           {movie.year} · {movie.durationMinutes} phút · đang xem: {currentUser}
         </span>
       </div>

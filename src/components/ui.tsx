@@ -58,7 +58,7 @@ export const Modal: React.FC<ModalProps> = ({ onClose, children, tone = 'paper',
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto overlay-enter bg-ink/55"
+      className="fixed inset-0 z-50 overflow-y-auto overlay-enter bg-[rgb(8_7_6/0.6)]"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -69,8 +69,8 @@ export const Modal: React.FC<ModalProps> = ({ onClose, children, tone = 'paper',
           onClick={(e) => e.stopPropagation()}
           className={`enter relative w-full ${SIZES[size]} rounded-xl border-[1.5px] overflow-hidden ${
             tone === 'night'
-              ? 'on-night bg-night text-paper border-night-line'
-              : 'bg-card text-ink border-ink shadow-[6px_6px_0_var(--color-ink)]'
+              ? 'on-night bg-night text-night-ink border-night-line'
+              : 'bg-card text-ink border-ink shadow-[6px_6px_0_var(--color-shadow)]'
           }`}
         >
           {children}
