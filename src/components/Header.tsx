@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Volume2, VolumeX, BookOpen, Check, ChevronDown } from 'lucide-react';
+import { Plus, Volume2, VolumeX, BookOpen, Check, ChevronDown, Music } from 'lucide-react';
+import { soundtrack } from '../utils/soundtrack';
 import { sounds } from '../utils/soundEffects';
 import { AppearanceMenu } from './AppearanceMenu';
 import { ThemeId, Mode } from '../theme';
@@ -56,6 +57,32 @@ export const Header: React.FC<HeaderProps> = ({
   const [customNameInput, setCustomNameInput] = useState('');
   const [isAddingCustom, setIsAddingCustom] = useState(false);
   const [isMuted, setIsMuted] = useState(() => sounds.getIsMuted());
+
+  // GG Theme soundtrack (opt-in). Browsers only allow audio after a gesture, so a saved
+  // "on" preference resumes the music on the first click or key press.
+  const [musicOn, setMusicOn] = useState(false);
+  useEffect(() => {
+    if (!soundtrack.getPreference()) return;
+    const resume = () => {
+      setMusicOn(soundtrack.start());
+      window.removeEventListener('pointerdown', resume);
+      window.removeEventListener('keydown', resume);
+    };
+    window.addEventListener('pointerdown', resume);
+    window.addEventListener('keydown', resume);
+    return () => {
+      window.removeEventListener('pointerdown', resume);
+      window.removeEventListener('keydown', resume);
+    };
+  }, []);
+  const toggleMusic = () => {
+    if (soundtrack.playing) {
+      soundtrack.stop();
+      setMusicOn(false);
+    } else {
+      setMusicOn(soundtrack.start());
+    }
+  };
 
   const handleToggleSound = () => {
     const muted = sounds.toggleMute();
@@ -157,6 +184,15 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <AppearanceMenu themeId={themeId} setThemeId={setThemeId} mode={mode} setMode={setMode} seasonName={seasonName} />
+          <button
+            onClick={toggleMusic}
+            className={`btn-icon ${musicOn ? '!text-accent' : ''}`}
+            aria-pressed={musicOn}
+            aria-label={musicOn ? 'Tắt nhạc nền' : 'Bật nhạc nền GG Theme'}
+            title={musicOn ? 'Tắt nhạc nền' : 'Bật nhạc nền GG Theme'}
+          >
+            <Music className={`w-[18px] h-[18px] ${musicOn ? 'animate-pulse' : ''}`} />
+          </button>
           <button
             onClick={handleToggleSound}
             className="btn-icon"

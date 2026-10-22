@@ -4,6 +4,7 @@ import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
 import { RotateCcw, Play, Check, Shuffle, Shield, X } from 'lucide-react';
 import { Modal, SectionHeader } from './ui';
+import { soundtrack } from '../utils/soundtrack';
 
 interface RandomWheelProps {
   movies: Movie[];
@@ -90,6 +91,11 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
 
   // Pointer flick on every slice boundary
   const [pawlAngle, setPawlAngle] = useState(0);
+
+  // The soundtrack steps back while the reel turns
+  useEffect(() => {
+    soundtrack.duck(isSpinning);
+  }, [isSpinning]);
 
   // Rotation angles in radians
   const currentAngleRef = useRef(0);

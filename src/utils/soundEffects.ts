@@ -1,3 +1,5 @@
+import { playMotif } from './soundtrack';
+
 // Professional Vintage Acoustic Sound Engine for 35mm Projector & Mechanical Tensioner
 // Designed for headphone listening in café environments with strict acoustic dynamic range control
 
@@ -150,7 +152,7 @@ class VintageSoundEngine {
     }
   }
 
-  // 3. Cinematic Winner Fanfare (Deep Subwoofer Impact + Antique Brass Chime)
+  // 3. Winner sting: a low impact, then the club leitmotif G-G (see utils/soundtrack.ts)
   playVintageWinnerFanfare() {
     if (this.isMuted) return;
     try {
@@ -158,43 +160,31 @@ class VintageSoundEngine {
       if (!ctx || !this.masterGain) return;
       const now = ctx.currentTime;
 
-      // Part 1: Deep Cinematic Impact (Sub-Bass Thud ~50Hz)
       const subOsc = ctx.createOscillator();
       const subGain = ctx.createGain();
-
       subOsc.type = 'sine';
       subOsc.frequency.setValueAtTime(120, now);
       subOsc.frequency.exponentialRampToValueAtTime(36, now + 0.5);
-
-      subGain.gain.setValueAtTime(0.35, now);
+      subGain.gain.setValueAtTime(0.3, now);
       subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-
       subOsc.connect(subGain);
       subGain.connect(this.masterGain);
-
       subOsc.start(now);
       subOsc.stop(now + 0.6);
 
-      // Part 2: Vintage Brass Bell Chime (C6 - E6 - G6 - C7 harmonic chord)
-      const chord = [1046.5, 1318.5, 1567.98, 2093.0];
-      chord.forEach((freq, idx) => {
-        const bellOsc = ctx.createOscillator();
-        const bellGain = ctx.createGain();
-        const startTime = now + 0.05 + idx * 0.08;
-        const decayTime = 1.8;
+      playMotif(ctx, this.masterGain, now + 0.05, 'reveal');
+    } catch {
+      // Audio fallback
+    }
+  }
 
-        bellOsc.type = 'sine';
-        bellOsc.frequency.setValueAtTime(freq, startTime);
-
-        bellGain.gain.setValueAtTime(0.12 - idx * 0.02, startTime);
-        bellGain.gain.exponentialRampToValueAtTime(0.0001, startTime + decayTime);
-
-        bellOsc.connect(bellGain);
-        bellGain.connect(this.masterGain!);
-
-        bellOsc.start(startTime);
-        bellOsc.stop(startTime + decayTime);
-      });
+  // Achievement unlock: the leitmotif an octave up, short
+  playUnlockSting() {
+    if (this.isMuted) return;
+    try {
+      const ctx = this.getContext();
+      if (!ctx || !this.masterGain) return;
+      playMotif(ctx, this.masterGain, ctx.currentTime + 0.02, 'unlock');
     } catch {
       // Audio fallback
     }

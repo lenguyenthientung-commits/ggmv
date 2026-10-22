@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Movie } from '../types/cinema';
+import { sounds } from '../utils/soundEffects';
 import { ACHIEVEMENTS, EggEvent, EggId, Story, UNLOCK_COPY, latestLegendaryDate } from '../easterEggs';
 
 // C3 Projector dust: when the pointer rests, a speck resolves under it. Never captures input.
@@ -82,6 +83,7 @@ export const IntermissionCard: React.FC<{ movies: Movie[] }> = ({ movies }) => {
 // First-ever unlock of an achievement (per viewer): dismissible, 4 s, no focus trap
 export const UnlockToast: React.FC<{ eggId: EggId; onDone: () => void }> = ({ eggId, onDone }) => {
   useEffect(() => {
+    sounds.playUnlockSting();
     const t = setTimeout(onDone, 4000);
     return () => clearTimeout(t);
   }, [eggId, onDone]);
