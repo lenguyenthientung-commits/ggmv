@@ -45,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 w-full border-b border-amber-900/30 bg-[#0e0b09]/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
         {/* Zone 1: Brand Wordmark (Compact & Shrink-0 to prevent overflow) */}
-        <div className="flex items-center gap-2 shrink-0 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <a
             href="#"
             onClick={(e) => {
@@ -53,12 +53,12 @@ export const Header: React.FC<HeaderProps> = ({
               sounds.playVintageSwitch();
               setActiveTab('movies');
             }}
-            className="flex items-center gap-2 group text-white focus:outline-none shrink-0"
+            className="flex items-center gap-2 group text-white focus:outline-none min-w-0"
           >
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-neutral-950 font-black shadow-[0_0_12px_color-mix(in_srgb,var(--color-amber-600)_50%,transparent)] border border-amber-300/40 shrink-0">
               <Film className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-950 stroke-[2.5]" />
             </div>
-            <span className="text-sm sm:text-base lg:text-lg font-black tracking-wider uppercase font-cinema text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 whitespace-nowrap">
+            <span className="text-sm sm:text-base lg:text-lg font-black tracking-wider uppercase font-cinema text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 whitespace-nowrap truncate">
               GAY GANG CINEMA
             </span>
           </a>
@@ -256,11 +256,12 @@ export const Header: React.FC<HeaderProps> = ({
               sounds.playVintageSwitch();
               onOpenAddModal();
             }}
+            aria-label="Bỏ phim mới vào kho"
             className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-bold text-xs shadow-[0_0_15px_color-mix(in_srgb,var(--color-amber-600)_40%,transparent)] transition-all whitespace-nowrap uppercase tracking-wider font-cinema active:scale-95 shrink-0"
           >
             <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
             <span className="hidden sm:inline">Bỏ Phim</span>
-            <span className="sm:hidden">Phim</span>
+            <span className="hidden min-[400px]:inline sm:hidden">Phim</span>
           </button>
         </div>
       </div>
