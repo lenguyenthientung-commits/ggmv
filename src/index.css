@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Space Grotesk', ui-monospace, monospace;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: #0b0908;
+    color: #ede8e3;
+    background-image: 
+      radial-gradient(ellipse at 50% 0%, rgba(217, 119, 6, 0.08) 0%, transparent 60%),
+      radial-gradient(circle at 100% 100%, rgba(69, 10, 10, 0.08) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, .font-cinema {
+    font-family: var(--font-display);
+    letter-spacing: normal;
+  }
+}
+
+/* Subtle 35mm film grain overlay */
+.film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Vintage Brass & Tungsten Sconce Glow */
+.cinema-glow {
+  box-shadow: 0 0 50px -10px rgba(217, 119, 6, 0.25);
+}
+
+.brass-border {
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  box-shadow: inset 0 1px 0 0 rgba(254, 243, 199, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.art-deco-frame {
+  position: relative;
+}
+.art-deco-frame::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid rgba(217, 119, 6, 0.15);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Dim The Lights transition */
+.transition-lighting {
+  transition: opacity 0.8s cubic-bezier(0.19, 1, 0.22, 1), background-color 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #110e0c;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a221c;
+  border-radius: 9999px;
+  border: 1px solid rgba(217, 119, 6, 0.15);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #44352b;
+}
+

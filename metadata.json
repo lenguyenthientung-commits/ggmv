@@ -1,0 +1,6 @@
+{
+  "name": "CineBro - Rạp Phim Cuối Tuần Cho Anh Em",
+  "description": "Nền tảng rạp phim gia đình và hội bạn thân: cùng thêm phim vào danh sách chờ, bình chọn, vòng quay may mắn chọn phim ngẫu nhiên mỗi cuối tuần và lên lịch chiếu phim cùng anh em.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

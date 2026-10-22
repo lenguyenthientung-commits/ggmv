@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ggmv
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Secrets: entered in the Render dashboard, never committed
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
+      - key: OMDB_API_KEY
+        sync: false

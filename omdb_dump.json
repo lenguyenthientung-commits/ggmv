@@ -1,0 +1,898 @@
+[
+  {
+    "title": "Warrior",
+    "year": 2011,
+    "suggestedBy": "Shiba",
+    "genre": "Hành động",
+    "link": "Warrior",
+    "omdb": {
+      "Title": "Warrior",
+      "Year": "2011",
+      "Rated": "PG-13",
+      "Released": "09 Sep 2011",
+      "Runtime": "140 min",
+      "Genre": "Action, Drama, Sport",
+      "Director": "Gavin O&apos;Connor",
+      "Writer": "Gavin O&apos;Connor, Anthony Tambakis, Cliff Dorfman",
+      "Actors": "Tom Hardy, Nick Nolte, Joel Edgerton",
+      "Plot": "The youngest son of an alcoholic former boxer returns home, where he's trained by his father for competition in a mixed martial arts tournament - a path that puts the fighter on a collision course with his estranged, older brother.",
+      "Language": "English, Spanish",
+      "Country": "United States",
+      "Awards": "Nominated for 1 Oscar. 6 wins & 22 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BMTk4ODk5MTMyNV5BMl5BanBnXkFtZTcwMDMyNTg0Ng@@._V1_QL75_UX380_CR0,12,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.1/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "84%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "71/100"
+        }
+      ],
+      "Metascore": "71",
+      "imdbRating": "8.1",
+      "imdbVotes": "534,418",
+      "imdbID": "tt1291584",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$13,657,115",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Ford v Ferrari",
+    "year": 2019,
+    "suggestedBy": "Shiba",
+    "genre": "Hành động",
+    "link": "Ford v Ferrari",
+    "omdb": {
+      "Title": "Ford v Ferrari",
+      "Year": "2019",
+      "Rated": "PG-13",
+      "Released": "15 Nov 2019",
+      "Runtime": "152 min",
+      "Genre": "Action, Biography, Drama",
+      "Director": "James Mangold",
+      "Writer": "Jez Butterworth, John-Henry Butterworth, Jason Keller",
+      "Actors": "Matt Damon, Christian Bale, Jon Bernthal",
+      "Plot": "American car designer Carroll Shelby and driver Ken Miles battle corporate interference and the laws of physics to build a revolutionary race car for Ford in order to defeat Ferrari at the 24 Hours of Le Mans in 1966.",
+      "Language": "English, Italian, French, Japanese",
+      "Country": "United States",
+      "Awards": "Won 2 Oscars. 26 wins & 86 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BOTBjNTEyNjYtYjdkNi00YzE5LTljYzUtZjVlYmYwZmJmZWYxXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.1/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "92%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "81/100"
+        }
+      ],
+      "Metascore": "81",
+      "imdbRating": "8.1",
+      "imdbVotes": "588,704",
+      "imdbID": "tt1950186",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$117,624,357",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Memories of Murder",
+    "year": 2003,
+    "suggestedBy": "Lil Teng",
+    "genre": "Tội phạm",
+    "vnTitle": "Hồi Ức Kẻ Sát Nhân",
+    "omdb": {
+      "Title": "Memories of Murder",
+      "Year": "2003",
+      "Rated": "Not Rated",
+      "Released": "02 May 2003",
+      "Runtime": "131 min",
+      "Genre": "Crime, Drama, Mystery",
+      "Director": "Bong Joon Ho",
+      "Writer": "Bong Joon Ho, Kwang-rim Kim, Sung-bo Shim",
+      "Actors": "Song Kang-ho, Kim Sang-kyung, Kim Roe-ha",
+      "Plot": "In a small Korean province in 1986, two detectives struggle with the case of multiple young women being found raped and murdered by an unknown culprit.",
+      "Language": "Korean, English",
+      "Country": "South Korea",
+      "Awards": "34 wins & 13 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BYmRjOWE5NmMtYTdkYS00ODFlLWJiMTMtYzE2NDZlZjlkZDQ0XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.1/10"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "82/100"
+        }
+      ],
+      "Metascore": "82",
+      "imdbRating": "8.1",
+      "imdbVotes": "276,526",
+      "imdbID": "tt0353969",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$15,357",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "The Hunt",
+    "year": 2012,
+    "suggestedBy": "Shiba",
+    "genre": "Tâm lý",
+    "vnTitle": "Cuộc Săn Lùng",
+    "omdb": {
+      "Title": "The Hunt",
+      "Year": "2012",
+      "Rated": "R",
+      "Released": "14 Nov 2012",
+      "Runtime": "115 min",
+      "Genre": "Drama",
+      "Director": "Thomas Vinterberg",
+      "Writer": "Thomas Vinterberg, Tobias Lindholm",
+      "Actors": "Mads Mikkelsen, Thomas Bo Larsen, Annika Wedderkopp",
+      "Plot": "A teacher lives a lonely life, all the while struggling over his son's custody. His life slowly gets better as he finds love and receives good news from his son, but his new luck is about to be brutally shattered by an innocent li...",
+      "Language": "Danish, English, Polish",
+      "Country": "Denmark, Sweden, Belgium, France",
+      "Awards": "Nominated for 1 Oscar. 38 wins & 74 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BMTg2NDg3ODg4NF5BMl5BanBnXkFtZTcwNzk3NTc3Nw@@._V1_QL75_UY562_CR7,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.3/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "92%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "77/100"
+        }
+      ],
+      "Metascore": "77",
+      "imdbRating": "8.3",
+      "imdbVotes": "419,837",
+      "imdbID": "tt2106476",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$613,308",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "One Flew Over the Cuckoo's Nest",
+    "year": 1975,
+    "suggestedBy": "Lil Teng",
+    "genre": "Tâm lý",
+    "vnTitle": "Bay Trên Tổ Chim Cúc Cu",
+    "omdb": {
+      "Title": "One Flew Over the Cuckoo's Nest",
+      "Year": "1975",
+      "Rated": "R",
+      "Released": "21 Nov 1975",
+      "Runtime": "133 min",
+      "Genre": "Drama",
+      "Director": "Miloš Forman",
+      "Writer": "Lawrence Hauben, Bo Goldman, Ken Kesey",
+      "Actors": "Jack Nicholson, Louise Fletcher, Michael Berryman",
+      "Plot": "A rebellious convict is sent to a psychiatric hospital for evaluation in 1963 Oregon, and encourages his docile companions to take more control of their lives and defy the tyrannical head nurse.",
+      "Language": "English",
+      "Country": "United States",
+      "Awards": "Won 5 Oscars. 38 wins & 15 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BYjBkMjgzMzYtNzRiMS00NDc3LWE4YTUtZjYxYjZhNjNhYzhhXkEyXkFqcGc@._V1_QL75_UX380_CR0,1,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.6/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "92%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "84/100"
+        }
+      ],
+      "Metascore": "84",
+      "imdbRating": "8.6",
+      "imdbVotes": "1,169,722",
+      "imdbID": "tt0073486",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$108,981,275",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "The Pianist",
+    "year": 2002,
+    "suggestedBy": "Lil Teng",
+    "genre": "Tiểu sử",
+    "vnTitle": "Nghệ Sĩ Dương Cầm",
+    "omdb": {
+      "Response": "False",
+      "Error": "Movie not found!"
+    }
+  },
+  {
+    "title": "Stand by Me",
+    "year": 1986,
+    "suggestedBy": "Lộc",
+    "genre": "Phiêu lưu",
+    "vnTitle": "Hãy Đứng Bên Tôi",
+    "omdb": {
+      "Title": "Stand by Me",
+      "Year": "1986",
+      "Rated": "R",
+      "Released": "22 Aug 1986",
+      "Runtime": "89 min",
+      "Genre": "Adventure, Drama",
+      "Director": "Rob Reiner",
+      "Writer": "Stephen King, Raynold Gideon, Bruce A. Evans",
+      "Actors": "Wil Wheaton, River Phoenix, Corey Feldman",
+      "Plot": "A writer recounts a childhood journey with his friends to view the body of a boy who went missing in the woods.",
+      "Language": "English",
+      "Country": "United States",
+      "Awards": "Nominated for 1 Oscar. 7 wins & 14 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BNGJkNTUwM2MtZWE2MS00YjNkLWE3MjktNWQwZDQxMDIyZWVmXkEyXkFqcGc@._V1_QL75_UX380_CR0,18,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.1/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "89%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "76/100"
+        }
+      ],
+      "Metascore": "76",
+      "imdbRating": "8.1",
+      "imdbVotes": "496,133",
+      "imdbID": "tt0092005",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$52,987,763",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Shutter Island",
+    "year": 2010,
+    "suggestedBy": "Lộc",
+    "genre": "Tâm lý",
+    "vnTitle": "Đảo Kinh Hoàng",
+    "omdb": {
+      "Title": "Shutter Island",
+      "Year": "2010",
+      "Rated": "R",
+      "Released": "19 Feb 2010",
+      "Runtime": "138 min",
+      "Genre": "Mystery, Thriller",
+      "Director": "Martin Scorsese",
+      "Writer": "Laeta Kalogridis, Dennis Lehane",
+      "Actors": "Leonardo DiCaprio, Emily Mortimer, Mark Ruffalo",
+      "Plot": "Two US marshals are sent to a mental institution on an inhospitable island in order to investigate the disappearance of a patient.",
+      "Language": "English, German",
+      "Country": "Canada, United States",
+      "Awards": "11 wins & 66 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BN2FjNWExYzEtY2YzOC00YjNlLTllMTQtNmIwM2Q1YzBhOWM1XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.2/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "69%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "63/100"
+        }
+      ],
+      "Metascore": "63",
+      "imdbRating": "8.2",
+      "imdbVotes": "1,689,261",
+      "imdbID": "tt1130884",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$128,012,934",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Sunset Boulevard",
+    "year": 1950,
+    "suggestedBy": "Hoèn",
+    "genre": "Tâm lý",
+    "vnTitle": "Đại Lộ Hoàng Hôn",
+    "omdb": {
+      "Title": "Sunset Boulevard",
+      "Year": "1950",
+      "Rated": "Approved",
+      "Released": "04 Aug 1950",
+      "Runtime": "110 min",
+      "Genre": "Drama, Film-Noir",
+      "Director": "Billy Wilder",
+      "Writer": "Charles Brackett, Billy Wilder, D.M. Marshman Jr.",
+      "Actors": "William Holden, Gloria Swanson, Erich von Stroheim",
+      "Plot": "A failed screenwriter falls into a mercenary romance with a faded silent-film star.",
+      "Language": "English",
+      "Country": "United States",
+      "Awards": "Won 3 Oscars. 21 wins & 20 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BMTU0NTkyNzYwMF5BMl5BanBnXkFtZTgwMDU0NDk5MTI@._V1_QL75_UX380_CR0,5,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.4/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "98%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "94/100"
+        }
+      ],
+      "Metascore": "94",
+      "imdbRating": "8.4",
+      "imdbVotes": "264,320",
+      "imdbID": "tt0043014",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$299,645",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "The Spine of Night",
+    "year": 2021,
+    "suggestedBy": "Hoèn",
+    "genre": "Hoạt hình",
+    "omdb": {
+      "Title": "The Spine of Night",
+      "Year": "2021",
+      "Rated": "Not Rated",
+      "Released": "24 Dec 2021",
+      "Runtime": "93 min",
+      "Genre": "Animation, Action, Adventure",
+      "Director": "Philip Gelatt, Morgan Galen King",
+      "Writer": "Philip Gelatt, Morgan Galen King",
+      "Actors": "Richard E. Grant, Lucy Lawless, Patton Oswalt",
+      "Plot": "Ultra-violent, epic fantasy set in a land of magic follows heroes from different eras and cultures battling against a malevolent force.",
+      "Language": "English",
+      "Country": "United States, United Kingdom",
+      "Awards": "1 win & 2 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BM2VhYmU3MTEtYWI5Yi00NmQzLWFmMzAtZTM0OTk4NmRkNGQzXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "6.4/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "80%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "58/100"
+        }
+      ],
+      "Metascore": "58",
+      "imdbRating": "6.4",
+      "imdbVotes": "3,661",
+      "imdbID": "tt3885422",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "N/A",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "No Country for Old Men",
+    "year": 2007,
+    "suggestedBy": "Nem",
+    "genre": "Tội phạm",
+    "vnTitle": "Không Chốn Dung Thân",
+    "omdb": {
+      "Title": "No Country for Old Men",
+      "Year": "2007",
+      "Rated": "R",
+      "Released": "21 Nov 2007",
+      "Runtime": "122 min",
+      "Genre": "Crime, Drama, Thriller",
+      "Director": "Ethan Coen, Joel Coen",
+      "Writer": "Joel Coen, Ethan Coen, Cormac McCarthy",
+      "Actors": "Tommy Lee Jones, Javier Bardem, Josh Brolin",
+      "Plot": "Violence and mayhem ensue after a hunter stumbles upon the aftermath of a drug deal gone wrong and over two million dollars in cash near the Rio Grande.",
+      "Language": "English, Spanish",
+      "Country": "United States",
+      "Awards": "Won 4 Oscars. 165 wins & 139 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BMjA5Njk3MjM4OV5BMl5BanBnXkFtZTcwMTc5MTE1MQ@@._V1_QL75_UY562_CR1,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.2/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "93%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "92/100"
+        }
+      ],
+      "Metascore": "92",
+      "imdbRating": "8.2",
+      "imdbVotes": "1,216,902",
+      "imdbID": "tt0477348",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$74,283,625",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Game Night",
+    "year": 2018,
+    "suggestedBy": "Lộc",
+    "genre": "Hành động",
+    "vnTitle": "Đêm Chơi Nhớ Đời",
+    "omdb": {
+      "Title": "Game Night",
+      "Year": "2018",
+      "Rated": "R",
+      "Released": "23 Feb 2018",
+      "Runtime": "100 min",
+      "Genre": "Action, Adventure, Comedy",
+      "Director": "John Francis Daley, Jonathan Goldstein",
+      "Writer": "Mark Perez",
+      "Actors": "Jason Bateman, Rachel McAdams, Kyle Chandler",
+      "Plot": "A group of friends who meet regularly for game nights find themselves entangled in a real-life mystery when the shady brother of one of them is seemingly kidnapped by dangerous gangsters.",
+      "Language": "English",
+      "Country": "United States",
+      "Awards": "4 wins & 22 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "6.9/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "85%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "66/100"
+        }
+      ],
+      "Metascore": "66",
+      "imdbRating": "6.9",
+      "imdbVotes": "285,581",
+      "imdbID": "tt2704998",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$69,268,230",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "The Last Waltz",
+    "year": 1978,
+    "suggestedBy": "Hệ thống",
+    "genre": "Tài liệu",
+    "omdb": {
+      "Title": "The Last Waltz",
+      "Year": "1978",
+      "Rated": "PG",
+      "Released": "26 Apr 1978",
+      "Runtime": "117 min",
+      "Genre": "Documentary, Biography, Music",
+      "Director": "Martin Scorsese",
+      "Writer": "Mardik Martin",
+      "Actors": "Robbie Robertson, Muddy Waters, Neil Young",
+      "Plot": "A film account and presentation of the final concert of The Band.",
+      "Language": "English, Middle English",
+      "Country": "United States",
+      "Awards": "3 wins & 3 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BYWE3MjEzNjgtNzE2OC00ZTQwLWFhYjUtNDQ4ZWJhYTFmMzYzXkEyXkFqcGc@._V1_QL75_UX380_CR0,8,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.1/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "98%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "84/100"
+        }
+      ],
+      "Metascore": "84",
+      "imdbRating": "8.1",
+      "imdbVotes": "22,502",
+      "imdbID": "tt0077838",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$322,313",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Scarface",
+    "year": 1983,
+    "suggestedBy": "Lil Teng",
+    "genre": "Tội phạm",
+    "vnTitle": "Mặt Sẹo",
+    "omdb": {
+      "Title": "Scarface",
+      "Year": "1983",
+      "Rated": "R",
+      "Released": "09 Dec 1983",
+      "Runtime": "170 min",
+      "Genre": "Crime, Drama",
+      "Director": "Brian De Palma",
+      "Writer": "Oliver Stone, Howard Hawks, Ben Hecht",
+      "Actors": "Al Pacino, Michelle Pfeiffer, Steven Bauer",
+      "Plot": "In the 1980s, a determined criminal-minded Cuban immigrant becomes the biggest drug smuggler in Miami, and is eventually undone by his own drug addiction.",
+      "Language": "English, Spanish",
+      "Country": "United States",
+      "Awards": "1 win & 9 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BNDUzYjY0NmUtMDM4OS00Y2Q5LWJiODYtNTk0ZTk0YjZhMTg1XkEyXkFqcGc@._V1_QL75_UX380_CR0,4,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.3/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "77%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "65/100"
+        }
+      ],
+      "Metascore": "65",
+      "imdbRating": "8.3",
+      "imdbVotes": "1,037,471",
+      "imdbID": "tt0086250",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$45,967,303",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Everything Everywhere All at Once",
+    "year": 2022,
+    "suggestedBy": "Shiba",
+    "genre": "Hành động",
+    "vnTitle": "Cuộc Chiến Đa Vũ Trụ",
+    "omdb": {
+      "Title": "Everything Everywhere All at Once",
+      "Year": "2022",
+      "Rated": "R",
+      "Released": "08 Apr 2022",
+      "Runtime": "139 min",
+      "Genre": "Action, Adventure, Comedy",
+      "Director": "Daniel Kwan, Daniel Scheinert",
+      "Writer": "Daniel Kwan, Daniel Scheinert",
+      "Actors": "Michelle Yeoh, Stephanie Hsu, Jamie Lee Curtis",
+      "Plot": "A middle-aged Chinese immigrant is swept up into an insane adventure in which she alone can save existence by exploring other universes and connecting with the lives she could have led.",
+      "Language": "English, Mandarin, Cantonese",
+      "Country": "United States",
+      "Awards": "Won 7 Oscars. 408 wins & 382 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BOWNmMzAzZmQtNDQ1NC00Nzk5LTkyMmUtNGI2N2NkOWM4MzEyXkEyXkFqcGc@._V1_QL75_UY562_CR4,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "7.7/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "93%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "81/100"
+        }
+      ],
+      "Metascore": "81",
+      "imdbRating": "7.7",
+      "imdbVotes": "663,149",
+      "imdbID": "tt6710474",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$77,191,785",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Rush",
+    "year": 2013,
+    "suggestedBy": "Shiba",
+    "genre": "Tiểu sử",
+    "vnTitle": "Đường Đua Nghẹt Thở",
+    "omdb": {
+      "Title": "Rush",
+      "Year": "2013",
+      "Rated": "R",
+      "Released": "27 Sep 2013",
+      "Runtime": "123 min",
+      "Genre": "Biography, Drama, Sport",
+      "Director": "Ron Howard",
+      "Writer": "Peter Morgan",
+      "Actors": "Daniel Brühl, Chris Hemsworth, Olivia Wilde",
+      "Plot": "James Hunt and Niki Lauda, two extremely skilled Formula One racers, have an intense rivalry with each other. However, it is their enmity that pushes them to their limits.",
+      "Language": "English, German, Italian, French, Japanese, Spanish",
+      "Country": "United Kingdom, United States",
+      "Awards": "Won 1 BAFTA Award. 6 wins & 67 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BMTZhOGQxM2ItNGQyYy00YzE5LWI5MjMtNmMzNGQzNDE1OTUzXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.1/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "88%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "74/100"
+        }
+      ],
+      "Metascore": "74",
+      "imdbRating": "8.1",
+      "imdbVotes": "567,924",
+      "imdbID": "tt1979320",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$26,947,624",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Top Gun: Maverick",
+    "year": 2022,
+    "suggestedBy": "Shiba",
+    "genre": "Hành động",
+    "vnTitle": "Phi Công Siêu Đẳng Maverick",
+    "omdb": {
+      "Title": "Top Gun: Maverick",
+      "Year": "2022",
+      "Rated": "PG-13",
+      "Released": "27 May 2022",
+      "Runtime": "130 min",
+      "Genre": "Action, Drama",
+      "Director": "Joseph Kosinski",
+      "Writer": "Ehren Kruger, Eric Warren Singer, Christopher McQuarrie",
+      "Actors": "Tom Cruise, Jennifer Connelly, Miles Teller",
+      "Plot": "The story involves Maverick confronting his past while training a group of younger Top Gun graduates, including the son of his deceased best friend, for a dangerous mission.",
+      "Language": "English",
+      "Country": "United States",
+      "Awards": "Won 1 Oscar. 114 wins & 237 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BMDBkZDNjMWEtOTdmMi00NmExLTg5MmMtNTFlYTJlNWY5YTdmXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.2/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "96%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "78/100"
+        }
+      ],
+      "Metascore": "78",
+      "imdbRating": "8.2",
+      "imdbVotes": "908,768",
+      "imdbID": "tt1745960",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$721,996,984",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Project Hail Mary",
+    "year": 2026,
+    "suggestedBy": "Lộc",
+    "genre": "Phiêu lưu",
+    "omdb": {
+      "Title": "Project Hail Mary",
+      "Year": "2026",
+      "Rated": "PG-13",
+      "Released": "20 Mar 2026",
+      "Runtime": "156 min",
+      "Genre": "Adventure, Comedy, Sci-Fi",
+      "Director": "Phil Lord, Christopher Miller",
+      "Writer": "Drew Goddard, Andy Weir",
+      "Actors": "Ryan Gosling, Sandra Hüller, James Ortiz",
+      "Plot": "A science teacher wakes up alone on a spaceship. As his memory returns, he uncovers a mission to stop a mysterious substance killing Earth's sun, and realizes that an unexpected friendship may be the key.",
+      "Language": "English",
+      "Country": "United States",
+      "Awards": "10 wins & 10 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BNTkwNzJiYTctNzI3NC00NjE1LTlhYjktY2Q5MTdmMWFmNzcxXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "8.2/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "95%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "77/100"
+        }
+      ],
+      "Metascore": "77",
+      "imdbRating": "8.2",
+      "imdbVotes": "570,200",
+      "imdbID": "tt12042730",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$344,050,007",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Pandorum",
+    "year": 2009,
+    "suggestedBy": "Lộc",
+    "genre": "Hành động",
+    "omdb": {
+      "Title": "Pandorum",
+      "Year": "2009",
+      "Rated": "R",
+      "Released": "25 Sep 2009",
+      "Runtime": "108 min",
+      "Genre": "Action, Horror, Mystery",
+      "Director": "Christian Alvart",
+      "Writer": "Travis Milloy, Christian Alvart",
+      "Actors": "Dennis Quaid, Ben Foster, Cam Gigandet",
+      "Plot": "Two crew members of a spaceship wake up from hypersleep to discover that all their colleagues are missing. Despite this, it appears that they are not alone.",
+      "Language": "English, Vietnamese, German",
+      "Country": "United Kingdom, Germany",
+      "Awards": "N/A",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BNDQxNjc5NTMxNl5BMl5BanBnXkFtZTcwNjg2NDE4Mg@@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "6.7/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "26%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "28/100"
+        }
+      ],
+      "Metascore": "28",
+      "imdbRating": "6.7",
+      "imdbVotes": "169,596",
+      "imdbID": "tt1188729",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$10,330,853",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  },
+  {
+    "title": "Knives Out",
+    "year": 2019,
+    "suggestedBy": "Lil Teng",
+    "genre": "Hài hước",
+    "vnTitle": "Kẻ Đâm Lén",
+    "omdb": {
+      "Title": "Knives Out",
+      "Year": "2019",
+      "Rated": "PG-13",
+      "Released": "27 Nov 2019",
+      "Runtime": "130 min",
+      "Genre": "Comedy, Crime, Drama",
+      "Director": "Rian Johnson",
+      "Writer": "Rian Johnson",
+      "Actors": "Daniel Craig, Chris Evans, Ana de Armas",
+      "Plot": "When renowned crime novelist Harlan Thrombey is found dead at his estate just after his 85th birthday, the inquisitive and debonair Detective Benoit Blanc is mysteriously enlisted to investigate.",
+      "Language": "English, Spanish",
+      "Country": "United States",
+      "Awards": "Nominated for 1 Oscar. 52 wins & 114 nominations total",
+      "Poster": "https://m.media-amazon.com/images/M/MV5BZDU5ZTRkYmItZjg0Mi00ZTQwLThjMWItNWM3MTMxMzVjZmVjXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+      "Ratings": [
+        {
+          "Source": "Internet Movie Database",
+          "Value": "7.9/10"
+        },
+        {
+          "Source": "Rotten Tomatoes",
+          "Value": "97%"
+        },
+        {
+          "Source": "Metacritic",
+          "Value": "82/100"
+        }
+      ],
+      "Metascore": "82",
+      "imdbRating": "7.9",
+      "imdbVotes": "893,101",
+      "imdbID": "tt8946378",
+      "Type": "movie",
+      "DVD": "N/A",
+      "BoxOffice": "$165,363,234",
+      "Production": "N/A",
+      "Website": "N/A",
+      "Response": "True"
+    }
+  }
+]

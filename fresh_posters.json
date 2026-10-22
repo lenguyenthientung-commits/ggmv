@@ -1,0 +1,142 @@
+{
+  "Warrior": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMTk4ODk5MTMyNV5BMl5BanBnXkFtZTcwMDMyNTg0Ng@@._V1_QL75_UX380_CR0,12,380,562_.jpg",
+    "year": "2011",
+    "director": "Gavin O&apos;Connor",
+    "runtime": "140 min"
+  },
+  "Ford v Ferrari": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BOTBjNTEyNjYtYjdkNi00YzE5LTljYzUtZjVlYmYwZmJmZWYxXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2019",
+    "director": "James Mangold",
+    "runtime": "152 min"
+  },
+  "Memories of Murder": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BYmRjOWE5NmMtYTdkYS00ODFlLWJiMTMtYzE2NDZlZjlkZDQ0XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2003",
+    "director": "Bong Joon Ho",
+    "runtime": "131 min"
+  },
+  "The Hunt": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMTg2NDg3ODg4NF5BMl5BanBnXkFtZTcwNzk3NTc3Nw@@._V1_QL75_UY562_CR7,0,380,562_.jpg",
+    "year": "2012",
+    "director": "Thomas Vinterberg",
+    "runtime": "115 min"
+  },
+  "One Flew Over the Cuckoo's Nest": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BYjBkMjgzMzYtNzRiMS00NDc3LWE4YTUtZjYxYjZhNjNhYzhhXkEyXkFqcGc@._V1_QL75_UX380_CR0,1,380,562_.jpg",
+    "year": "1975",
+    "director": "Miloš Forman",
+    "runtime": "133 min"
+  },
+  "The Pianist": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMjEwNmEwYjgtNTk3ZC00NjljLTg5ZDctZTY3ZGQwZjRkZmQxXkEyXkFqcGc@._V1_QL75_UY562_CR14,0,380,562_.jpg",
+    "year": "2003",
+    "director": "Roman Polanski",
+    "runtime": "150 min"
+  },
+  "Stand by Me": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BNGJkNTUwM2MtZWE2MS00YjNkLWE3MjktNWQwZDQxMDIyZWVmXkEyXkFqcGc@._V1_QL75_UX380_CR0,18,380,562_.jpg",
+    "year": "1986",
+    "director": "Rob Reiner",
+    "runtime": "89 min"
+  },
+  "Shutter Island": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BN2FjNWExYzEtY2YzOC00YjNlLTllMTQtNmIwM2Q1YzBhOWM1XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2010",
+    "director": "Martin Scorsese",
+    "runtime": "138 min"
+  },
+  "Sunset Boulevard": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMTU0NTkyNzYwMF5BMl5BanBnXkFtZTgwMDU0NDk5MTI@._V1_QL75_UX380_CR0,5,380,562_.jpg",
+    "year": "1950",
+    "director": "Billy Wilder",
+    "runtime": "110 min"
+  },
+  "The Spine of Night": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BM2VhYmU3MTEtYWI5Yi00NmQzLWFmMzAtZTM0OTk4NmRkNGQzXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2021",
+    "director": "Philip Gelatt, Morgan Galen King",
+    "runtime": "93 min"
+  },
+  "No Country for Old Men": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMjA5Njk3MjM4OV5BMl5BanBnXkFtZTcwMTc5MTE1MQ@@._V1_QL75_UY562_CR1,0,380,562_.jpg",
+    "year": "2007",
+    "director": "Ethan Coen, Joel Coen",
+    "runtime": "122 min"
+  },
+  "Game Night": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMjI3ODkzNDk5MF5BMl5BanBnXkFtZTgwNTEyNjY2NDM@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2018",
+    "director": "John Francis Daley, Jonathan Goldstein",
+    "runtime": "100 min"
+  },
+  "The Last Waltz": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BYWE3MjEzNjgtNzE2OC00ZTQwLWFhYjUtNDQ4ZWJhYTFmMzYzXkEyXkFqcGc@._V1_QL75_UX380_CR0,8,380,562_.jpg",
+    "year": "1978",
+    "director": "Martin Scorsese",
+    "runtime": "117 min"
+  },
+  "Scarface": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BNDUzYjY0NmUtMDM4OS00Y2Q5LWJiODYtNTk0ZTk0YjZhMTg1XkEyXkFqcGc@._V1_QL75_UX380_CR0,4,380,562_.jpg",
+    "year": "1983",
+    "director": "Brian De Palma",
+    "runtime": "170 min"
+  },
+  "Everything Everywhere All at Once": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BOWNmMzAzZmQtNDQ1NC00Nzk5LTkyMmUtNGI2N2NkOWM4MzEyXkEyXkFqcGc@._V1_QL75_UY562_CR4,0,380,562_.jpg",
+    "year": "2022",
+    "director": "Daniel Kwan, Daniel Scheinert",
+    "runtime": "139 min"
+  },
+  "Rush": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMTZhOGQxM2ItNGQyYy00YzE5LWI5MjMtNmMzNGQzNDE1OTUzXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2013",
+    "director": "Ron Howard",
+    "runtime": "123 min"
+  },
+  "Top Gun: Maverick": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BMDBkZDNjMWEtOTdmMi00NmExLTg5MmMtNTFlYTJlNWY5YTdmXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2022",
+    "director": "Joseph Kosinski",
+    "runtime": "130 min"
+  },
+  "Project Hail Mary": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BNTkwNzJiYTctNzI3NC00NjE1LTlhYjktY2Q5MTdmMWFmNzcxXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2026",
+    "director": "Phil Lord, Christopher Miller",
+    "runtime": "156 min"
+  },
+  "Pandorum": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BNDQxNjc5NTMxNl5BMl5BanBnXkFtZTcwNjg2NDE4Mg@@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2009",
+    "director": "Christian Alvart",
+    "runtime": "108 min"
+  },
+  "Knives Out": {
+    "status": 200,
+    "poster": "https://m.media-amazon.com/images/M/MV5BZDU5ZTRkYmItZjg0Mi00ZTQwLThjMWItNWM3MTMxMzVjZmVjXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
+    "year": "2019",
+    "director": "Rian Johnson",
+    "runtime": "130 min"
+  }
+}
