@@ -44,6 +44,7 @@ const SpeedLines: React.FC = () => (
 
 export const RandomWheel: React.FC<RandomWheelProps> = ({
   movies,
+  currentUser,
   onSelectForWeekend,
   onOpenTrailer,
   onEggsChanged,
@@ -72,6 +73,11 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   const [fakeStage, setFakeStage] = useState<'jackpot' | 'denied' | null>(null);
   const [nearMiss, setNearMiss] = useState(false);
   const vetoedMovieRef = useRef<string | null>(null);
+  // R3 The Prophecy: an optional guess filed with the server before the reel moves
+  const [guessId, setGuessId] = useState('');
+  const [prophecyBy, setProphecyBy] = useState<string | null>(null);
+  const operationRef = useRef('');
+  const guessRef = useRef<{ movieId: string; member: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/veto')
@@ -291,6 +297,20 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     setIsSpinning(true);
     setWinnerMovie(null);
     setShowWinnerModal(false);
+    setProphecyBy(null);
+
+    // One operation id per spin; a guess is filed now, before any result exists
+    operationRef.current = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    guessRef.current = null;
+    if (guessId && eligibleMovies.some((m) => m.id === guessId)) {
+      guessRef.current = { movieId: guessId, member: currentUser };
+      fetch('/api/eggs/prophecy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operationId: operationRef.current, guessMovieId: guessId, member: currentUser }),
+      }).catch(() => {});
+    }
+    setGuessId('');
 
     // Rotations: 6 to 9 full turns + random landing angle
     const extraRotations = (6 + Math.random() * 3.5) * (2 * Math.PI);
@@ -358,6 +378,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
         recordSpin(movie, fakeVictory);
         setWinnerMovie(movie);
         setNearMiss(fakeVictory);
+        setProphecyBy(guessRef.current?.movieId === movie.id ? guessRef.current.member : null);
 
         if (fakeVictory) {
           runFakeVictory(newAngle, () => {
@@ -421,12 +442,12 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   const recordSpin = (movie: Movie, showedFakeVictory: boolean) => {
     const vetoedMovieId = vetoedMovieRef.current;
     vetoedMovieRef.current = null;
-    if (!showedFakeVictory && vetoedMovieId !== movie.id) return;
+    if (!showedFakeVictory && vetoedMovieId !== movie.id && guessRef.current?.movieId !== movie.id) return;
     fetch('/api/eggs/spin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        operationId: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        operationId: operationRef.current,
         movieId: movie.id,
         movieTitle: movie.title,
         showedFakeVictory,
@@ -508,7 +529,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                 </div>
               ) : (
                 <div className="enter bg-card border-[1.5px] border-ink rounded-lg px-5 py-3 shadow-[4px_4px_0_var(--color-shadow)] text-center">
-                  <span className="stamp stamp-land text-stop !text-[20px]">Claim denied</span>
+                  <span className="stamp stamp-land text-stop !text-[20px]">Claim denied ♧</span>
                   <div className="label mt-2">Not legally binding · đảo reel…</div>
                 </div>
               )}
@@ -545,6 +566,24 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
             <Shuffle className={`w-[18px] h-[18px] ${isSpinning ? 'animate-spin' : ''}`} strokeWidth={2.5} />
             {isSpinning ? 'Đang quay…' : 'Quay!'}
           </button>
+          {/* R3 The Prophecy: optional, filed with the server when Quay! is pressed */}
+          <div className="mt-5 flex items-center gap-2.5 bg-card border-[1.5px] border-line rounded-lg pl-3 pr-1.5 py-1.5 max-w-full">
+            <label htmlFor="prophecy" className="label shrink-0" title="Ghi lời đoán trước khi quay. Đoán trúng sẽ được rạp ghi nhận.">
+              Tiên tri
+            </label>
+            <select
+              id="prophecy"
+              value={guessId}
+              onChange={(e) => setGuessId(e.target.value)}
+              disabled={isSpinning}
+              className="input !h-8 !border-0 !bg-transparent !px-1 text-[13px] min-w-0 max-w-[240px]"
+            >
+              <option value="">Không đoán</option>
+              {eligibleMovies.map((m) => (
+                <option key={m.id} value={m.id}>{m.title}</option>
+              ))}
+            </select>
+          </div>
           {vetoNotice && (
             <p className="mt-4 bg-card border-[1.5px] border-ink rounded-md px-3 py-1.5 text-[13px] font-semibold text-center">
               {vetoNotice}
@@ -648,6 +687,12 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                   <span className="label !text-night-ink/60">Phim tuần này là</span>
                 </div>
                 <h3 className="display mt-3 text-[clamp(40px,6.5vw,68px)]">{winnerMovie.title}</h3>
+                {prophecyBy && (
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <span className="stamp stamp-land text-accent">Prophecy confirmed</span>
+                    <span className="text-[13px] text-night-ink/70">{prophecyBy} made this claim before the reel moved.</span>
+                  </div>
+                )}
                 {nearMiss && (
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <span className="stamp stamp-land text-accent">Near-miss insurance · Claim denied</span>

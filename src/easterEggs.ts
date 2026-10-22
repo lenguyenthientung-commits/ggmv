@@ -11,7 +11,8 @@ export type EggId =
   | 'WITNESS_PROTECTION'
   | 'EMPTY_REEL'
   | 'CENTURY_ROOM'
-  | 'END_CREDIT_SURVIVOR';
+  | 'END_CREDIT_SURVIVOR'
+  | 'PROPHECY';
 
 export interface EggEvent {
   key: string;
@@ -29,6 +30,7 @@ export const ACHIEVEMENTS: { id: EggId; name: string; description: string; rule:
   { id: 'WITNESS_PROTECTION', name: 'Bảo vệ nhân chứng', description: 'Một bộ phim nhận điểm trung bình cực thấp.', rule: 'Có ít nhất 2 điểm hợp lệ, điểm trung bình không quá 2.' },
   { id: 'EMPTY_REEL', name: 'Cuộn phim cuối cùng', description: 'Kho phim chưa xem đã được dọn sạch.', rule: 'Xem xong khiến danh sách chưa xem không còn phim nào.' },
   { id: 'CENTURY_ROOM', name: 'Phòng chiếu 100', description: 'Câu lạc bộ đã hoàn thành một cột mốc lớn.', rule: 'Đạt ít nhất 100 phim đã xem.' },
+  { id: 'PROPHECY', name: 'Đã phán là trúng', description: 'Một thành viên ghi lời tiên tri trước khi quay, và vòng quay chốt đúng phim đó.', rule: 'Chọn phim ở ô Tiên tri trước khi bấm Quay.' },
   { id: 'END_CREDIT_SURVIVOR', name: 'Sống sót qua credit', description: 'Ba suất chiếu hoàn tất đã được chấm điểm trên cùng trình duyệt.', rule: 'Lưu điểm cho 3 phim khác nhau; mỗi trình duyệt nhận một lần.' },
 ];
 
@@ -41,6 +43,7 @@ export const UNLOCK_COPY: Record<EggId, string> = {
   EMPTY_REEL: 'Every suspect has been screened. New evidence may be submitted.',
   CENTURY_ROOM: 'One hundred screenings. No consensus was harmed in the making of this archive.',
   END_CREDIT_SURVIVOR: 'You stayed. The credits noticed.',
+  PROPHECY: 'The witness made this claim before the reel moved.',
 };
 
 export const DEFAULT_HOUSE_NOTE = 'We saw you arrive. We will pretend not to judge.';
@@ -57,6 +60,15 @@ export function judgeScores(movie: Movie): number[] {
   return [movie.scoreTeng, movie.scoreLoc, movie.scoreThanh].filter(
     (s): s is number => typeof s === 'number' && Number.isFinite(s)
   );
+}
+
+// Hall of fame ranking score: judges' average, else the members' review average, else 0.
+// The archive sorts by this, and the House Edge tie clue reads the same number.
+export function rankScore(movie: Movie): number {
+  if (typeof movie.scoreAvg === 'number') return movie.scoreAvg;
+  return movie.reviews && movie.reviews.length > 0
+    ? movie.reviews.reduce((acc, r) => acc + r.rating, 0) / movie.reviews.length
+    : 0;
 }
 
 function averageOf(movie: Movie): number | null {
@@ -96,6 +108,7 @@ export function movieStories(movie: Movie, events: EggEvent[]): Story[] {
     .forEach((e) => {
       if (e.eggId === 'NEAR_MISS') add('near-miss', 'Near-Miss Insurance · Suýt trúng jackpot', 'Your prize was the film the reel had already selected.');
       if (e.eggId === 'DOUBLE_FEATURE') add('double-feature', 'Sold Out · technically', 'Two tickets. One option. An evening of unprecedented freedom.');
+      if (e.eggId === 'PROPHECY') add('prophecy', 'The Prophecy · Đã phán là trúng', `${String(e.evidence.member ?? 'A witness')} made this claim before the reel moved.`);
     });
   return stories;
 }
@@ -125,6 +138,42 @@ function threeFilmProposerStreak(movies: Movie[]): { proposer: string; movie: Mo
     }
   }
   return null;
+}
+
+// ---------- Chain B: The House Edge (one clue visible at a time) ----------
+// 1. A fake-victory spin (NEAR_MISS) shows ♧ on its CLAIM DENIED stamp.
+// 2. Then a real 6-point split (DIVIDED_HOUSE) carries ♧ on each judge's score card.
+// 3. Then a real tie for #1 in the hall of fame carries ♧ on its tie marker.
+// Ending: THE HOUSE EDGE plaque with the split screening's three real ratings.
+export interface HouseEdge {
+  step: 0 | 1 | 2 | 3;
+  dividedMovieIds: string[];
+  tieIds: string[];
+  plaqueMovie?: Movie;
+}
+
+export function topTieIds(movies: Movie[]): string[] {
+  const watched = movies.filter((m) => m.watched);
+  if (watched.length < 2) return [];
+  const top = Math.max(...watched.map(rankScore));
+  if (top <= 0) return [];
+  const tied = watched.filter((m) => Math.abs(rankScore(m) - top) < 1e-9);
+  return tied.length >= 2 ? tied.map((m) => m.id) : [];
+}
+
+export function houseEdge(movies: Movie[], events: EggEvent[]): HouseEdge {
+  const watched = movies.filter((m) => m.watched);
+  const divided = watched.filter((m) => movieStories(m, []).some((s) => s.id === 'divided-house'));
+  const tieIds = topTieIds(movies);
+  let step: HouseEdge['step'] = 0;
+  if (events.some((e) => e.eggId === 'NEAR_MISS')) {
+    step = 1;
+    if (divided.length > 0) {
+      step = 2;
+      if (tieIds.length > 0) step = 3;
+    }
+  }
+  return { step, dividedMovieIds: divided.map((m) => m.id), tieIds, plaqueMovie: divided[divided.length - 1] };
 }
 
 // Everything that belongs in the classified archive
@@ -164,6 +213,17 @@ export function classifiedStories(movies: Movie[], events: EggEvent[]): Story[] 
   }
   if (hasThreeCardMonte(watched)) {
     stories.push({ id: 'three-card-monte', label: 'The House Always Wins · Three-Card Monte', title: 'Three judges. Three clean alibis.', detail: 'Each judge was the sole high scorer once across three consecutive screenings.' });
+  }
+  const edge = houseEdge(movies, events);
+  if (edge.step === 3 && edge.plaqueMovie) {
+    const m = edge.plaqueMovie;
+    stories.push({
+      id: 'house-edge',
+      label: '♧ The House Edge · Nhà cái là cả căn phòng',
+      title: 'The house always wins.',
+      detail: `Teng ${m.scoreTeng?.toFixed(2)} · Lộc ${m.scoreLoc?.toFixed(2)} · Thành ${m.scoreThanh?.toFixed(2)} on ${m.title}. The house was never the reel; it is the room's disagreement.`,
+      movieId: m.id,
+    });
   }
   const streak = threeFilmProposerStreak(watched);
   if (streak) {

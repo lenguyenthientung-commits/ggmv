@@ -41,11 +41,13 @@ const moviesCol = db.collection('movies');
 const sessionsCol = db.collection('sessions');
 const vetoDoc = db.collection('meta').doc('veto');
 const eggsCol = db.collection('easterEggs');
+// R3 The Prophecy: pre-spin guesses, keyed by the spin's operationId
+const propheciesCol = db.collection('prophecies');
 
 // ---------- Easter egg ledger (ported from GGMV "GGMV Easter Egg Events") ----------
 // Eggs only decorate: they never change the drawn movie, a score, a rank or a veto.
 // One document per "<eggId>:<operationId>", so the same event can never be recorded twice.
-const EGG_IDS = ['NEAR_MISS', 'DOUBLE_FEATURE', 'DIVIDED_HOUSE', 'WITNESS_PROTECTION', 'EMPTY_REEL', 'CENTURY_ROOM', 'END_CREDIT_SURVIVOR'] as const;
+const EGG_IDS = ['NEAR_MISS', 'DOUBLE_FEATURE', 'DIVIDED_HOUSE', 'WITNESS_PROTECTION', 'EMPTY_REEL', 'CENTURY_ROOM', 'END_CREDIT_SURVIVOR', 'PROPHECY'] as const;
 type EggId = typeof EGG_IDS[number];
 
 interface EggEvent {
@@ -429,8 +431,29 @@ async function startServer() {
     res.json(snap.docs.map(d => d.data()));
   }));
 
+  // R3 The Prophecy: a member files a guess BEFORE the reel moves. The server timestamp
+  // is the provenance, so a lucky guess cannot be claimed after the result is known.
+  app.post('/api/eggs/prophecy', asyncHandler(async (req, res) => {
+    const { operationId, guessMovieId, member } = req.body;
+    if (typeof operationId !== 'string' || typeof guessMovieId !== 'string' || typeof member !== 'string' || !member.trim()) {
+      res.status(400).json({ error: 'Thiếu thông tin lời tiên tri' });
+      return;
+    }
+    try {
+      await propheciesCol.doc(operationId).create({ operationId, guessMovieId, member: member.trim(), createdAt: new Date().toISOString() });
+    } catch (err) {
+      if ((err as { code?: number }).code === 6) {
+        res.status(409).json({ error: 'Lượt quay này đã có lời tiên tri' });
+        return;
+      }
+      throw err;
+    }
+    res.status(201).json({ filed: true });
+  }));
+
   // A finished spin: NEAR_MISS when the fake-victory flourish played, DOUBLE_FEATURE when
-  // the movie just vetoed came straight back. Presentation records only.
+  // the movie just vetoed came straight back, PROPHECY when the filed guess matches.
+  // Presentation records only.
   app.post('/api/eggs/spin', asyncHandler(async (req, res) => {
     const { operationId, movieId, movieTitle, showedFakeVictory, vetoedMovieId } = req.body;
     if (typeof operationId !== 'string' || typeof movieId !== 'string') {
@@ -444,6 +467,15 @@ async function startServer() {
     if (vetoedMovieId && String(vetoedMovieId) === movieId &&
       await recordEgg('DOUBLE_FEATURE', operationId, movieId, { title: String(movieTitle), vetoedMovieId: String(vetoedMovieId) })) {
       recorded.push('DOUBLE_FEATURE');
+    }
+    const prophecy = await propheciesCol.doc(operationId).get();
+    if (prophecy.exists && prophecy.get('guessMovieId') === movieId &&
+      await recordEgg('PROPHECY', operationId, movieId, {
+        title: String(movieTitle),
+        member: prophecy.get('member'),
+        guessedAt: prophecy.get('createdAt'),
+      })) {
+      recorded.push('PROPHECY');
     }
     res.json({ recorded });
   }));
@@ -576,7 +608,7 @@ async function startServer() {
 
   // Reset demo data: wipes movies, sessions, veto cards and the easter egg ledger, then writes the sample data
   app.post('/api/reset', asyncHandler(async (_req, res) => {
-    await Promise.all([db.recursiveDelete(moviesCol), db.recursiveDelete(sessionsCol), db.recursiveDelete(eggsCol), vetoDoc.delete()]);
+    await Promise.all([db.recursiveDelete(moviesCol), db.recursiveDelete(sessionsCol), db.recursiveDelete(eggsCol), db.recursiveDelete(propheciesCol), vetoDoc.delete()]);
     await writeAll({ movies: INITIAL_MOVIES, sessions: INITIAL_SESSIONS });
     res.json({ success: true, message: 'Đã khôi phục dữ liệu mẫu thành công' });
   }));

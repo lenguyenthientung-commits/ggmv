@@ -4,7 +4,7 @@ import { BookOpen, MessageSquarePlus, SlidersHorizontal } from 'lucide-react';
 import { BROTHERS_LIST } from './Header';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader, SectionHeader, Stat } from './ui';
-import { EggEvent, movieStories, classifiedStories, recordScoredScreening } from '../easterEggs';
+import { EggEvent, movieStories, classifiedStories, recordScoredScreening, rankScore, houseEdge } from '../easterEggs';
 import { ClassifiedArchive, AchievementHall } from './EasterEggs';
 
 // Short archive tags for per-movie stories (the full copy lives in the classified archive)
@@ -14,6 +14,7 @@ const STORY_TAGS: Record<string, string> = {
   'final-frame': 'Khung hình chốt sổ',
   'near-miss': 'Suýt trúng jackpot',
   'double-feature': 'Sold out · technically',
+  prophecy: 'Đã phán là trúng',
 };
 
 interface WatchedArchiveProps {
@@ -44,11 +45,10 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
   // Filter watched movies and sort by scoreAvg (or review average) descending (Hall of Fame Rule 3.4)
   const watchedMovies = movies
     .filter((m) => m.watched)
-    .sort((a, b) => {
-      const scoreA = a.scoreAvg ?? (a.reviews && a.reviews.length > 0 ? a.reviews.reduce((acc, r) => acc + r.rating, 0) / a.reviews.length : 0);
-      const scoreB = b.scoreAvg ?? (b.reviews && b.reviews.length > 0 ? b.reviews.reduce((acc, r) => acc + r.rating, 0) / b.reviews.length : 0);
-      return scoreB - scoreA;
-    });
+    .sort((a, b) => rankScore(b) - rankScore(a));
+
+  // Chain B "The House Edge": which clues are currently visible
+  const edge = houseEdge(movies, eggEvents);
 
   // Judges scoring sheet (Rule 3.1 & 3.2)
   const [scoringMovie, setScoringMovie] = useState<Movie | null>(null);
@@ -186,6 +186,12 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                         {movie.watchedDate ? `Chiếu ${movie.watchedDate}` : 'Đã chiếu'} · {movie.genres.slice(0, 2).join(', ')}
                       </div>
                       <h3 className="mt-1.5 text-[22px] sm:text-[26px] font-bold leading-tight">{movie.title}</h3>
+                      {/* A real tie for #1: the ranking order is untouched, the jury just declines */}
+                      {edge.tieIds.includes(movie.id) && (
+                        <div className="mt-1.5 label !text-accent">
+                          The jury refused to separate them{edge.step >= 2 ? ' · ♧' : ''}
+                        </div>
+                      )}
                       <div className="mt-1 text-[13px] text-ink-3">
                         {movie.year} · {movie.durationMinutes} phút{movie.director ? ` · ${movie.director}` : ''}
                       </div>
@@ -219,7 +225,10 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                       { name: 'Thành', v: movie.scoreThanh },
                     ].map((j, i) => (
                       <div key={j.name} className={`px-3 py-2 ${i > 0 ? 'border-l-[1.5px] border-ink' : ''}`}>
-                        <div className="label !text-[10px]">{j.name}</div>
+                        <div className="label !text-[10px]">
+                          {j.name}
+                          {edge.step >= 2 && edge.dividedMovieIds.includes(movie.id) && <span className="text-accent"> ♧</span>}
+                        </div>
                         <div className="num text-[17px] font-bold mt-0.5">{j.v !== undefined ? j.v.toFixed(2) : '—'}</div>
                       </div>
                     ))}
