@@ -290,7 +290,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
     document.fonts?.ready.then(() => drawWheel(currentAngleRef.current));
     // Canvas does not follow CSS: redraw when theme / mode changes
     const observer = new MutationObserver(() => drawWheel(currentAngleRef.current));
-    observer.observe(document.documentElement, { attributeFilter: ['data-theme', 'data-mode'] });
+    observer.observe(document.documentElement, { attributeFilter: ['data-theme', 'data-mode', 'data-world'] });
     return () => observer.disconnect();
   }, [slices]);
 

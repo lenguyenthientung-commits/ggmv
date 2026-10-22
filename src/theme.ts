@@ -48,8 +48,11 @@ export function saveAppearance(theme: ThemeId, mode: Mode) {
 
 export const systemPrefersDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-export function applyAppearance(theme: ThemeId, mode: Mode) {
+// A seasonal world (if any) sits on top: it carries its own full palette
+export function applyAppearance(theme: ThemeId, mode: Mode, world: string | null = null) {
   const root = document.documentElement;
+  if (world) root.dataset.world = world;
+  else delete root.dataset.world;
   if (theme === 'auto') delete root.dataset.theme;
   else root.dataset.theme = theme;
 

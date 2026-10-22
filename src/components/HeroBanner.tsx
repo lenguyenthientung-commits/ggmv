@@ -3,6 +3,23 @@ import { Shuffle, Plus, ArrowUpRight } from 'lucide-react';
 import { Movie, WeekendSession } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
 import { Stat, formatSessionDate } from './ui';
+import { World } from '../seasons/worlds';
+import { WorldKeyVisual } from '../seasons/art';
+
+// Halloween possesses the headline letter by letter (worlds.css); other worlds ignore the spans
+// Words stay whole so the headline still wraps between words
+const Letters: React.FC<{ text: string }> = ({ text }) => (
+  <>
+    {text.split(' ').map((word, wi) => (
+      <React.Fragment key={wi}>
+        {wi > 0 && ' '}
+        <span className="inline-block whitespace-nowrap" aria-hidden="true">
+          {[...word].map((ch, i) => <span key={i}>{ch}</span>)}
+        </span>
+      </React.Fragment>
+    ))}
+  </>
+);
 
 interface HeroBannerProps {
   moviesCount: number;
@@ -13,6 +30,7 @@ interface HeroBannerProps {
   onSpinClick: () => void;
   onAddMovieClick: () => void;
   onOpenSession: () => void;
+  world?: World | null;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
@@ -24,6 +42,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onSpinClick,
   onAddMovieClick,
   onOpenSession,
+  world,
 }) => {
   const when = upcomingSession ? formatSessionDate(upcomingSession.date) : null;
 
@@ -32,17 +51,33 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       {/* Headline */}
       <div className="lg:col-span-7">
         <div className="flex items-center gap-3">
-          <span className="jp text-[13px]">シネマクラブ</span>
-          <span className="label">Câu lạc bộ chiếu phim của hội</span>
+          {world ? (
+            <span className="label !text-accent">{world.kicker}</span>
+          ) : (
+            <>
+              <span className="jp text-[13px]">シネマクラブ</span>
+              <span className="label">Câu lạc bộ chiếu phim của hội</span>
+            </>
+          )}
         </div>
 
-        <h1 className="display mt-8 sm:mt-10 text-[clamp(64px,12.5vw,168px)] leading-[0.98]">
-          <span className="reveal">Tối nay</span>
-          <span className="reveal text-accent" style={{ animationDelay: '90ms' }}>xem gì?</span>
+        <h1 className="display mt-8 sm:mt-10 leading-[0.98]" style={{ fontSize: 'var(--hero-size, clamp(64px, 12.5vw, 168px))' }}>
+          {world ? (
+            <>
+              <span className="sr-only">{world.headline.join(' ')}</span>
+              <span className="reveal possessed"><Letters text={world.headline[0]} /></span>
+              <span className="reveal possessed text-accent" style={{ animationDelay: '90ms' }}><Letters text={world.headline[1]} /></span>
+            </>
+          ) : (
+            <>
+              <span className="reveal">Tối nay</span>
+              <span className="reveal text-accent" style={{ animationDelay: '90ms' }}>xem gì?</span>
+            </>
+          )}
         </h1>
 
         <p className="mt-6 max-w-md text-[16px] leading-relaxed text-ink-2">
-          Bỏ phim vào kho, cả hội vote, vòng quay chốt hạ. Không còn 45 phút cãi nhau chọn phim nữa.
+          {world?.tagline ?? 'Bỏ phim vào kho, cả hội vote, vòng quay chốt hạ. Không còn 45 phút cãi nhau chọn phim nữa.'}
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -75,8 +110,32 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         </dl>
       </div>
 
-      {/* Next screening */}
+      {/* Next screening, or the season's key visual with a compact ticket */}
       <div className="lg:col-span-5">
+        {world ? (
+          <div className="world-stage">
+            <div className="panel overflow-hidden shadow-[6px_6px_0_var(--color-shadow)]">
+              <div className="flex items-center justify-between px-5 h-12 border-b-[1.5px] border-ink">
+                <span className="label !text-ink">{world.name}</span>
+                <span className="label">Hồn &amp; Xác</span>
+              </div>
+              <div className="p-3 sm:p-4">
+                <WorldKeyVisual id={world.id} title={world.concept} />
+              </div>
+              <p className="px-5 pb-4 -mt-1 text-[13px] text-ink-2 italic leading-snug">{world.concept}</p>
+            </div>
+            {selectedMovie && upcomingSession && (
+              <button onClick={onOpenSession} className="group panel mt-4 w-full flex items-center gap-3 p-2.5 pr-4 text-left">
+                <img src={selectedMovie.posterUrl} alt="" referrerPolicy="no-referrer" className="w-10 h-14 object-cover border-[1.5px] border-ink" style={{ borderRadius: 'var(--radius-btn, 6px)' }} />
+                <span className="flex-1 min-w-0">
+                  <span className="block label !text-[10px]">Suất kế tiếp · {when?.weekday} {when?.dayMonth} · {upcomingSession.time}</span>
+                  <span className="block font-bold leading-snug truncate">{selectedMovie.title}</span>
+                </span>
+                <ArrowUpRight className="w-5 h-5 shrink-0 group-hover:text-accent transition-colors" />
+              </button>
+            )}
+          </div>
+        ) : (
         <div className="panel relative overflow-hidden shadow-[6px_6px_0_var(--color-shadow)]">
           <div className="flex items-center justify-between px-5 h-12 border-b-[1.5px] border-ink">
             <span className="label !text-ink">Suất chiếu kế tiếp</span>
@@ -126,6 +185,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             </div>
           )}
         </div>
+        )}
       </div>
     </section>
   );

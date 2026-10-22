@@ -4,6 +4,8 @@ import { soundtrack } from '../utils/soundtrack';
 import { sounds } from '../utils/soundEffects';
 import { AppearanceMenu } from './AppearanceMenu';
 import { ThemeId, Mode } from '../theme';
+import { World, WorldPref } from '../seasons/worlds';
+import { WorldMark } from '../seasons/art';
 
 type Tab = 'movies' | 'wheel' | 'sessions' | 'archive' | 'stats';
 
@@ -19,6 +21,9 @@ interface HeaderProps {
   mode: Mode;
   setMode: (m: Mode) => void;
   houseNote: string;
+  world: World | null;
+  worldPref: WorldPref;
+  setWorldPref: (p: WorldPref) => void;
 }
 
 export const BROTHERS_LIST = [
@@ -50,6 +55,9 @@ export const Header: React.FC<HeaderProps> = ({
   mode,
   setMode,
   houseNote,
+  world,
+  worldPref,
+  setWorldPref,
 }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [customNameInput, setCustomNameInput] = useState('');
@@ -155,12 +163,20 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center gap-2.5 min-w-0"
           aria-label="Về Kho phim"
         >
-          <span className="grid place-items-center w-9 h-9 shrink-0 rounded-md bg-accent text-on-accent border-[1.5px] border-ink display text-[17px] leading-none">
-            GG
-          </span>
+          {world ? (
+            <WorldMark id={world.id} />
+          ) : (
+            <span className="grid place-items-center w-9 h-9 shrink-0 rounded-md bg-accent text-on-accent border-[1.5px] border-ink display text-[17px] leading-none">
+              GG
+            </span>
+          )}
           <span className="flex flex-col items-start min-w-0">
             <span className="display text-[22px] leading-none truncate">Gay Gang</span>
-            <span className="jp text-[9px] leading-none mt-1 hidden min-[380px]:block">シネマクラブ</span>
+            {world ? (
+              <span className="label !text-accent !text-[9px] !tracking-[0.12em] leading-none mt-1 hidden min-[380px]:block truncate max-w-[140px]">{world.name}</span>
+            ) : (
+              <span className="jp text-[9px] leading-none mt-1 hidden min-[380px]:block">シネマクラブ</span>
+            )}
           </span>
         </button>
 
@@ -181,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <AppearanceMenu themeId={themeId} setThemeId={setThemeId} mode={mode} setMode={setMode} />
+          <AppearanceMenu themeId={themeId} setThemeId={setThemeId} mode={mode} setMode={setMode} world={world} worldPref={worldPref} setWorldPref={setWorldPref} />
           <button
             onClick={toggleMusic}
             className={`btn-icon ${musicOn ? '!text-accent' : ''}`}

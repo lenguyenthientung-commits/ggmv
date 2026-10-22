@@ -12,6 +12,8 @@ import { CinemaScreenModal } from './components/CinemaScreenModal';
 import { MovieStats } from './components/MovieStats';
 import { CinemaRulesModal } from './components/CinemaRulesModal';
 import { ThemeId, Mode, loadTheme, loadMode, saveAppearance, applyAppearance } from './theme';
+import { WorldPref, loadWorldPref, saveWorldPref, resolveWorld, worldById } from './seasons/worlds';
+import { WorldCurtain } from './seasons/WorldCurtain';
 import { EggEvent, EggId, DEFAULT_HOUSE_NOTE, takeUnseenEvents, markSurface, hasCrossSurfaceVisit } from './easterEggs';
 import { ProjectorDust, IntermissionCard, UnlockToast } from './components/EasterEggs';
 
@@ -29,16 +31,28 @@ export default function App() {
   const [themeId, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [mode, setMode] = useState<Mode>(() => loadMode());
 
-  // Appearance: CSS keys off <html data-theme / data-mode>
+  // Seasonal world ("Linh hồn & Thể xác"): opt-in, off by default
+  const [worldPref, setWorldPrefState] = useState<WorldPref>(() => loadWorldPref());
+  const world = worldById(resolveWorld(worldPref));
+  const [curtainFor, setCurtainFor] = useState<string | null>(null);
+  const setWorldPref = (pref: WorldPref) => {
+    saveWorldPref(pref);
+    setWorldPrefState(pref);
+    const next = resolveWorld(pref);
+    if (next && next !== world?.id) setCurtainFor(next); // entering a new world
+  };
+  const closeCurtain = useCallback(() => setCurtainFor(null), []);
+
+  // Appearance: CSS keys off <html data-theme / data-mode / data-world>
   useEffect(() => {
-    applyAppearance(themeId, mode);
+    applyAppearance(themeId, mode, world?.id ?? null);
     saveAppearance(themeId, mode);
     if (mode !== 'system') return;
     const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const follow = () => applyAppearance(themeId, mode);
+    const follow = () => applyAppearance(themeId, mode, world?.id ?? null);
     media.addEventListener('change', follow);
     return () => media.removeEventListener('change', follow);
-  }, [themeId, mode]);
+  }, [themeId, mode, world?.id]);
 
   // Persist user selection
   const handleSetUser = (name: string) => {
@@ -384,6 +398,9 @@ export default function App() {
         mode={mode}
         setMode={setMode}
         houseNote={DEFAULT_HOUSE_NOTE}
+        world={world}
+        worldPref={worldPref}
+        setWorldPref={setWorldPref}
       />
 
       {/* Main Container */}
@@ -399,6 +416,7 @@ export default function App() {
             onSpinClick={() => setActiveTab('wheel')}
             onAddMovieClick={() => setIsAddModalOpen(true)}
             onOpenSession={() => setActiveTab('sessions')}
+            world={world}
           />
         )}
 
@@ -474,7 +492,7 @@ export default function App() {
             <span className="label">
               {creditShifted
                 ? 'Continuity supervised by three people who disagree about everything.'
-                : 'Cùng xem · Cùng vote · Hết cãi nhau chọn phim'}
+                : world?.signoff ?? 'Cùng xem · Cùng vote · Hết cãi nhau chọn phim'}
             </span>
           </div>
           <div className="display mt-6 text-[clamp(56px,15.5vw,210px)] leading-[0.82] select-none">
@@ -497,6 +515,8 @@ export default function App() {
         onClose={() => setCinemaModalMovie(null)}
         currentUser={currentUser}
       />
+
+      {curtainFor && worldById(curtainFor) && <WorldCurtain world={worldById(curtainFor)!} onDone={closeCurtain} />}
 
       {toastQueue.length > 0 && (
         <UnlockToast key={toastQueue[0]} eggId={toastQueue[0]} onDone={dismissToast} />
