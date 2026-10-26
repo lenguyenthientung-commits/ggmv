@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
-import { RotateCcw, Play, Check, Shuffle, Shield, X } from 'lucide-react';
+import { RotateCcw, Play, Check, Shuffle, Shield, X, ExternalLink } from 'lucide-react';
 import { Modal, SectionHeader } from './ui';
 import { soundtrack } from '../utils/soundtrack';
 
@@ -851,6 +851,17 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                 <RotateCcw className="w-4 h-4" />
                 Quay lại
               </button>
+              {winnerMovie.watchUrl && (
+                <a
+                  href={winnerMovie.watchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-primary flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Xem phim
+                </a>
+              )}
               {winnerMovie.trailerUrl && (
                 <button
                   onClick={() => {

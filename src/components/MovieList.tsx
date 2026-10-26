@@ -15,6 +15,8 @@ interface MovieListProps {
   onDeleteMovie: (movieId: string) => void;
   onOpenAddModal: () => void;
   onResetData: () => void;
+  onUpdateWatchUrl?: (movieId: string, watchUrl: string) => void;
+  onSubmitReview?: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
 }
 
 type FilterTab = 'all' | 'unwatched' | 'top_voted' | 'watched';
@@ -29,6 +31,8 @@ export const MovieList: React.FC<MovieListProps> = ({
   onDeleteMovie,
   onOpenAddModal,
   onResetData,
+  onUpdateWatchUrl,
+  onSubmitReview,
 }) => {
   const [activeFilterTab, setActiveFilterTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,6 +166,8 @@ export const MovieList: React.FC<MovieListProps> = ({
               onSelectForWeekend={onSelectForWeekend}
               onOpenTrailer={onOpenTrailer}
               onDeleteMovie={onDeleteMovie}
+              onUpdateWatchUrl={onUpdateWatchUrl}
+              onSubmitReview={onSubmitReview}
             />
           ))}
         </div>

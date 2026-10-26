@@ -8,7 +8,7 @@ import { initializeApp, cert, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import type { CollectionReference, DocumentData } from 'firebase-admin/firestore';
 import { INITIAL_MOVIES, INITIAL_SESSIONS } from './src/data/initialData.ts';
-import type { Movie, WeekendSession } from './src/types/cinema.ts';
+import type { Movie, MovieReview, WeekendSession } from './src/types/cinema.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -295,7 +295,7 @@ async function startServer() {
   }));
 
   app.post('/api/movies', asyncHandler(async (req, res) => {
-    const { title, originalTitle, year, durationMinutes, genres, director, suggestedBy, vibe, platform, posterUrl, trailerUrl, synopsis, whyWatch } = req.body;
+    const { title, originalTitle, year, durationMinutes, genres, director, suggestedBy, vibe, platform, posterUrl, trailerUrl, watchUrl, synopsis, whyWatch } = req.body;
     if (!title || !suggestedBy) {
       res.status(400).json({ error: 'Tên phim và người đề xuất là bắt buộc' });
       return;
@@ -314,6 +314,7 @@ async function startServer() {
       platform: platform || 'Netflix',
       posterUrl: posterUrl?.trim() || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80',
       trailerUrl: trailerUrl?.trim() || undefined,
+      watchUrl: watchUrl?.trim() || undefined,
       synopsis: synopsis ? synopsis.trim() : 'Chưa có tóm tắt chi tiết.',
       whyWatch: whyWatch ? whyWatch.trim() : 'Anh em nên xem bộ này!',
       votes: [suggestedBy.trim()], // Automatically 1 vote from submitter
@@ -323,6 +324,21 @@ async function startServer() {
 
     await moviesCol.doc(newMovie.id).set({ ...newMovie, _order: Date.now() });
     res.status(201).json(newMovie);
+  }));
+
+  app.patch('/api/movies/:id', asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { watchUrl } = req.body;
+    const movie = await updateDoc<Movie>(moviesCol, id, m => {
+      if (watchUrl !== undefined) {
+        m.watchUrl = watchUrl ? String(watchUrl).trim() : undefined;
+      }
+    });
+    if (!movie) {
+      res.status(404).json({ error: 'Không tìm thấy phim' });
+      return;
+    }
+    res.json(movie);
   }));
 
   app.delete('/api/movies/:id', asyncHandler(async (req, res) => {
@@ -362,30 +378,63 @@ async function startServer() {
   // Toggle Watched / Add Review
   app.post('/api/movies/:id/watched', asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { watched, rating, comment, author, badge } = req.body;
+    const { watched, rating, comment, author, badge, markWatched } = req.body;
     const movie = await updateDoc<Movie>(moviesCol, id, movie => {
       if (typeof watched === 'boolean') {
         movie.watched = watched;
         if (watched && !movie.watchedDate) {
           movie.watchedDate = new Date().toISOString().split('T')[0];
+        } else if (!watched) {
+          delete movie.watchedDate;
         }
       }
 
-      if (rating && author && comment) {
+      if (rating !== undefined && rating !== null && author) {
         if (!movie.reviews) {
           movie.reviews = [];
         }
-        movie.reviews.push({
-          id: `rev-${Date.now()}`,
-          author: author.trim(),
+        const trimmedAuthor = author.trim();
+        const existingIdx = movie.reviews.findIndex(r => r.author.trim().toLowerCase() === trimmedAuthor.toLowerCase());
+        const newReview: MovieReview = {
+          id: existingIdx >= 0 ? movie.reviews[existingIdx].id : `rev-${Date.now()}`,
+          author: trimmedAuthor,
           rating: Number(rating),
           badge: badge || 'Siêu phẩm',
-          comment: comment.trim(),
+          comment: comment && comment.trim() ? comment.trim() : 'Đã xem và chấm điểm',
           createdAt: new Date().toISOString(),
-        });
-        movie.watched = true;
-        if (!movie.watchedDate) {
-          movie.watchedDate = new Date().toISOString().split('T')[0];
+        };
+        if (existingIdx >= 0) {
+          movie.reviews[existingIdx] = newReview;
+        } else {
+          movie.reviews.push(newReview);
+        }
+
+        // Sync individual judge scores if author is one of the three judges
+        const norm = (s: string) => s.trim().toLowerCase();
+        if (norm(trimmedAuthor) === norm('Lil Teng')) movie.scoreTeng = Number(rating);
+        if (norm(trimmedAuthor) === norm('Lộc')) movie.scoreLoc = Number(rating);
+        if (norm(trimmedAuthor) === norm('Thành')) movie.scoreThanh = Number(rating);
+
+        const jScores = [movie.scoreTeng, movie.scoreLoc, movie.scoreThanh].filter((s): s is number => typeof s === 'number' && Number.isFinite(s));
+        if (jScores.length > 0) {
+          movie.scoreAvg = Number((jScores.reduce((a, b) => a + b, 0) / jScores.length).toFixed(2));
+          movie.statusBadge = '🎟️ Vé Vàng VIP';
+        } else if (movie.reviews && movie.reviews.length > 0) {
+          movie.scoreAvg = Number((movie.reviews.reduce((a, b) => a + b.rating, 0) / movie.reviews.length).toFixed(2));
+        }
+
+        // Automatic watched: when all users who voted have rated, OR all 3 judges have rated, OR explicitly marked
+        const voterCount = Array.isArray(movie.votes) ? movie.votes.length : 0;
+        const allVotersRated = voterCount > 0 &&
+          movie.votes.every(v => movie.reviews?.some(r => r.author.trim().toLowerCase() === v.trim().toLowerCase()));
+
+        const allJudgesRated = movie.scoreTeng !== undefined && movie.scoreLoc !== undefined && movie.scoreThanh !== undefined;
+
+        if (markWatched === true || allVotersRated || allJudgesRated) {
+          movie.watched = true;
+          if (!movie.watchedDate) {
+            movie.watchedDate = new Date().toISOString().split('T')[0];
+          }
         }
       }
     });
