@@ -37,9 +37,71 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
   const myReview = movie.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
   const [reviewScore, setReviewScore] = useState<number>(myReview ? myReview.rating : 7.5);
+  const [scoreInputStr, setScoreInputStr] = useState<string>(String(myReview ? myReview.rating : 7.5));
   const [reviewAuthor, setReviewAuthor] = useState<string>(currentUser);
   const [reviewBadge, setReviewBadge] = useState<string>(myReview?.badge || 'Siêu phẩm');
   const [reviewComment, setReviewComment] = useState<string>(myReview?.comment || '');
+
+  const handleScoreChange = (newScore: number) => {
+    const clamped = Math.min(10, Math.max(0, Number(newScore.toFixed(2))));
+    setReviewScore(clamped);
+    setScoreInputStr(String(clamped));
+  };
+
+  const handleScoreInput = (raw: string) => {
+    if (raw === '' || raw === '.' || raw === ',') {
+      setScoreInputStr(raw);
+      return;
+    }
+
+    // Only allow digits and at most one decimal separator
+    if (!/^\d*[.,]?\d*$/.test(raw)) {
+      return;
+    }
+
+    const normalized = raw.replace(',', '.').trim();
+
+    // Limit to at most 2 decimal places (e.g. 8.67, 8.25)
+    const parts = normalized.split('.');
+    if (parts[1] && parts[1].length > 2) {
+      return;
+    }
+
+    const num = parseFloat(normalized);
+    if (isNaN(num)) {
+      return;
+    }
+
+    // Prevent number larger than 10 (immediately clamp to 10)
+    if (num > 10) {
+      setScoreInputStr('10');
+      setReviewScore(10);
+      return;
+    }
+
+    if (num < 0) {
+      setScoreInputStr('0');
+      setReviewScore(0);
+      return;
+    }
+
+    setScoreInputStr(raw);
+    setReviewScore(Number(num.toFixed(2)));
+  };
+
+  const handleScoreBlur = () => {
+    if (scoreInputStr === '' || scoreInputStr === '.' || scoreInputStr === ',') {
+      handleScoreChange(reviewScore);
+      return;
+    }
+    const normalized = scoreInputStr.replace(',', '.').trim();
+    const num = parseFloat(normalized);
+    if (isNaN(num)) {
+      handleScoreChange(reviewScore);
+    } else {
+      handleScoreChange(Math.min(10, Math.max(0, num)));
+    }
+  };
 
   const hasVoted = movie.votes?.includes(currentUser);
   const voteCount = movie.votes?.length || 0;
@@ -56,9 +118,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   // Average review rating if watched
   const avgRating =
     typeof movie.scoreAvg === 'number'
-      ? movie.scoreAvg.toFixed(1)
+      ? (Number.isInteger(movie.scoreAvg) ? movie.scoreAvg.toString() : movie.scoreAvg.toFixed(2).replace(/0$/, ''))
       : movie.reviews && movie.reviews.length > 0
-      ? (movie.reviews.reduce((acc, r) => acc + r.rating, 0) / movie.reviews.length).toFixed(1)
+      ? Number((movie.reviews.reduce((acc, r) => acc + r.rating, 0) / movie.reviews.length).toFixed(2)).toString()
       : null;
 
   const handleVoteClick = () => {
@@ -218,7 +280,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                           onClick={() => {
                             sounds.playVintageSwitch();
                             const cur = movie.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
-                            setReviewScore(cur ? cur.rating : (typeof movie.scoreAvg === 'number' ? movie.scoreAvg : 8));
+                            const initialScore = cur ? cur.rating : (typeof movie.scoreAvg === 'number' ? movie.scoreAvg : 8);
+                            setReviewScore(initialScore);
+                            setScoreInputStr(String(initialScore));
                             setReviewAuthor(currentUser);
                             setReviewBadge(cur?.badge || 'Siêu phẩm');
                             setReviewComment(cur?.comment || '');
@@ -414,9 +478,15 @@ export const MovieCard: React.FC<MovieCardProps> = ({
             onSubmit={(e) => {
               e.preventDefault();
               sounds.playWinnerFanfare();
+              const normalized = scoreInputStr.replace(',', '.').trim();
+              const parsed = parseFloat(normalized);
+              const finalScore = !isNaN(parsed)
+                ? Math.min(10, Math.max(0, Number(parsed.toFixed(2))))
+                : reviewScore;
+
               onSubmitReview?.(
                 movie.id,
-                Number(reviewScore),
+                finalScore,
                 reviewComment.trim(),
                 reviewBadge,
                 reviewAuthor,
@@ -437,6 +507,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   const existing = movie.reviews?.find(r => r.author.trim().toLowerCase() === nextAuthor.trim().toLowerCase());
                   if (existing) {
                     setReviewScore(existing.rating);
+                    setScoreInputStr(String(existing.rating));
                     setReviewBadge(existing.badge || 'Siêu phẩm');
                     setReviewComment(existing.comment || '');
                   }
@@ -451,11 +522,30 @@ export const MovieCard: React.FC<MovieCardProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="field-label !mb-0" htmlFor="r-score">Điểm số (Thang 0 – 10)</label>
+                <label className="field-label !mb-0" htmlFor="r-score-input">Điểm số (Thang 0 – 10)</label>
                 <div className="flex items-center gap-2">
-                  <span className="display text-[28px] text-accent font-bold tabular-nums">
-                    {reviewScore}★
-                  </span>
+                  <div className="flex items-center gap-1 bg-sunk/90 border border-line focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 rounded-lg px-2.5 py-0.5 transition-all shadow-inner">
+                    <input
+                      id="r-score-input"
+                      type="text"
+                      inputMode="decimal"
+                      maxLength={5}
+                      autoComplete="off"
+                      value={scoreInputStr}
+                      onChange={(e) => handleScoreInput(e.target.value)}
+                      onBlur={handleScoreBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleScoreBlur();
+                        }
+                      }}
+                      className="w-16 bg-transparent text-right font-display text-[24px] font-bold text-accent tabular-nums focus:outline-none"
+                      placeholder="0.0"
+                      title="Gõ điểm trực tiếp (vd: 8.67, 8.25)"
+                    />
+                    <span className="text-accent text-[20px] font-bold select-none">★</span>
+                  </div>
                   <span className="text-[12px] text-ink-3 font-semibold">
                     {reviewScore === 0
                       ? '💀 0 điểm (Rác phẩm)'
@@ -478,9 +568,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 type="range"
                 min="0"
                 max="10"
-                step="0.5"
+                step="0.01"
                 value={reviewScore}
-                onChange={(e) => setReviewScore(parseFloat(e.target.value))}
+                onChange={(e) => handleScoreChange(parseFloat(e.target.value))}
                 className="w-full h-2 rounded-lg cursor-pointer accent-accent"
               />
               <div className="grid grid-cols-6 gap-1.5 mt-2.5">
@@ -488,7 +578,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   <button
                     key={s}
                     type="button"
-                    onClick={() => setReviewScore(s)}
+                    onClick={() => handleScoreChange(s)}
                     className={`btn btn-sm !h-8 text-[13px] font-mono font-bold transition-all ${
                       reviewScore === s ? 'btn-primary shadow-none' : ''
                     }`}
@@ -497,6 +587,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   </button>
                 ))}
               </div>
+              <p className="text-[11.5px] text-ink-3 mt-1.5 italic">
+                💡 Có thể kéo mượt thanh trượt (bước 0.01) hoặc gõ trực tiếp điểm số lẻ như 8.67, 8.25 vào ô trên.
+              </p>
             </div>
 
             <div>

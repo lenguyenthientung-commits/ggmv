@@ -99,8 +99,66 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
   // Member review sheet
   const [activeReviewMovie, setActiveReviewMovie] = useState<Movie | null>(null);
   const [rating, setRating] = useState(9);
+  const [ratingInputStr, setRatingInputStr] = useState('9');
   const [comment, setComment] = useState('');
   const [author, setAuthor] = useState(currentUser);
+
+  const handleRatingChange = (newRating: number) => {
+    const clamped = Math.min(10, Math.max(0, Number(newRating.toFixed(2))));
+    setRating(clamped);
+    setRatingInputStr(String(clamped));
+  };
+
+  const handleRatingInput = (raw: string) => {
+    if (raw === '' || raw === '.' || raw === ',') {
+      setRatingInputStr(raw);
+      return;
+    }
+
+    if (!/^\d*[.,]?\d*$/.test(raw)) {
+      return;
+    }
+
+    const normalized = raw.replace(',', '.').trim();
+    const parts = normalized.split('.');
+    if (parts[1] && parts[1].length > 2) {
+      return;
+    }
+
+    const num = parseFloat(normalized);
+    if (isNaN(num)) {
+      return;
+    }
+
+    if (num > 10) {
+      setRatingInputStr('10');
+      setRating(10);
+      return;
+    }
+
+    if (num < 0) {
+      setRatingInputStr('0');
+      setRating(0);
+      return;
+    }
+
+    setRatingInputStr(raw);
+    setRating(Number(num.toFixed(2)));
+  };
+
+  const handleRatingBlur = () => {
+    if (ratingInputStr === '' || ratingInputStr === '.' || ratingInputStr === ',') {
+      handleRatingChange(rating);
+      return;
+    }
+    const normalized = ratingInputStr.replace(',', '.').trim();
+    const num = parseFloat(normalized);
+    if (isNaN(num)) {
+      handleRatingChange(rating);
+    } else {
+      handleRatingChange(Math.min(10, Math.max(0, num)));
+    }
+  };
 
   // Stats
   const totalWatchedCount = watchedMovies.length;
@@ -147,7 +205,12 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
     e.preventDefault();
     if (!activeReviewMovie || !comment.trim()) return;
     sounds.playWinnerFanfare();
-    onSubmitReview(activeReviewMovie.id, rating, comment.trim(), 'Vé Vàng VIP', author);
+    const normalized = ratingInputStr.replace(',', '.').trim();
+    const parsed = parseFloat(normalized);
+    const finalRating = !isNaN(parsed)
+      ? Math.min(10, Math.max(0, Number(parsed.toFixed(2))))
+      : rating;
+    onSubmitReview(activeReviewMovie.id, finalRating, comment.trim(), 'Vé Vàng VIP', author);
     setComment('');
     setActiveReviewMovie(null);
   };
@@ -357,6 +420,10 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                         sounds.playVintageSwitch();
                         setActiveReviewMovie(movie);
                         setAuthor(currentUser);
+                        const cur = movie.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
+                        const initialScore = cur ? cur.rating : 9;
+                        setRating(initialScore);
+                        setRatingInputStr(String(initialScore));
                       }}
                       className="btn btn-quiet btn-sm"
                     >
@@ -403,19 +470,32 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
             <div className="space-y-4">
               {judges.map((j) => (
                 <div key={j.key}>
-                  <div className="flex items-baseline justify-between">
-                    <label className="field-label !mb-1" htmlFor={j.key}>{j.name}</label>
-                    <span className="num font-bold text-[15px]">{j.value.toFixed(2)}</span>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="field-label !mb-0" htmlFor={j.key}>{j.name}</label>
+                    <div className="flex items-center gap-1 bg-sunk/80 border border-line focus-within:border-accent rounded px-2 py-0.5">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={j.value}
+                        onChange={(e) => {
+                          const normalized = e.target.value.replace(',', '.').trim();
+                          const val = parseFloat(normalized);
+                          if (!isNaN(val)) j.set(Math.min(10, Math.max(0, Number(val.toFixed(2)))));
+                        }}
+                        className="w-14 bg-transparent text-right font-mono font-bold text-[14px] text-accent focus:outline-none"
+                      />
+                      <span className="text-[12px] text-ink-3">★</span>
+                    </div>
                   </div>
                   <input
                     id={j.key}
                     type="range"
                     min="0"
                     max="10"
-                    step="0.05"
+                    step="0.01"
                     value={j.value}
                     onChange={(e) => j.set(Number(e.target.value))}
-                    className="w-full cursor-pointer"
+                    className="w-full cursor-pointer accent-accent"
                   />
                 </div>
               ))}
@@ -456,27 +536,58 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
           <form onSubmit={handleReviewSubmit} className="px-5 sm:px-7 pb-6 space-y-4">
             <div>
               <label className="field-label" htmlFor="rev-author">Thành viên</label>
-              <select id="rev-author" value={author} onChange={(e) => setAuthor(e.target.value)} className="input">
+              <select
+                id="rev-author"
+                value={author}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setAuthor(next);
+                  const cur = activeReviewMovie?.reviews?.find(r => r.author.trim().toLowerCase() === next.trim().toLowerCase());
+                  if (cur) {
+                    handleRatingChange(cur.rating);
+                    setComment(cur.comment || '');
+                  }
+                }}
+                className="input"
+              >
                 {BROTHERS_LIST.map((b) => (
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
             </div>
             <div>
-              <div className="flex items-baseline justify-between">
-                <label className="field-label !mb-1" htmlFor="rev-rating">Điểm cá nhân</label>
-                <span className="num font-bold text-[15px]">{rating} / 10</span>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="field-label !mb-0" htmlFor="rev-rating-input">Điểm cá nhân (Thang 0 – 10)</label>
+                <div className="flex items-center gap-1 bg-sunk/80 border border-line focus-within:border-accent rounded px-2 py-0.5">
+                  <input
+                    id="rev-rating-input"
+                    type="text"
+                    inputMode="decimal"
+                    maxLength={5}
+                    autoComplete="off"
+                    value={ratingInputStr}
+                    onChange={(e) => handleRatingInput(e.target.value)}
+                    onBlur={handleRatingBlur}
+                    className="w-14 bg-transparent text-right font-mono font-bold text-[14px] text-accent focus:outline-none"
+                    placeholder="0.0"
+                    title="Gõ điểm cá nhân (vd: 8.67, 8.25)"
+                  />
+                  <span className="text-[12px] text-ink-3">★</span>
+                </div>
               </div>
               <input
                 id="rev-rating"
                 type="range"
-                min="1"
+                min="0"
                 max="10"
-                step="0.5"
+                step="0.01"
                 value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-                className="w-full cursor-pointer"
+                onChange={(e) => handleRatingChange(Number(e.target.value))}
+                className="w-full cursor-pointer accent-accent"
               />
+              <p className="text-[11.5px] text-ink-3 mt-1.5 italic">
+                💡 Bạn có thể kéo thanh trượt mượt mà hoặc gõ điểm trực tiếp (vd: 8.67, 8.25).
+              </p>
             </div>
             <div>
               <label className="field-label" htmlFor="rev-comment">Nhận xét</label>
