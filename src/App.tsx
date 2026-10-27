@@ -143,6 +143,7 @@ export default function App() {
           platform: movieData.platform || 'Netflix',
           posterUrl: movieData.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80',
           trailerUrl: movieData.trailerUrl,
+          watchUrl: movieData.watchUrl,
           synopsis: movieData.synopsis || '',
           whyWatch: movieData.whyWatch || '',
           votes: [currentUser],
@@ -153,6 +154,21 @@ export default function App() {
       }
     } catch {
       // Offline fallback
+    }
+  };
+
+  // Handle update watchUrl for existing movie
+  const handleUpdateWatchUrl = async (movieId: string, watchUrl: string) => {
+    const cleaned = watchUrl ? watchUrl.trim() : undefined;
+    setMovies(prev => prev.map(m => m.id === movieId ? { ...m, watchUrl: cleaned } : m));
+    try {
+      await fetch(`/api/movies/${movieId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ watchUrl: cleaned || '' }),
+      });
+    } catch (err) {
+      console.error('Failed to update watchUrl:', err);
     }
   };
 
@@ -208,11 +224,15 @@ export default function App() {
     );
 
     try {
-      await fetch(`/api/movies/${movie.id}/watched`, {
+      const res = await fetch(`/api/movies/${movie.id}/watched`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ watched: updatedWatched }),
       });
+      if (res.ok) {
+        const updated = await res.json();
+        setMovies(prev => prev.map(m => (m.id === movie.id ? updated : m)));
+      }
       fetchEggs();
     } catch {
       fetchData();
@@ -225,17 +245,19 @@ export default function App() {
     rating: number,
     comment: string,
     badge: string,
-    author: string
+    author: string,
+    markWatched?: boolean
   ) => {
     try {
       const res = await fetch(`/api/movies/${movieId}/watched`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating, comment, badge, author }),
+        body: JSON.stringify({ rating, comment, badge, author, markWatched }),
       });
       if (res.ok) {
         const updated = await res.json();
         setMovies(prev => prev.map(m => (m.id === movieId ? updated : m)));
+        fetchEggs();
       }
     } catch {
       fetchData();
@@ -432,6 +454,8 @@ export default function App() {
             onDeleteMovie={handleDeleteMovie}
             onOpenAddModal={() => setIsAddModalOpen(true)}
             onResetData={handleResetData}
+            onUpdateWatchUrl={handleUpdateWatchUrl}
+            onSubmitReview={handleSubmitReview}
           />
         )}
 

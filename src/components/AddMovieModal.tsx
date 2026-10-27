@@ -60,6 +60,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
   const [selectedGenres, setSelectedGenres] = useState<string[]>(['Hành động']);
   const [posterUrl, setPosterUrl] = useState('');
   const [trailerUrl, setTrailerUrl] = useState('');
+  const [watchUrl, setWatchUrl] = useState('');
   const [synopsis, setSynopsis] = useState('');
   const [whyWatch, setWhyWatch] = useState('');
 
@@ -180,6 +181,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
         posterUrl.trim() ||
         'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80',
       trailerUrl: trailerUrl.trim() || undefined,
+      watchUrl: watchUrl.trim() || undefined,
       synopsis: synopsis.trim() || 'Một bộ phim xuất sắc do anh em đề xuất.',
       whyWatch: whyWatch.trim() || 'Phim hay anh em xem cuối tuần nhé!',
     });
@@ -353,7 +355,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-3 gap-3">
           <div>
             <label className="field-label" htmlFor="m-poster">Link poster</label>
             <input id="m-poster" type="url" placeholder="https://…" value={posterUrl} onChange={(e) => setPosterUrl(e.target.value)} className="input" />
@@ -361,6 +363,10 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
           <div>
             <label className="field-label" htmlFor="m-trailer">Link trailer YouTube</label>
             <input id="m-trailer" type="url" placeholder="https://youtube.com/watch?v=…" value={trailerUrl} onChange={(e) => setTrailerUrl(e.target.value)} className="input" />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="m-watch">Link xem phim (watchUrl)</label>
+            <input id="m-watch" type="url" placeholder="https://… (Netflix, Drive, Web)" value={watchUrl} onChange={(e) => setWatchUrl(e.target.value)} className="input" />
           </div>
         </div>
 

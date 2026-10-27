@@ -1,6 +1,6 @@
 import React from 'react';
 import { Movie } from '../types/cinema';
-import { X } from 'lucide-react';
+import { X, ExternalLink } from 'lucide-react';
 import { Modal } from './ui';
 
 interface CinemaScreenModalProps {
@@ -42,14 +42,27 @@ export const CinemaScreenModal: React.FC<CinemaScreenModalProps> = ({ movie, onC
           <div className="label !text-night-ink/50 !text-[10px]">Phòng chiếu · {movie.platform}</div>
           <div className="text-[16px] font-bold truncate">{movie.title}</div>
         </div>
-        <button
-          onClick={onClose}
-          className="grid place-items-center w-9 h-9 shrink-0 rounded-md text-night-ink/70 hover:text-night-ink hover:bg-night-2 transition-colors"
-          title="Đóng (Esc)"
-          aria-label="Đóng phòng chiếu"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {movie.watchUrl && (
+            <a
+              href={movie.watchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sm btn-primary flex items-center gap-1.5"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Xem phim ngay
+            </a>
+          )}
+          <button
+            onClick={onClose}
+            className="grid place-items-center w-9 h-9 shrink-0 rounded-md text-night-ink/70 hover:text-night-ink hover:bg-night-2 transition-colors"
+            title="Đóng (Esc)"
+            aria-label="Đóng phòng chiếu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <div className="relative w-full aspect-video bg-black">

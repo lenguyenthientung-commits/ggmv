@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Movie } from '../types/cinema';
-import { ThumbsUp, Play, CalendarPlus, Check, Star, Trash2 } from 'lucide-react';
+import { ThumbsUp, Play, CalendarPlus, Check, Star, Trash2, ExternalLink, Tv, Edit3, MessageSquarePlus } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader } from './ui';
+import { BROTHERS_LIST } from './Header';
 
 interface MovieCardProps {
   movie: Movie;
@@ -12,6 +13,8 @@ interface MovieCardProps {
   onSelectForWeekend: (movie: Movie) => void;
   onOpenTrailer: (movie: Movie) => void;
   onDeleteMovie: (movieId: string) => void;
+  onUpdateWatchUrl?: (movieId: string, watchUrl: string) => void;
+  onSubmitReview?: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -22,15 +25,39 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onSelectForWeekend,
   onOpenTrailer,
   onDeleteMovie,
+  onUpdateWatchUrl,
+  onSubmitReview,
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isEditingWatchUrl, setIsEditingWatchUrl] = useState(false);
+  const [watchUrlInput, setWatchUrlInput] = useState(movie.watchUrl || '');
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
+  const [markWatchedImmediately, setMarkWatchedImmediately] = useState(false);
+
+  const myReview = movie.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
+  const [reviewScore, setReviewScore] = useState<number>(myReview ? myReview.rating : 7.5);
+  const [reviewAuthor, setReviewAuthor] = useState<string>(currentUser);
+  const [reviewBadge, setReviewBadge] = useState<string>(myReview?.badge || 'Siêu phẩm');
+  const [reviewComment, setReviewComment] = useState<string>(myReview?.comment || '');
+
   const hasVoted = movie.votes?.includes(currentUser);
   const voteCount = movie.votes?.length || 0;
 
+  const voters = movie.votes || [];
+  const ratedVoters = voters.filter(v =>
+    movie.reviews?.some(r => r.author.trim().toLowerCase() === v.trim().toLowerCase())
+  );
+  const unratedVoters = voters.filter(v =>
+    !movie.reviews?.some(r => r.author.trim().toLowerCase() === v.trim().toLowerCase())
+  );
+  const allVotersDone = voters.length > 0 && unratedVoters.length === 0;
+
   // Average review rating if watched
   const avgRating =
-    movie.reviews && movie.reviews.length > 0
+    typeof movie.scoreAvg === 'number'
+      ? movie.scoreAvg.toFixed(1)
+      : movie.reviews && movie.reviews.length > 0
       ? (movie.reviews.reduce((acc, r) => acc + r.rating, 0) / movie.reviews.length).toFixed(1)
       : null;
 
@@ -103,6 +130,18 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           <div className="mt-auto pt-3 flex items-center justify-between gap-1">
             {voteButton()}
             <div className="flex items-center -mr-1.5">
+              {movie.watchUrl && (
+                <a
+                  href={movie.watchUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-icon !w-8 !h-8 !text-accent hover:bg-sunk"
+                  title="Mở link xem phim trực tiếp"
+                  aria-label="Mở link xem phim trực tiếp"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" strokeWidth={2.5} />
+                </a>
+              )}
               <button
                 onClick={() => {
                   sounds.playVintageSwitch();
@@ -161,14 +200,174 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   <div className="label">{movie.suggestedBy} đề xuất</div>
                   <p className="mt-1 text-[15px] font-medium">“{movie.whyWatch}”</p>
                 </blockquote>
-                {avgRating && (
-                  <div className="flex items-center gap-2 text-[14px]">
-                    <Star className="w-4 h-4 fill-accent text-accent" />
-                    <span className="num font-bold">{avgRating}</span>
-                    <span className="text-ink-3">từ {movie.reviews?.length} cảm nhận</span>
+                {/* Rating & Review Section */}
+                <div className="pt-3 border-t-[1.5px] border-line">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-[14px]">
+                      <Star className="w-4 h-4 fill-accent text-accent" />
+                      <span className="num font-bold">{avgRating ? `${avgRating}/10` : 'Chưa có điểm'}</span>
+                      {movie.reviews && movie.reviews.length > 0 && (
+                        <span className="text-ink-3">từ {movie.reviews.length} đánh giá</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {onSubmitReview && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            sounds.playVintageSwitch();
+                            const cur = movie.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
+                            setReviewScore(cur ? cur.rating : (typeof movie.scoreAvg === 'number' ? movie.scoreAvg : 8));
+                            setReviewAuthor(currentUser);
+                            setReviewBadge(cur?.badge || 'Siêu phẩm');
+                            setReviewComment(cur?.comment || '');
+                            setMarkWatchedImmediately(false);
+                            setIsRatingOpen(true);
+                          }}
+                          className={`btn btn-sm ${myReview ? 'bg-accent/15 border-accent text-accent font-bold' : ''}`}
+                        >
+                          <Star className="w-3.5 h-3.5 fill-accent text-accent" />
+                          {myReview ? `Đã chấm ${myReview.rating}★ (Đổi điểm)` : 'Chấm điểm phim'}
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sounds.playWinnerFanfare();
+                          onMarkWatched(movie);
+                        }}
+                        className={`btn btn-sm ${
+                          movie.watched
+                            ? 'btn-quiet !text-go border border-go/40 font-bold'
+                            : 'btn-primary font-bold'
+                        }`}
+                        title={movie.watched ? 'Bỏ đánh dấu đã xem' : 'Chốt đã xem và đưa phim lên Bảng Vàng'}
+                      >
+                        <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                        {movie.watched ? 'Đã xem ✓' : 'Chốt đã xem'}
+                      </button>
+                    </div>
                   </div>
-                )}
+
+                  {/* Voters rating progress banner */}
+                  {voters.length > 0 && (
+                    <div className="mt-2.5 p-2.5 rounded-md bg-sunk/60 border border-line text-[12.5px] flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-ink">
+                          Tiến độ chấm: <span className="text-accent font-bold font-mono">{ratedVoters.length}/{voters.length}</span> người vote
+                        </span>
+                        {allVotersDone ? (
+                          <span className="chip !text-[10px] !py-0 !px-1.5 bg-go/15 border-go text-go font-bold">
+                            ✓ Đủ người chấm
+                          </span>
+                        ) : (
+                          <span className="text-ink-3 text-[12px]">
+                            (Chờ: <strong className="text-ink-2">{unratedVoters.join(', ')}</strong>)
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11.5px] text-ink-3 font-medium">
+                        {allVotersDone
+                          ? (movie.watched ? '🏆 Đã chốt lên Bảng Vàng' : '✨ Tự động chuyển Đã Xem')
+                          : '⚡ Tự động chốt khi đủ người chấm'}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reviews list */}
+                  {movie.reviews && movie.reviews.length > 0 && (
+                    <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-1">
+                      {movie.reviews.map((rev) => (
+                        <div key={rev.id} className="p-2.5 rounded-md bg-card border border-line text-[13px]">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-ink">{rev.author}</span>
+                              {rev.badge && <span className="chip !text-[10px] !py-0 !px-1.5">{rev.badge}</span>}
+                            </div>
+                            <span className="num font-bold text-accent">{rev.rating}★</span>
+                          </div>
+                          {rev.comment && <p className="mt-1 text-ink-2 italic">“{rev.comment}”</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Watch URL Section */}
+                <div className="pt-3 border-t-[1.5px] border-line">
+                  <div className="flex items-center justify-between">
+                    <span className="field-label !mb-0 flex items-center gap-1.5">
+                      <Tv className="w-3.5 h-3.5 text-ink-2" /> Link xem phim:
+                    </span>
+                    {onUpdateWatchUrl && !isEditingWatchUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWatchUrlInput(movie.watchUrl || '');
+                          setIsEditingWatchUrl(true);
+                        }}
+                        className="text-[12px] font-semibold text-accent hover:underline flex items-center gap-1"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        {movie.watchUrl ? 'Đổi link' : '+ Thêm link xem'}
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditingWatchUrl ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={watchUrlInput}
+                        onChange={(e) => setWatchUrlInput(e.target.value)}
+                        placeholder="https://… (Netflix, Drive, Web phim)"
+                        className="input !h-9 text-[13px] flex-1"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUpdateWatchUrl?.(movie.id, watchUrlInput);
+                          setIsEditingWatchUrl(false);
+                        }}
+                        className="btn btn-primary btn-sm"
+                      >
+                        Lưu
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingWatchUrl(false)}
+                        className="btn btn-quiet btn-sm"
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  ) : movie.watchUrl ? (
+                    <p className="mt-1 text-[12.5px] truncate font-mono">
+                      <a href={movie.watchUrl} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline inline-flex items-center gap-1 font-semibold">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        {movie.watchUrl}
+                      </a>
+                    </p>
+                  ) : (
+                    <p className="mt-0.5 text-[12px] text-ink-3 italic">Chưa gắn link xem phim trực tiếp.</p>
+                  )}
+                </div>
+
                 <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                  {movie.watchUrl && (
+                    <a
+                      href={movie.watchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-primary flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      Xem phim
+                    </a>
+                  )}
                   {movie.trailerUrl && (
                     <button
                       onClick={() => {
@@ -200,6 +399,179 @@ export const MovieCard: React.FC<MovieCardProps> = ({
               </div>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Rating & Review Modal */}
+      {isRatingOpen && (
+        <Modal onClose={() => setIsRatingOpen(false)} size="md" label={`Chấm điểm ${movie.title}`}>
+          <ModalHeader
+            kicker="Đánh giá & Xếp hạng"
+            title={`Chấm điểm: ${movie.title}`}
+            onClose={() => setIsRatingOpen(false)}
+          />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sounds.playWinnerFanfare();
+              onSubmitReview?.(
+                movie.id,
+                Number(reviewScore),
+                reviewComment.trim(),
+                reviewBadge,
+                reviewAuthor,
+                markWatchedImmediately
+              );
+              setIsRatingOpen(false);
+            }}
+            className="p-5 sm:p-6 space-y-4"
+          >
+            <div>
+              <label className="field-label" htmlFor="r-author">Người chấm điểm</label>
+              <select
+                id="r-author"
+                value={reviewAuthor}
+                onChange={(e) => {
+                  const nextAuthor = e.target.value;
+                  setReviewAuthor(nextAuthor);
+                  const existing = movie.reviews?.find(r => r.author.trim().toLowerCase() === nextAuthor.trim().toLowerCase());
+                  if (existing) {
+                    setReviewScore(existing.rating);
+                    setReviewBadge(existing.badge || 'Siêu phẩm');
+                    setReviewComment(existing.comment || '');
+                  }
+                }}
+                className="input"
+              >
+                {BROTHERS_LIST.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="field-label !mb-0" htmlFor="r-score">Điểm số (Thang 0 – 10)</label>
+                <div className="flex items-center gap-2">
+                  <span className="display text-[28px] text-accent font-bold tabular-nums">
+                    {reviewScore}★
+                  </span>
+                  <span className="text-[12px] text-ink-3 font-semibold">
+                    {reviewScore === 0
+                      ? '💀 0 điểm (Rác phẩm)'
+                      : reviewScore <= 2
+                      ? '⚠️ Quá tệ'
+                      : reviewScore <= 4
+                      ? '👎 Dưới trung bình'
+                      : reviewScore <= 6
+                      ? '👌 Xem được'
+                      : reviewScore <= 8
+                      ? '👍 Khá hay'
+                      : reviewScore < 10
+                      ? '🔥 Cực đỉnh'
+                      : '👑 Kiệt tác'}
+                  </span>
+                </div>
+              </div>
+              <input
+                id="r-score"
+                type="range"
+                min="0"
+                max="10"
+                step="0.5"
+                value={reviewScore}
+                onChange={(e) => setReviewScore(parseFloat(e.target.value))}
+                className="w-full h-2 rounded-lg cursor-pointer accent-accent"
+              />
+              <div className="grid grid-cols-6 gap-1.5 mt-2.5">
+                {[0, 2, 4, 6, 8, 10].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setReviewScore(s)}
+                    className={`btn btn-sm !h-8 text-[13px] font-mono font-bold transition-all ${
+                      reviewScore === s ? 'btn-primary shadow-none' : ''
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="field-label">Huy hiệu cảm nhận</div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  'Siêu phẩm',
+                  'Căng não',
+                  'Hài vãi',
+                  'Gây lú',
+                  'Bình thường',
+                  'Buồn ngủ',
+                  'Phí thời gian',
+                  'Xem xong trầm cảm',
+                  'Xem lại vẫn hay',
+                ].map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => setReviewBadge(b)}
+                    className={`h-7 px-2.5 rounded-full border text-[12px] font-semibold transition-colors ${
+                      reviewBadge === b ? 'bg-ink text-paper border-ink' : 'border-line text-ink-2 hover:border-ink hover:text-ink'
+                    }`}
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="field-label" htmlFor="r-comment">Cảm nhận (tùy chọn)</label>
+              <textarea
+                id="r-comment"
+                rows={2}
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Vài dòng cảm nhận nhanh về bộ phim cùng anh em..."
+                className="input"
+              />
+            </div>
+
+            <label className="flex items-start gap-2.5 cursor-pointer p-3 bg-sunk/60 rounded-md border border-line text-[12.5px] text-ink select-none hover:bg-sunk transition-colors">
+              <input
+                type="checkbox"
+                checked={markWatchedImmediately}
+                onChange={(e) => setMarkWatchedImmediately(e.target.checked)}
+                className="mt-0.5 rounded border-line accent-accent w-4 h-4 cursor-pointer"
+              />
+              <div>
+                <span className="font-bold text-ink">Chốt phim là ĐÃ XEM luôn</span>
+                <p className="mt-0.5 text-ink-3 text-[11.5px] leading-relaxed">
+                  {voters.length > 0
+                    ? `Nếu không tích, phim vẫn ở Kho Phim và sẽ tự động chốt khi tất cả ${voters.length} người vote chấm điểm xong.`
+                    : 'Nếu không tích, phim vẫn ở Kho Phim để các anh em khác có thể vào xem và chấm điểm.'}
+                </p>
+              </div>
+            </label>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsRatingOpen(false)}
+                className="btn btn-quiet"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+              >
+                Lưu đánh giá
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
     </>

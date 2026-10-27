@@ -25,7 +25,7 @@ interface WatchedArchiveProps {
   movies: Movie[];
   currentUser: string;
   onOpenRules?: () => void;
-  onSubmitReview: (movieId: string, rating: number, comment: string, badge: string, author: string) => void;
+  onSubmitReview: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
   onUpdateJudgesScore?: (
     movieId: string,
     scoreTeng: number,
