@@ -332,7 +332,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                           </button>
                           {frameOpenId === movie.id && (
                             <div className="enter mt-2 text-[13px] text-ink-2 border-l-[3px] border-accent pl-3">
-                              FRAME 03 · {movie.suggestedBy.charAt(0).toUpperCase()} / {firstDate ?? '—'}: người đề xuất và đêm chiếu đầu tiên của hội.
+                              FRAME 03 · {movie.suggestedBy.charAt(0).toUpperCase()} / {firstDate ?? '—'}: người đề xuất và buổi chiếu đầu tiên của hội.
                               <button onClick={() => unlockChain('missingFrame')} className="ml-2 font-semibold text-ink hover:text-accent">
                                 Mở hồ sơ mật →
                               </button>

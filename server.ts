@@ -580,7 +580,7 @@ async function startServer() {
       id: `session-${Date.now()}`,
       title: title || 'Kèo Chiếu Phim Cuối Tuần',
       date: date || new Date().toISOString().split('T')[0],
-      time: time || '20:30',
+      time: time || '09:00',
       selectedMovieId: selectedMovieId || undefined,
       location: location || 'Phòng khách anh em',
       snackDuty: Array.isArray(snackDuty) ? snackDuty : [],

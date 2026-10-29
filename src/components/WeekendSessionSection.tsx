@@ -38,7 +38,7 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [sessionTitle, setSessionTitle] = useState('Kèo Chiếu Phim Thứ Bảy Tuần Này');
   const [sessionDate, setSessionDate] = useState('2026-10-03');
-  const [sessionTime, setSessionTime] = useState('20:30');
+  const [sessionTime, setSessionTime] = useState('09:00');
   const [sessionLocation, setSessionLocation] = useState('Phòng khách nhà Tuấn Anh');
   const [selectedMovieId, setSelectedMovieId] = useState<string>(movies[0]?.id || '');
 
@@ -200,7 +200,7 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
                 className="w-32 sm:w-40 shrink-0 object-cover border-r-[1.5px] border-ink"
               />
               <div className="p-5 min-w-0 flex flex-col">
-                <div className="label">Phim tối nay</div>
+                <div className="label">Phim sáng nay</div>
                 <div className="mt-1.5 text-[19px] font-bold leading-snug line-clamp-2">{selectedMovie.title}</div>
                 <div className="mt-1 text-[13px] text-ink-3">
                   {selectedMovie.year} · {selectedMovie.durationMinutes} phút · {selectedMovie.platform}

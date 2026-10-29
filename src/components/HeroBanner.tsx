@@ -70,7 +70,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             </>
           ) : (
             <>
-              <span className="reveal">Tối nay</span>
+              <span className="reveal">Sáng nay</span>
               <span className="reveal text-accent" style={{ animationDelay: '90ms' }}>xem gì?</span>
             </>
           )}
