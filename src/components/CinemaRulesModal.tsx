@@ -66,7 +66,7 @@ export const CINEMA_RULES: CinemaRuleItem[] = [
     chapter: 1,
     chapterTitle: 'Chương I: Đề Xuất & Tỷ Lệ Xuất Hiện',
     title: 'Buff Thể Loại x1.5',
-    summary: 'Phim có thể loại không xuất hiện trong 3 phim xem gần nhất sẽ được nhân 1.5 tỷ lệ xuất hiện. Cộng dồn với Buff Luck x2 (tối đa x3).',
+    summary: 'Phim mà không thể loại nào của nó xuất hiện trong 3 phim xem gần nhất sẽ được nhân 1.5 tỷ lệ xuất hiện. Cộng dồn với Buff Luck x2 (tối đa x3).',
     mechanism: 'Tự động x1.5 tỷ lệ cho thể loại ít được xem',
     badge: '🎲 BUFF THỂ LOẠI x1.5',
     target: 'Phim thuộc thể loại vắng 3 phim gần nhất',
