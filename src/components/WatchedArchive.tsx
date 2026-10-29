@@ -457,7 +457,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
       {showEndCard && (
         <EndCard onDone={finishEndCard} />
       )}
-      <AchievementHall events={eggEvents} />
+      <AchievementHall events={eggEvents} movies={movies} />
 
       {/* Judges scoring sheet (Rule 3.1 & 3.2) */}
       {scoringMovie && (

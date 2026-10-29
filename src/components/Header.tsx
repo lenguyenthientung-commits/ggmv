@@ -6,6 +6,7 @@ import { AppearanceMenu } from './AppearanceMenu';
 import { ThemeId, Mode } from '../theme';
 import { World, WorldPref } from '../seasons/worlds';
 import { WorldMark } from '../seasons/art';
+import { playFx, unlockSecret } from '../badges';
 
 type Tab = 'movies' | 'wheel' | 'sessions' | 'archive' | 'stats';
 
@@ -21,6 +22,7 @@ interface HeaderProps {
   mode: Mode;
   setMode: (m: Mode) => void;
   houseNote: string;
+  userBadgeGlyphs: string;
   world: World | null;
   worldPref: WorldPref;
   setWorldPref: (p: WorldPref) => void;
@@ -55,6 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
   mode,
   setMode,
   houseNote,
+  userBadgeGlyphs,
   world,
   worldPref,
   setWorldPref,
@@ -128,6 +131,19 @@ export const Header: React.FC<HeaderProps> = ({
     setActiveTab(tab);
   };
 
+  // Secret: 7 quick clicks on the wordmark make the projector act up
+  const logoClicks = useRef<number[]>([]);
+  const handleLogoClick = () => {
+    goTo('movies');
+    const now = Date.now();
+    logoClicks.current = [...logoClicks.current.filter((t) => now - t < 2500), now];
+    if (logoClicks.current.length >= 7) {
+      logoClicks.current = [];
+      playFx('projector');
+      unlockSecret('PROJECTIONIST');
+    }
+  };
+
   const navButton = (tab: { id: Tab; label: string }, compact = false) => {
     const active = activeTab === tab.id;
     return (
@@ -155,7 +171,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* Wordmark */}
         <button
-          onClick={() => goTo('movies')}
+          onClick={handleLogoClick}
           onMouseEnter={scheduleHouseNote}
           onMouseLeave={cancelHouseNote}
           onFocus={scheduleHouseNote}
@@ -232,6 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {currentUser.charAt(0).toUpperCase()}
               </span>
               <span className="hidden sm:block text-[13px] font-semibold max-w-[88px] truncate">{currentUser}</span>
+              {userBadgeGlyphs && <span className="hidden sm:block text-[12px] leading-none" title="Danh hiệu đang giữ">{userBadgeGlyphs}</span>}
               <ChevronDown className="w-3.5 h-3.5 text-ink-3" />
             </button>
 

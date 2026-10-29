@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
-import { ACHIEVEMENTS, EggEvent, EggId, Story, UNLOCK_COPY, latestLegendaryDate } from '../easterEggs';
+import { EggEvent, EggId, Story, UNLOCK_COPY, latestLegendaryDate } from '../easterEggs';
+import { BadgeDef, FxKind, Tier, SECRET_BADGES, clubBadges, loadSecrets, memberBadges, playFx, unlockSecret } from '../badges';
+import { BROTHERS_LIST } from './Header';
 
 // C3 Projector dust: when the pointer rests, a speck resolves under it. Never captures input.
 export const ProjectorDust: React.FC = () => {
@@ -80,28 +82,167 @@ export const IntermissionCard: React.FC<{ movies: Movie[] }> = ({ movies }) => {
   ) : null;
 };
 
-// First-ever unlock of an achievement (per viewer): dismissible, 4 s, no focus trap
-export const UnlockToast: React.FC<{ eggId: EggId; onDone: () => void }> = ({ eggId, onDone }) => {
+// ---------- Badges ----------
+const TIER_COLORS: Record<Tier | 'locked', [string, string, string]> = {
+  gold: ['#FFE27A', '#D9A106', '#7A5600'],
+  silver: ['#F4F6F8', '#AEB6BF', '#56616C'],
+  bronze: ['#F5B985', '#B8692E', '#6A3610'],
+  secret: ['#D4C4FF', '#7C4DFF', '#35197F'],
+  member: ['#A8F2E3', '#1FB89A', '#0D5A4C'],
+  locked: ['#E6E6E6', '#B9B9B9', '#7D7D7D'],
+};
+const TIER_LABEL: Record<Tier, string> = { gold: 'Vàng', silver: 'Bạc', bronze: 'Đồng', secret: 'Bí mật', member: 'Danh hiệu' };
+
+// A rosette with 18 scallops, tier-colored, plus two ribbon tails
+const ROSETTE = Array.from({ length: 36 }, (_, i) => {
+  const a = (i / 36) * Math.PI * 2 - Math.PI / 2;
+  const r = i % 2 === 0 ? 46 : 41.5;
+  return `${(50 + r * Math.cos(a)).toFixed(2)},${(50 + r * Math.sin(a)).toFixed(2)}`;
+}).join(' ');
+
+export const BadgeMedal: React.FC<{ badge: BadgeDef; unlocked: boolean; size?: number; shine?: boolean }> = ({ badge, unlocked, size = 64, shine }) => {
+  const uid = useId().replace(/:/g, '');
+  const [hi, mid, lo] = TIER_COLORS[unlocked ? badge.tier : 'locked'];
+  const glyph = !unlocked && badge.tier === 'secret' ? '?' : badge.glyph;
+  return (
+    <svg
+      viewBox="0 0 100 116"
+      width={size}
+      height={size * 1.16}
+      className={`badge-medal shrink-0 ${unlocked ? '' : 'is-locked'}`}
+      role="img"
+      aria-label={`${badge.name}${unlocked ? '' : ' (chưa mở)'}`}
+    >
+      <defs>
+        <linearGradient id={`g${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor={hi} />
+          <stop offset="0.55" stopColor={mid} />
+          <stop offset="1" stopColor={lo} />
+        </linearGradient>
+        <linearGradient id={`s${uid}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0.5" stopColor="#fff" stopOpacity="0.75" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <clipPath id={`c${uid}`}>
+          <polygon points={ROSETTE} />
+        </clipPath>
+      </defs>
+      <polygon points="30,78 22,114 36,106 44,116 50,82" fill={lo} stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" />
+      <polygon points="70,78 78,114 64,106 56,116 50,82" fill={mid} stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" />
+      <polygon points={ROSETTE} fill={`url(#g${uid})`} stroke="var(--color-ink)" strokeWidth="2.5" strokeLinejoin="round" />
+      <circle cx="50" cy="50" r="31" fill={hi} fillOpacity="0.35" stroke={lo} strokeWidth="2" />
+      <circle cx="50" cy="50" r="26" fill="none" stroke="#fff" strokeOpacity="0.45" strokeWidth="1.5" strokeDasharray="2 3" />
+      <text x="50" y="51" textAnchor="middle" dominantBaseline="central" fontSize="30" opacity={unlocked ? 1 : 0.4}
+        fontWeight={900} fill={lo} style={{ filter: unlocked ? undefined : 'grayscale(1)' }}>
+        {glyph}
+      </text>
+      <g clipPath={`url(#c${uid})`}>
+        <rect className={`medal-shine ${shine ? 'is-auto' : ''}`} x="-60" y="-10" width="40" height="120" fill={`url(#s${uid})`} transform="skewX(-20)" />
+      </g>
+    </svg>
+  );
+};
+
+// A new badge (ledger, archive milestone or secret): medal flips in, popcorn bursts out
+const BURST = Array.from({ length: 16 }, (_, i) => {
+  const a = (i / 16) * Math.PI * 2;
+  const d = 70 + (i % 3) * 22;
+  return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, glyph: i % 4 === 0 ? '🍿' : i % 2 ? '✦' : '★' };
+});
+
+export const BadgeToast: React.FC<{ badge: BadgeDef; copy?: string; onDone: () => void }> = ({ badge, copy, onDone }) => {
   useEffect(() => {
     sounds.playUnlockSting();
-    const t = setTimeout(onDone, 4000);
+    const t = setTimeout(onDone, 5000);
     return () => clearTimeout(t);
-  }, [eggId, onDone]);
-  const achievement = ACHIEVEMENTS.find((a) => a.id === eggId);
-  if (!achievement) return null;
+  }, [badge.id, onDone]);
   return (
-    <div role="status" aria-live="polite" className="egg-toast fixed z-50 bottom-4 right-4 left-4 sm:left-auto sm:w-[340px] bg-night text-night-ink border-[1.5px] border-night-line rounded-lg p-4 shadow-[4px_4px_0_var(--color-accent)]">
-      <div className="flex items-start gap-3">
-        <span className="stamp !text-[11px] text-accent shrink-0 mt-0.5">Mở khóa</span>
+    <div role="status" aria-live="polite" className="egg-toast fixed z-50 bottom-4 right-4 left-4 sm:left-auto sm:w-[360px] bg-night text-night-ink border-[1.5px] border-night-line rounded-lg p-4 shadow-[4px_4px_0_var(--color-accent)]">
+      <div className="flex items-center gap-4">
+        <span className="relative shrink-0">
+          <span className="badge-flip block"><BadgeMedal badge={badge} unlocked size={60} shine /></span>
+          <span className="absolute left-1/2 top-[40%]" aria-hidden="true">
+            {BURST.map((p, i) => (
+              <span key={i} className="badge-burst" style={{ '--dx': `${p.dx}px`, '--dy': `${p.dy}px`, animationDelay: `${250 + (i % 4) * 30}ms` } as React.CSSProperties}>
+                {p.glyph}
+              </span>
+            ))}
+          </span>
+        </span>
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-[15px] leading-snug">{achievement.name}</div>
-          <p className="mt-1 text-[13px] text-night-ink/70 leading-snug">{UNLOCK_COPY[eggId]}</p>
+          <span className="stamp !text-[10px] text-accent">Mở khóa · {TIER_LABEL[badge.tier]}</span>
+          <div className="mt-1.5 font-bold text-[16px] leading-snug">{badge.name}</div>
+          <p className="mt-1 text-[13px] text-night-ink/70 leading-snug">{copy ?? badge.description}</p>
         </div>
-        <button onClick={onDone} className="text-night-ink/60 hover:text-night-ink -mr-1" aria-label="Đóng">
+        <button onClick={onDone} className="self-start text-night-ink/60 hover:text-night-ink -mr-1" aria-label="Đóng">
           <X className="w-4 h-4" />
         </button>
       </div>
     </div>
+  );
+};
+
+export const badgeCopy = (id: string): string | undefined => UNLOCK_COPY[id as EggId];
+
+// ---------- Hidden effects ----------
+// Konami code -> old film, typing "popcorn" -> popcorn rain. Other parts of the app call playFx().
+const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+const FX_MS: Record<FxKind, number> = { popcorn: 4500, oldfilm: 8000, projector: 2600, dizzy: 2400 };
+
+export const FxLayer: React.FC = () => {
+  const [active, setActive] = useState<Partial<Record<FxKind, number>>>({});
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const onFx = (e: Event) => {
+      const kind = (e as CustomEvent<FxKind>).detail;
+      const stamp = Date.now();
+      setActive((a) => ({ ...a, [kind]: stamp }));
+      document.documentElement.classList.add(`fx-${kind}`);
+      timers.push(setTimeout(() => {
+        setActive((a) => (a[kind] === stamp ? { ...a, [kind]: undefined } : a));
+        document.documentElement.classList.remove(`fx-${kind}`);
+      }, FX_MS[kind]));
+    };
+
+    let keys: string[] = [];
+    const onKey = (e: KeyboardEvent) => {
+      keys = [...keys, e.key.toLowerCase()].slice(-10);
+      if (keys.join() === KONAMI.join()) {
+        keys = [];
+        playFx('oldfilm');
+        unlockSecret('KONAMI');
+      } else if (keys.slice(-7).join('') === 'popcorn') {
+        keys = [];
+        playFx('popcorn');
+        unlockSecret('POPCORN');
+      }
+    };
+
+    window.addEventListener('ggmv:fx', onFx);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('ggmv:fx', onFx);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, []);
+
+  return (
+    <>
+      {active.popcorn && (
+        <div key={active.popcorn} className="fx-rain" aria-hidden="true">
+          {Array.from({ length: 36 }, (_, i) => (
+            <span key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i * 0.137) % 1.4}s`, animationDuration: `${2.1 + ((i * 0.31) % 1.3)}s`, fontSize: `${18 + ((i * 7) % 16)}px` }}>
+              🍿
+            </span>
+          ))}
+        </div>
+      )}
+      {active.oldfilm && <div key={active.oldfilm} className="fx-oldfilm-layer" aria-hidden="true"><span className="fx-scratch" /><span className="fx-scratch fx-scratch-2" /></div>}
+      {active.projector && <div key={active.projector} className="fx-projector-layer" aria-hidden="true" />}
+    </>
   );
 };
 
@@ -151,9 +292,9 @@ export const ClassifiedArchive: React.FC<{ stories: Story[]; openSignal?: number
   );
 };
 
-// Hall of achievements (GGMV getAchievementHallOfFame)
-export const AchievementHall: React.FC<{ events: EggEvent[] }> = ({ events }) => {
-  const stats = new Map<EggId, { count: number; first: string }>();
+// Hall of badges (GGMV getAchievementHallOfFame + medals, member titles, secrets)
+export const AchievementHall: React.FC<{ events: EggEvent[]; movies: Movie[] }> = ({ events, movies }) => {
+  const stats = new Map<string, { count: number; first: string }>();
   events.forEach((e) => {
     const s = stats.get(e.eggId);
     if (!s) stats.set(e.eggId, { count: 1, first: e.createdAt });
@@ -162,36 +303,97 @@ export const AchievementHall: React.FC<{ events: EggEvent[] }> = ({ events }) =>
       if (e.createdAt < s.first) s.first = e.createdAt;
     }
   });
-  const unlocked = ACHIEVEMENTS.filter((a) => stats.has(a.id)).length;
+  const club = clubBadges(movies, events);
+  const unlocked = club.filter((b) => b.unlocked).length;
+  const members = memberBadges(movies);
+  const secrets = loadSecrets();
 
   return (
-    <section className="mt-16" aria-label="Thành tích của hội">
+    <section className="mt-16" aria-label="Huy hiệu của hội">
       <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
         <div>
-          <div className="label">Thành tích của hội</div>
+          <div className="label">Huy hiệu của hội</div>
           <h3 className="display text-[clamp(32px,4vw,44px)] mt-1.5">
-            {unlocked} / {ACHIEVEMENTS.length} <span className="text-ink-3">đã mở</span>
+            {unlocked} / {club.length} <span className="text-ink-3">đã mở</span>
           </h3>
         </div>
         <span className="label">{events.length} lần ghi nhận</span>
       </div>
       <div className="h-2 rounded-full border-[1.5px] border-ink bg-card overflow-hidden mb-6">
-        <div className="h-full bg-accent" style={{ width: `${(unlocked / ACHIEVEMENTS.length) * 100}%` }} />
+        <div className="h-full bg-accent" style={{ width: `${(unlocked / club.length) * 100}%` }} />
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {ACHIEVEMENTS.map((a) => {
-          const s = stats.get(a.id);
+        {club.map((b) => {
+          const s = stats.get(b.id);
           return (
-            <article key={a.id} className={`p-4 rounded-lg border-[1.5px] ${s ? 'panel' : 'border-dashed border-line'}`}>
-              <div className={`label !text-[10px] ${s ? '!text-accent' : ''}`}>
-                {s ? `Đã mở · ${s.count} lần` : 'Chưa mở'}
+            <article key={b.id} className={`flex gap-4 p-4 rounded-lg border-[1.5px] ${b.unlocked ? 'panel' : 'border-dashed border-line'}`}>
+              <BadgeMedal badge={b} unlocked={b.unlocked} size={56} />
+              <div className="min-w-0">
+                <div className={`label !text-[10px] ${b.unlocked ? '!text-accent' : ''}`}>
+                  {TIER_LABEL[b.tier]} · {b.unlocked ? (s ? `Đã mở · ${s.count} lần` : 'Đã mở') : 'Chưa mở'}
+                </div>
+                <div className={`mt-1 font-bold leading-snug ${b.unlocked ? '' : 'text-ink-3'}`}>{b.name}</div>
+                <p className="mt-1 text-[13px] text-ink-2 leading-snug">{b.description}</p>
+                <p className="mt-2 text-[12px] text-ink-3 leading-snug">Điều kiện: {b.rule}</p>
+                {b.unlocked && (s || b.detail) && (
+                  <div className="label !text-[10px] mt-2">{s ? `Lần đầu ${new Date(s.first).toLocaleDateString('vi-VN')}` : b.detail}</div>
+                )}
               </div>
-              <div className={`mt-1.5 font-bold leading-snug ${s ? '' : 'text-ink-3'}`}>{a.name}</div>
-              <p className="mt-1 text-[13px] text-ink-2 leading-snug">{a.description}</p>
-              <p className="mt-2 text-[12px] text-ink-3 leading-snug">Điều kiện: {a.rule}</p>
-              {s && (
-                <div className="label !text-[10px] mt-2">Lần đầu {new Date(s.first).toLocaleDateString('vi-VN')}</div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="mt-12 mb-5">
+        <div className="label">Danh hiệu thành viên</div>
+        <p className="mt-1.5 text-[14px] text-ink-2">Danh hiệu đổi chủ theo dữ liệu. Ai giữ được lâu thì giữ.</p>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {BROTHERS_LIST.map((name) => {
+          const owned = members.get(name) ?? [];
+          return (
+            <article key={name} className="panel p-4">
+              <div className="flex items-center gap-2.5">
+                <span className="grid place-items-center w-8 h-8 rounded-full bg-ink text-paper text-[13px] font-bold">{name.charAt(0).toUpperCase()}</span>
+                <span className="font-bold">{name}</span>
+                <span className="label !text-[10px] ml-auto">{owned.length} danh hiệu</span>
+              </div>
+              {owned.length ? (
+                <ul className="mt-3 space-y-2">
+                  {owned.map((b) => (
+                    <li key={b.id} className="flex items-center gap-3" title={b.rule}>
+                      <BadgeMedal badge={b} unlocked size={34} />
+                      <span className="min-w-0">
+                        <span className="block text-[14px] font-semibold leading-tight">{b.name}</span>
+                        <span className="block text-[12px] text-ink-3">{b.detail}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-[13px] text-ink-3">Chưa có danh hiệu nào. Còn thời gian.</p>
               )}
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="mt-12 mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div className="label">Huy hiệu bí mật</div>
+          <p className="mt-1.5 text-[14px] text-ink-2">Chỉ tính trên trình duyệt này. Gợi ý thì có, đáp án thì không.</p>
+        </div>
+        <span className="label">{secrets.length} / {SECRET_BADGES.length}</span>
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {SECRET_BADGES.map((b) => {
+          const found = secrets.includes(b.id);
+          return (
+            <article key={b.id} className={`flex flex-col items-center text-center p-4 rounded-lg border-[1.5px] ${found ? 'panel' : 'border-dashed border-line'}`}>
+              <BadgeMedal badge={b} unlocked={found} size={60} />
+              <div className={`mt-2 font-bold leading-snug ${found ? '' : 'text-ink-3'}`}>{found ? b.name : '???'}</div>
+              <p className="mt-1 text-[12px] text-ink-2 leading-snug">{found ? b.description : b.hint}</p>
+              {found && <p className="mt-1.5 text-[11px] text-ink-3">{b.rule}</p>}
             </article>
           );
         })}

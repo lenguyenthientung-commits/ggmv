@@ -324,10 +324,84 @@ html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-
   animation: sleeve-in 500ms var(--ease-snap) both;
 }
 
+/* ---------- Badges: medal shine, unlock flip, popcorn burst ---------- */
+.badge-medal { overflow: visible; }
+.badge-medal.is-locked { opacity: 0.7; }
+.medal-shine { opacity: 0; }
+@keyframes medal-shine { 0% { opacity: 1; transform: skewX(-20deg) translateX(0); } 100% { opacity: 1; transform: skewX(-20deg) translateX(190px); } }
+.badge-medal:not(.is-locked):hover .medal-shine, .medal-shine.is-auto { animation: medal-shine 900ms ease-in-out both; }
+.medal-shine.is-auto { animation-delay: 650ms; }
+@keyframes badge-flip {
+  0% { transform: perspective(400px) rotateY(-180deg) scale(0.4); opacity: 0; }
+  60% { transform: perspective(400px) rotateY(20deg) scale(1.12); opacity: 1; }
+  100% { transform: perspective(400px) rotateY(0) scale(1); }
+}
+.badge-flip { animation: badge-flip 700ms var(--ease-snap) both; }
+@keyframes badge-burst {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(200deg) scale(1); }
+}
+.badge-burst {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 14px;
+  color: var(--color-accent);
+  pointer-events: none;
+  animation: badge-burst 900ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* ---------- Hidden effects (FxLayer) ---------- */
+.fx-rain { position: fixed; inset: 0; z-index: 70; pointer-events: none; overflow: hidden; }
+@keyframes popcorn-fall {
+  0% { transform: translateY(-10vh) rotate(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 1; }
+}
+.fx-rain span { position: absolute; top: 0; animation: popcorn-fall linear both; }
+
+/* Konami: the page turns into a worn print, scratches and flicker included */
+@keyframes film-flicker { 0%, 100% { opacity: 1; } 8% { opacity: 0.82; } 9% { opacity: 1; } 47% { opacity: 0.9; } 49% { opacity: 1; } 73% { opacity: 0.85; } }
+.fx-oldfilm-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  backdrop-filter: sepia(0.85) contrast(1.15) brightness(0.95);
+  -webkit-backdrop-filter: sepia(0.85) contrast(1.15) brightness(0.95);
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(30, 18, 5, 0.55) 100%);
+  animation: film-flicker 0.9s steps(1) infinite;
+}
+@keyframes scratch-move { 0% { left: 18%; } 30% { left: 22%; } 31% { left: 64%; } 70% { left: 61%; } 71% { left: 37%; } 100% { left: 40%; } }
+.fx-scratch { position: absolute; top: 0; bottom: 0; width: 1.5px; background: rgba(255, 245, 220, 0.55); animation: scratch-move 1.7s steps(6) infinite; }
+.fx-scratch-2 { width: 1px; animation-duration: 2.3s; animation-direction: reverse; }
+
+/* Logo x7: the projector bulb stutters and the room shakes */
+@keyframes projector-strobe { 0%, 100% { opacity: 0; } 10%, 30%, 52%, 70% { opacity: 0.9; } 20%, 40%, 60%, 85% { opacity: 0.15; } }
+.fx-projector-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  background: conic-gradient(from 160deg at 50% -10%, transparent 0deg, rgba(255, 244, 200, 0.55) 15deg, rgba(255, 244, 200, 0.55) 25deg, transparent 40deg);
+  mix-blend-mode: screen;
+  animation: projector-strobe 2.6s linear both;
+}
+@keyframes room-shake { 0%, 100% { transform: none; } 20% { transform: translate(-3px, 1px); } 40% { transform: translate(3px, -1px); } 60% { transform: translate(-2px, -1px); } 80% { transform: translate(2px, 1px); } }
+.fx-projector main { animation: room-shake 0.25s linear 6; }
+
+/* 10 spins, no pick: the wheel gets dizzy */
+@keyframes wheel-dizzy { 0%, 100% { transform: none; } 25% { transform: rotate(-6deg) scale(0.96) skewX(4deg); } 50% { transform: rotate(5deg) scale(1.03) skewX(-5deg); } 75% { transform: rotate(-3deg) skewY(3deg); } }
+.fx-dizzy canvas { animation: wheel-dizzy 0.6s ease-in-out 4; }
+
 @media (prefers-reduced-motion: reduce) {
   .enter, .overlay-enter, .reveal { animation: none; }
   .egg-dust { animation: none; opacity: 0.35; transform: translate(-50%, -50%); }
   .stamp-land, .egg-slate, .egg-toast, .witness-sleeve { animation: none; }
+  .badge-flip, .badge-burst, .medal-shine, .fx-oldfilm-layer, .fx-scratch, .fx-projector main, .fx-dizzy canvas { animation: none !important; }
+  .badge-burst, .fx-rain { display: none; }
+  .fx-projector-layer { animation: none; opacity: 0.35; }
   .btn, .poster-lift { transition: background-color 200ms, color 200ms; }
   .btn-primary:hover, .btn-primary:active, .group:hover .poster-lift { transform: none; }
 }

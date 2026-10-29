@@ -5,6 +5,10 @@ import { sounds } from '../utils/soundEffects';
 import { RotateCcw, Play, Check, Shuffle, Shield, X, ExternalLink } from 'lucide-react';
 import { Modal, SectionHeader } from './ui';
 import { soundtrack } from '../utils/soundtrack';
+import { playFx, unlockSecret } from '../badges';
+
+// Secret "Kẻ do dự": spins since the last confirmed pick, kept across tab switches
+let unconfirmedSpins = 0;
 
 interface RandomWheelProps {
   movies: Movie[];
@@ -359,6 +363,12 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   //   'settle' a plain long stop with a small rebound
   const handleSpin = () => {
     if (isSpinning || slices.length === 0) return;
+
+    unconfirmedSpins += 1;
+    if (unconfirmedSpins === 10) {
+      playFx('dizzy');
+      unlockSecret('INDECISIVE');
+    }
 
     sounds.playVintageSwitch();
     sounds.startProjectorWhir();
@@ -881,6 +891,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
               )}
               <button
                 onClick={() => {
+                  unconfirmedSpins = 0;
                   onSelectForWeekend(winnerMovie);
                   setShowWinnerModal(false);
                 }}

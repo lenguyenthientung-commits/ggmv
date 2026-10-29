@@ -14,8 +14,9 @@ import { CinemaRulesModal } from './components/CinemaRulesModal';
 import { ThemeId, Mode, loadTheme, loadMode, saveAppearance, applyAppearance } from './theme';
 import { WorldPref, loadWorldPref, saveWorldPref, resolveWorld, worldById } from './seasons/worlds';
 import { WorldCurtain } from './seasons/WorldCurtain';
-import { EggEvent, EggId, DEFAULT_HOUSE_NOTE, takeUnseenEvents, markSurface, hasCrossSurfaceVisit } from './easterEggs';
-import { ProjectorDust, IntermissionCard, UnlockToast } from './components/EasterEggs';
+import { EggEvent, DEFAULT_HOUSE_NOTE, takeUnseenEvents, markSurface, hasCrossSurfaceVisit } from './easterEggs';
+import { ProjectorDust, IntermissionCard, BadgeToast, FxLayer, badgeCopy } from './components/EasterEggs';
+import { clubBadges, archiveBadgeIds, takeNewArchiveBadges, memberBadges, findBadge } from './badges';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string>(() => {
@@ -69,7 +70,10 @@ export default function App() {
       ]);
       if (resMovies.ok) {
         const moviesData = await resMovies.json();
-        if (Array.isArray(moviesData)) setMovies(moviesData);
+        if (Array.isArray(moviesData)) {
+          setMovies(moviesData);
+          setMoviesLoaded(true);
+        }
       }
       if (resSessions.ok) {
         const sessionsData = await resSessions.json();
@@ -84,9 +88,10 @@ export default function App() {
     fetchData();
   }, [fetchData]);
 
-  // Easter eggs: shared ledger + a toast the first time this viewer meets each achievement
+  // Easter eggs: shared ledger + a toast the first time this viewer meets each badge
   const [eggEvents, setEggEvents] = useState<EggEvent[]>([]);
-  const [toastQueue, setToastQueue] = useState<EggId[]>([]);
+  const [toastQueue, setToastQueue] = useState<string[]>([]);
+  const [moviesLoaded, setMoviesLoaded] = useState(false);
   const [creditShifted, setCreditShifted] = useState(() => hasCrossSurfaceVisit());
   const dismissToast = useCallback(() => setToastQueue(q => q.slice(1)), []);
 
@@ -109,6 +114,21 @@ export default function App() {
   useEffect(() => {
     fetchEggs();
   }, [fetchEggs]);
+
+  // Archive milestones are computed here, so this viewer is told about new ones here too
+  useEffect(() => {
+    if (!moviesLoaded) return;
+    const unlocked = clubBadges(movies, []).filter(b => b.unlocked && archiveBadgeIds.includes(b.id)).map(b => b.id);
+    const fresh = takeNewArchiveBadges(unlocked);
+    if (fresh.length) setToastQueue(q => [...q, ...fresh]);
+  }, [movies, moviesLoaded]);
+
+  // Secret badges announce themselves from anywhere in the app
+  useEffect(() => {
+    const onBadge = (e: Event) => setToastQueue(q => [...q, (e as CustomEvent<string>).detail]);
+    window.addEventListener('ggmv:badge', onBadge);
+    return () => window.removeEventListener('ggmv:badge', onBadge);
+  }, []);
 
   // C4 footer credit: the wheel and the archive both visited in one sitting
   useEffect(() => {
@@ -420,6 +440,7 @@ export default function App() {
         mode={mode}
         setMode={setMode}
         houseNote={DEFAULT_HOUSE_NOTE}
+        userBadgeGlyphs={(memberBadges(movies).get(currentUser) ?? []).map(b => b.glyph).join('')}
         world={world}
         worldPref={worldPref}
         setWorldPref={setWorldPref}
@@ -542,9 +563,10 @@ export default function App() {
 
       {curtainFor && worldById(curtainFor) && <WorldCurtain world={worldById(curtainFor)!} onDone={closeCurtain} />}
 
-      {toastQueue.length > 0 && (
-        <UnlockToast key={toastQueue[0]} eggId={toastQueue[0]} onDone={dismissToast} />
+      {toastQueue.length > 0 && findBadge(toastQueue[0], movies, eggEvents) && (
+        <BadgeToast key={toastQueue[0]} badge={findBadge(toastQueue[0], movies, eggEvents)!} copy={badgeCopy(toastQueue[0])} onDone={dismissToast} />
       )}
+      <FxLayer />
 
       {/* Cinema Rules Modal */}
       <CinemaRulesModal isOpen={isRulesOpen} onClose={() => setIsRulesOpen(false)} />
