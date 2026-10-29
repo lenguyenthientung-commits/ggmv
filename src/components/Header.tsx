@@ -8,7 +8,7 @@ import { World, WorldPref } from '../seasons/worlds';
 import { WorldMark } from '../seasons/art';
 import { playFx, unlockSecret } from '../badges';
 
-type Tab = 'movies' | 'wheel' | 'sessions' | 'archive' | 'stats';
+type Tab = 'movies' | 'wheel' | 'sessions' | 'archive' | 'achievements' | 'stats';
 
 interface HeaderProps {
   activeTab: Tab;
@@ -42,6 +42,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'wheel', label: 'Vòng quay' },
   { id: 'sessions', label: 'Lịch chiếu' },
   { id: 'archive', label: 'Bảng vàng' },
+  { id: 'achievements', label: 'Thành tích' },
   { id: 'stats', label: 'Thống kê' },
 ];
 

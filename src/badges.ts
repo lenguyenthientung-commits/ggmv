@@ -215,6 +215,95 @@ export function memberBadges(movies: Movie[]): Map<string, EarnedBadge[]> {
   return out;
 }
 
+// ---------- Personal achievements: tiered, with progress to the next tier ----------
+interface PersonalDef extends Omit<BadgeDef, 'tier'> {
+  unit: string;
+  thresholds: number[];
+  tiers?: Tier[];
+  judgesOnly?: boolean;
+  value: (name: string, movies: Movie[], events: EggEvent[]) => number;
+}
+
+export interface PersonalAchievement extends BadgeDef {
+  level: number; // 0 = not yet, 1..thresholds.length
+  maxLevel: number;
+  value: number;
+  next: number | null;
+  unit: string;
+}
+
+const proposedBy = (name: string, movies: Movie[]) => movies.filter((m) => m.suggestedBy?.trim() === name);
+const proposedWatched = (name: string, movies: Movie[]) => proposedBy(name, movies).filter((m) => m.watched);
+
+const PERSONAL: PersonalDef[] = [
+  {
+    id: 'P_PROPOSER', name: 'Người Đề Xuất', glyph: '🎬', unit: 'phim được xem', thresholds: [1, 3, 5],
+    description: 'Phim mình đề xuất được cả hội ngồi xem.', rule: 'Phim do mình đề xuất đã được xem: 1 / 3 / 5.',
+    value: (n, ms) => proposedWatched(n, ms).length,
+  },
+  {
+    id: 'P_STOCK', name: 'Thủ Kho', glyph: '📦', unit: 'phim đã thêm', thresholds: [3, 10, 20],
+    description: 'Chăm chỉ nhồi phim vào kho.', rule: 'Số phim mình đề xuất vào kho: 3 / 10 / 20.',
+    value: (n, ms) => proposedBy(n, ms).length,
+  },
+  {
+    id: 'P_VOTER', name: 'Lá Phiếu Vàng', glyph: '🗳️', unit: 'vote', thresholds: [5, 15, 30],
+    description: 'Không bỏ lỡ lần bầu chọn nào.', rule: 'Tổng số vote đã bỏ: 5 / 15 / 30.',
+    value: (n, ms) => ms.filter((m) => m.votes?.includes(n)).length,
+  },
+  {
+    id: 'P_CRITIC', name: 'Nhà Phê Bình', glyph: '✍️', unit: 'review', thresholds: [1, 5, 10],
+    description: 'Xem xong là phải có ý kiến.', rule: 'Số review đã viết: 1 / 5 / 10.',
+    value: (n, ms) => ms.reduce((acc, m) => acc + (m.reviews ?? []).filter((r) => r.author === n).length, 0),
+  },
+  {
+    id: 'P_JUDGE', name: 'Cầm Cân Nảy Mực', glyph: '⚖️', unit: 'phim đã chấm', thresholds: [5, 10, 20], judgesOnly: true,
+    description: 'Giám khảo chấm điểm đều tay.', rule: 'Số phim đã chấm điểm giám khảo: 5 / 10 / 20.',
+    value: (n, ms) => {
+      const field = JUDGES.find(([, j]) => j === n)?.[0];
+      return field ? ms.filter((m) => m.watched && typeof m[field] === 'number').length : 0;
+    },
+  },
+  {
+    id: 'P_ORACLE', name: 'Nhà Tiên Tri', glyph: '🔮', unit: 'lần phán trúng', thresholds: [1, 3, 5],
+    description: 'Phán trước khi quay, và vòng quay nghe lời.', rule: 'Số lần tiên tri trúng: 1 / 3 / 5.',
+    value: (n, _ms, evs) => evs.filter((e) => e.eggId === 'PROPHECY' && String(e.evidence.member ?? '').trim() === n).length,
+  },
+  {
+    id: 'P_GEM', name: 'Viên Ngọc Ẩn', glyph: '💎', unit: 'phim từ 8.5 điểm', thresholds: [1, 3], tiers: ['silver', 'gold'],
+    description: 'Đề xuất phim được chấm rất cao.', rule: 'Phim mình đề xuất đạt điểm trung bình từ 8.5: 1 / 3.',
+    value: (n, ms) => proposedWatched(n, ms).filter((m) => rankScore(m) >= 8.5).length,
+  },
+  {
+    id: 'P_DISASTER', name: 'Thảm Họa Có Chủ Đích', glyph: '💩', unit: 'phim dưới 5 điểm', thresholds: [1], tiers: ['bronze'],
+    description: 'Có người phải chịu trách nhiệm cho buổi chiếu đó.', rule: 'Phim mình đề xuất bị chấm trung bình dưới 5.',
+    value: (n, ms) => proposedWatched(n, ms).filter((m) => rankScore(m) > 0 && rankScore(m) < 5).length,
+  },
+  {
+    id: 'P_PALETTE', name: 'Bảng Màu Đa Sắc', glyph: '🎨', unit: 'thể loại', thresholds: [5, 8], tiers: ['silver', 'gold'],
+    description: 'Gu đề xuất không đóng khung một thể loại.', rule: 'Phim mình đề xuất (đã xem) phủ 5 / 8 thể loại.',
+    value: (n, ms) => new Set(proposedWatched(n, ms).flatMap((m) => m.genres)).size,
+  },
+];
+
+const DEFAULT_TIERS: Tier[] = ['bronze', 'silver', 'gold'];
+
+export function personalAchievements(name: string, movies: Movie[], events: EggEvent[]): PersonalAchievement[] {
+  const isJudge = JUDGES.some(([, j]) => j === name);
+  return PERSONAL.filter((p) => !p.judgesOnly || isJudge).map(({ value, thresholds, tiers = DEFAULT_TIERS, judgesOnly: _j, ...def }) => {
+    const v = value(name, movies, events);
+    const level = thresholds.filter((t) => v >= t).length;
+    return {
+      ...def,
+      tier: tiers[Math.max(0, level - 1)],
+      level,
+      maxLevel: thresholds.length,
+      value: v,
+      next: level < thresholds.length ? thresholds[level] : null,
+    };
+  });
+}
+
 export function findBadge(id: string, movies: Movie[], events: EggEvent[]): BadgeDef | undefined {
   return clubBadges(movies, events).find((b) => b.id === id) ?? SECRET_BADGES.find((b) => b.id === id);
 }

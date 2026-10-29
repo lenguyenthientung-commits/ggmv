@@ -10,6 +10,7 @@ import { WatchedArchive } from './components/WatchedArchive';
 import { AddMovieModal } from './components/AddMovieModal';
 import { CinemaScreenModal } from './components/CinemaScreenModal';
 import { MovieStats } from './components/MovieStats';
+import { MemberAchievements } from './components/MemberAchievements';
 import { CinemaRulesModal } from './components/CinemaRulesModal';
 import { ThemeId, Mode, loadTheme, loadMode, saveAppearance, applyAppearance } from './theme';
 import { WorldPref, loadWorldPref, saveWorldPref, resolveWorld, worldById } from './seasons/worlds';
@@ -23,7 +24,7 @@ export default function App() {
     return localStorage.getItem('cinebro_user') || 'Shiba';
   });
 
-  const [activeTab, setActiveTab] = useState<'movies' | 'wheel' | 'sessions' | 'archive' | 'stats'>('movies');
+  const [activeTab, setActiveTab] = useState<'movies' | 'wheel' | 'sessions' | 'archive' | 'achievements' | 'stats'>('movies');
   const [movies, setMovies] = useState<Movie[]>(INITIAL_MOVIES);
   const [sessions, setSessions] = useState<WeekendSession[]>(INITIAL_SESSIONS);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -520,6 +521,11 @@ export default function App() {
         )}
         {activeTab === 'archive' && <ProjectorDust />}
         {activeTab === 'archive' && <IntermissionCard movies={movies} />}
+
+        {/* Tab: Thành tích cá nhân (per-member badges) */}
+        {activeTab === 'achievements' && (
+          <MemberAchievements movies={movies} eggEvents={eggEvents} currentUser={currentUser} />
+        )}
 
         {/* Tab 5: Thống Kê Điện Ảnh (MovieStats with Recharts) */}
         {activeTab === 'stats' && (
