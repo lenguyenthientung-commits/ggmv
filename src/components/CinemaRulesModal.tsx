@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
-import { Modal, ModalHeader } from './ui';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Modal } from './ui';
+import { sounds } from '../utils/soundEffects';
 
 export interface CinemaRuleItem {
   id: string;
@@ -170,94 +171,255 @@ interface CinemaRulesModalProps {
   onClose: () => void;
 }
 
-// Badges in the data start with an emoji; the chip shows the words only
-const badgeText = (badge: string) => badge.replace(/^[^\p{L}\p{N}]+/u, '');
+// ---------- The rulebook: cover, contents, a title page per chapter, one rule per page ----------
+type Page =
+  | { kind: 'cover' }
+  | { kind: 'toc' }
+  | { kind: 'chapter'; chapter: number; title: string; count: number }
+  | { kind: 'rule'; rule: CinemaRuleItem }
+  | { kind: 'blank' }
+  | { kind: 'back' };
 
-const CHAPTERS = [
-  { id: 0, label: 'Tất cả' },
-  { id: 1, label: 'I · Đề xuất' },
-  { id: 2, label: 'II · Vòng quay' },
-  { id: 3, label: 'III · Chấm điểm' },
-] as const;
+const ROMAN = ['', 'I', 'II', 'III'];
+const chapterName = (title: string) => title.split(': ')[1] ?? title;
+
+const PAGES: Page[] = (() => {
+  const pages: Page[] = [{ kind: 'cover' }, { kind: 'toc' }];
+  [1, 2, 3].forEach((chapter) => {
+    const rules = CINEMA_RULES.filter((r) => r.chapter === chapter);
+    pages.push({ kind: 'chapter', chapter, title: chapterName(rules[0].chapterTitle), count: rules.length });
+    rules.forEach((rule) => pages.push({ kind: 'rule', rule }));
+  });
+  if (pages.length % 2 === 0) pages.push({ kind: 'blank' }); // keeps the back page on the right of a spread
+  pages.push({ kind: 'back' });
+  return pages;
+})();
+
+const pageOf = (pred: (p: Page) => boolean) => PAGES.findIndex(pred);
+const FLIP_MS = 700;
+
+type Side = 'left' | 'right' | 'single';
 
 export const CinemaRulesModal: React.FC<CinemaRulesModalProps> = ({ isOpen, onClose }) => {
-  const [selectedChapter, setSelectedChapter] = useState<0 | 1 | 2 | 3>(0);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [wide, setWide] = useState(() => window.matchMedia('(min-width: 768px)').matches);
+  const [page, setPage] = useState(0);
+  const [flip, setFlip] = useState<{ dir: 1 | -1; to: number } | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 768px)');
+    const follow = () => setWide(media.matches);
+    media.addEventListener('change', follow);
+    return () => media.removeEventListener('change', follow);
+  }, []);
+
+  // Every opening starts at the cover
+  useEffect(() => {
+    if (!isOpen) return;
+    setPage(0);
+    setFlip(null);
+    return () => clearTimeout(timer.current);
+  }, [isOpen]);
+
+  const per = wide ? 2 : 1;
+  const view = page - (page % per);
+  const last = PAGES.length - 1 - ((PAGES.length - 1) % per);
+
+  const goTo = (target: number) => {
+    const to = Math.max(0, Math.min(last, target - (target % per)));
+    if (flip || to === view) return;
+    sounds.playVintageSwitch();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setPage(to);
+      return;
+    }
+    setFlip({ dir: to > view ? 1 : -1, to });
+    timer.current = setTimeout(() => {
+      setPage(to);
+      setFlip(null);
+    }, FLIP_MS);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') goTo(view + per);
+      if (e.key === 'ArrowLeft') goTo(view - per);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   if (!isOpen) return null;
 
-  const filteredRules = CINEMA_RULES.filter((rule) => {
-    if (selectedChapter !== 0 && rule.chapter !== selectedChapter) return false;
-    if (searchTerm.trim() !== '') {
-      const q = searchTerm.toLowerCase();
-      return (
-        rule.title.toLowerCase().includes(q) ||
-        rule.code.toLowerCase().includes(q) ||
-        rule.summary.toLowerCase().includes(q) ||
-        rule.mechanism.toLowerCase().includes(q) ||
-        rule.badge.toLowerCase().includes(q)
-      );
+  const content = (i: number) => {
+    const p = PAGES[i];
+    if (!p) return null;
+    switch (p.kind) {
+      case 'cover':
+        return (
+          <div className="h-full bg-night text-night-ink flex flex-col justify-between p-7 sm:p-9">
+            <div className="flex items-center justify-between">
+              <span className="jp text-[14px] text-accent">ルールブック</span>
+              <span className="label !text-night-ink/50">Ấn bản 2026</span>
+            </div>
+            <div>
+              <div className="label !text-accent">Gay Gang Cinema</div>
+              <h2 className="display mt-3 text-[clamp(48px,7vw,68px)] leading-[0.9]">Điều lệ<br />rạp chiếu</h2>
+              <p className="mt-4 text-[14px] text-night-ink/70">3 chương · {CINEMA_RULES.length} điều · có hiệu lực với toàn bộ thành viên.</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="stamp text-accent">Chính quy</span>
+              <span className="label !text-night-ink/50">Lật trang →</span>
+            </div>
+          </div>
+        );
+      case 'toc':
+        return (
+          <div className="h-full p-7 sm:p-9 flex flex-col">
+            <div className="label">Mục lục</div>
+            <ol className="mt-4 space-y-4 overflow-hidden">
+              {[1, 2, 3].map((ch) => (
+                <li key={ch}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); goTo(pageOf((x) => x.kind === 'chapter' && x.chapter === ch)); }}
+                    className="font-bold text-[15px] hover:text-accent transition-colors text-left"
+                  >
+                    {ROMAN[ch]}. {chapterName(CINEMA_RULES.find((r) => r.chapter === ch)!.chapterTitle)}
+                  </button>
+                  <ul className="mt-1.5 space-y-1">
+                    {CINEMA_RULES.filter((r) => r.chapter === ch).map((r) => {
+                      const at = pageOf((x) => x.kind === 'rule' && x.rule.id === r.id);
+                      return (
+                        <li key={r.id}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); goTo(at); }}
+                            className="w-full flex items-baseline gap-2 text-[13px] text-ink-2 hover:text-ink text-left"
+                          >
+                            <span className="num text-ink-3 w-7 shrink-0">{r.code}</span>
+                            <span className="truncate">{r.title}</span>
+                            <span className="flex-1 border-b border-dotted border-line translate-y-[-3px] min-w-4" />
+                            <span className="num text-ink-3">{at}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+          </div>
+        );
+      case 'chapter':
+        return (
+          <div className="h-full p-7 sm:p-9 flex flex-col justify-center screentone">
+            <div className="bg-card border-[1.5px] border-ink rounded-md p-6 shadow-[4px_4px_0_var(--color-shadow)]">
+              <div className="label">Chương</div>
+              <div className="display text-[clamp(80px,12vw,120px)] leading-[0.85] text-accent mt-2">{ROMAN[p.chapter]}</div>
+              <h3 className="display text-[clamp(26px,3.5vw,34px)] leading-tight mt-4">{p.title}</h3>
+              <p className="mt-2 text-[13px] text-ink-3">{p.count} điều</p>
+            </div>
+          </div>
+        );
+      case 'rule':
+        return (
+          <div className="h-full p-7 sm:p-9 flex flex-col">
+            <div className="label !text-[10px]">Chương {ROMAN[p.rule.chapter]} · {chapterName(p.rule.chapterTitle)}</div>
+            <div className="display text-[clamp(56px,8vw,76px)] leading-[0.85] text-accent mt-5">{p.rule.code}</div>
+            <h4 className="mt-3 text-[clamp(19px,2.4vw,23px)] font-bold leading-snug">{p.rule.title}</h4>
+            <div className="mt-2"><span className="chip">{p.rule.badge}</span></div>
+            <p className="mt-4 text-[14.5px] leading-relaxed text-ink-2">{p.rule.summary}</p>
+            <dl className="mt-auto pt-5 grid gap-3 text-[13px] border-t border-line">
+              <div>
+                <dt className="label !text-[10px]">Cơ chế</dt>
+                <dd className="mt-0.5">{p.rule.mechanism}</dd>
+              </div>
+              <div>
+                <dt className="label !text-[10px]">Áp dụng</dt>
+                <dd className="mt-0.5">{p.rule.target}</dd>
+              </div>
+            </dl>
+          </div>
+        );
+      case 'blank':
+        return <div className="h-full grid place-items-center p-9 text-[13px] italic text-ink-3">Trang này được cố ý để trống.</div>;
+      case 'back':
+        return (
+          <div className="h-full p-7 sm:p-9 flex flex-col justify-center items-start">
+            <div className="label">Cam kết</div>
+            <p className="display text-[clamp(30px,4vw,40px)] leading-tight mt-3">Đã đọc.<br />Đã hiểu.<br />Không cãi.</p>
+            <p className="mt-3 text-[14px] text-ink-2">Mọi tranh chấp sẽ được giải quyết bằng vòng quay.</p>
+            <span className="stamp stamp-land text-accent mt-6">Đã thông qua</span>
+            <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="btn btn-primary btn-sm mt-8">Đã rõ, đóng sách</button>
+          </div>
+        );
     }
-    return true;
-  });
+  };
+
+  // A page sheet: paper, spine shading on the inner edge, page number in the outer corner
+  const sheet = (i: number, side: Side) => (
+    <div
+      className={`book-page ${side === 'left' ? 'is-left' : side === 'right' ? 'is-right' : ''} relative h-full overflow-hidden bg-card`}
+    >
+      {content(i)}
+      {i > 0 && PAGES[i] && (
+        <span className={`absolute bottom-3 num text-[11px] text-ink-3 ${side === 'left' ? 'left-5' : 'right-5'}`}>{i}</span>
+      )}
+    </div>
+  );
+
+  const leftIdx = flip?.dir === -1 ? flip.to : view;
+  const rightIdx = flip?.dir === 1 ? flip.to + 1 : view + 1;
+  const label = per === 2 ? `Trang ${view}–${Math.min(view + 1, PAGES.length - 1)}` : `Trang ${view}`;
 
   return (
-    <Modal onClose={onClose} size="lg" label="Điều lệ rạp">
-      <ModalHeader jp="ルール" kicker="Văn bản chính quy · 3 chương" title="12 điều lệ" onClose={onClose} />
-
-      <div className="px-5 sm:px-7 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-[1.5px] border-ink">
-        <div className="seg">
-          {CHAPTERS.map((c) => (
-            <button key={c.id} aria-pressed={selectedChapter === c.id} onClick={() => setSelectedChapter(c.id)}>
-              {c.label}
-            </button>
-          ))}
+    <Modal onClose={onClose} size="xl" label="Điều lệ rạp">
+      <div className="flex items-center justify-between gap-4 px-5 sm:px-6 h-14 border-b-[1.5px] border-ink">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="jp text-[13px]">ルール</span>
+          <span className="label truncate">Điều lệ rạp · {CINEMA_RULES.length} điều</span>
         </div>
-        <div className="relative sm:w-56">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Tìm điều lệ…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input !h-9 !pl-9 text-[13px]"
-            aria-label="Tìm điều lệ"
-          />
+        <button onClick={onClose} className="btn-icon" aria-label="Đóng điều lệ">
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="bg-sunk p-3 sm:p-6">
+        <div className={`book relative mx-auto border-[1.5px] border-ink rounded-md shadow-[6px_6px_0_var(--color-shadow)] ${per === 2 ? 'grid grid-cols-2 h-[560px]' : 'h-[min(560px,68vh)]'}`}>
+          {per === 2 ? (
+            <>
+              <div className="h-full border-r border-line cursor-pointer" onClick={() => goTo(view - 2)}>{sheet(leftIdx, 'left')}</div>
+              <div className="h-full cursor-pointer" onClick={() => goTo(view + 2)}>{sheet(rightIdx, 'right')}</div>
+              {flip && (
+                <div className={`book-leaf ${flip.dir === 1 ? 'leaf-next left-1/2' : 'leaf-prev left-0'} w-1/2`}>
+                  <div className="leaf-face">{sheet(flip.dir === 1 ? view + 1 : view, flip.dir === 1 ? 'right' : 'left')}</div>
+                  <div className="leaf-face leaf-back">{sheet(flip.dir === 1 ? flip.to : flip.to + 1, flip.dir === 1 ? 'left' : 'right')}</div>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="h-full cursor-pointer" onClick={() => goTo(view + 1)}>{sheet(flip?.dir === 1 ? flip.to : view, 'single')}</div>
+              {flip && (
+                <div className={`book-leaf ${flip.dir === 1 ? 'leaf-next' : 'leaf-in'} left-0 w-full`}>
+                  <div className="leaf-face">{sheet(flip.dir === 1 ? view : flip.to, 'single')}</div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      <ol className="max-h-[62vh] overflow-y-auto divide-y divide-line">
-        {filteredRules.length > 0 ? (
-          filteredRules.map((rule) => (
-            <li key={rule.id} className="grid grid-cols-[64px_1fr] sm:grid-cols-[88px_1fr] gap-4 px-5 sm:px-7 py-5">
-              <div className="display text-[40px] sm:text-[52px] leading-[0.85] text-accent">{rule.code}</div>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h4 className="text-[17px] font-bold leading-snug">{rule.title}</h4>
-                  <span className="chip">{badgeText(rule.badge)}</span>
-                </div>
-                <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-2">{rule.summary}</p>
-                <dl className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-2 text-[13px]">
-                  <div>
-                    <dt className="label !text-[10px]">Cơ chế</dt>
-                    <dd className="mt-0.5">{rule.mechanism}</dd>
-                  </div>
-                  <div>
-                    <dt className="label !text-[10px]">Áp dụng</dt>
-                    <dd className="mt-0.5">{rule.target}</dd>
-                  </div>
-                </dl>
-              </div>
-            </li>
-          ))
-        ) : (
-          <li className="px-7 py-12 text-center text-[14px] text-ink-3">Không có điều lệ nào khớp từ khóa.</li>
-        )}
-      </ol>
-
-      <div className="flex items-center justify-between gap-3 px-5 sm:px-7 py-4 border-t-[1.5px] border-ink">
-        <span className="text-[13px] text-ink-2">Có hiệu lực với toàn bộ thành viên.</span>
-        <button onClick={onClose} className="btn btn-primary btn-sm">Đã rõ</button>
+      <div className="flex items-center justify-between gap-3 px-5 sm:px-6 py-3 border-t-[1.5px] border-ink">
+        <button onClick={() => goTo(view - per)} disabled={view === 0} className="btn btn-sm disabled:opacity-40">
+          <ChevronLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">Trang trước</span>
+        </button>
+        <span className="num text-[12px] text-ink-3">{view === 0 ? 'Bìa' : label} / {PAGES.length - 1}</span>
+        <button onClick={() => goTo(view + per)} disabled={view >= last} className="btn btn-sm disabled:opacity-40">
+          <span className="hidden sm:inline">Trang sau</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
       </div>
     </Modal>
   );
