@@ -399,7 +399,7 @@ export default function App() {
   };
 
   const upcomingSession = sessions[0];
-  const selectedWeekendMovie = movies.find(m => m.id === upcomingSession?.selectedMovieId);
+  const selectedWeekendMovie = movies.find(m => m.id === upcomingSession?.selectedMovieId && !m.watched);
   const featuredMovies = movies
     .filter(m => !m.watched)
     .sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0))
