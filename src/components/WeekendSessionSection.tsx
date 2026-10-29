@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { WeekendSession, Movie } from '../types/cinema';
-import { Clock, MapPin, Plus, Tv, Check, X } from 'lucide-react';
+import { MapPin, Plus, Tv, Check, X } from 'lucide-react';
 import { BROTHERS_LIST } from './Header';
 import { Modal, ModalHeader, SectionHeader, formatSessionDate } from './ui';
 
@@ -35,38 +35,17 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
   const [snackPerson, setSnackPerson] = useState(currentUser);
   const [snackItem, setSnackItem] = useState('');
 
+  // Countdown: days until the coming Sunday (0 on Sunday itself), no fixed hour.
+  const today = new Date();
+  const daysToSunday = (7 - today.getDay()) % 7;
+  const sunday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysToSunday);
+  const sundayIso = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [sessionTitle, setSessionTitle] = useState('Kèo Chiếu Phim Thứ Bảy Tuần Này');
-  const [sessionDate, setSessionDate] = useState('2026-10-03');
-  const [sessionTime, setSessionTime] = useState('09:00');
+  const [sessionTitle, setSessionTitle] = useState('Kèo Chiếu Phim Chủ Nhật Tuần Này');
+  const [sessionDate, setSessionDate] = useState(sundayIso);
   const [sessionLocation, setSessionLocation] = useState('Phòng khách nhà Tuấn Anh');
   const [selectedMovieId, setSelectedMovieId] = useState<string>(movies[0]?.id || '');
-
-  // Calculate countdown
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
-
-  useEffect(() => {
-    if (!currentSession) return;
-    const calculateTimeLeft = () => {
-      const target = new Date(`${currentSession.date}T${currentSession.time}:00`);
-      const now = new Date();
-      const diff = target.getTime() - now.getTime();
-
-      if (diff > 0) {
-        setCountdown({
-          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((diff / 1000 / 60) % 60),
-        });
-      } else {
-        setCountdown({ days: 0, hours: 0, minutes: 0 });
-      }
-    };
-
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 60000);
-    return () => clearInterval(interval);
-  }, [currentSession]);
 
   const selectedMovie = movies.find(m => m.id === currentSession?.selectedMovieId);
 
@@ -88,7 +67,6 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
     onCreateSession({
       title: sessionTitle,
       date: sessionDate,
-      time: sessionTime,
       location: sessionLocation,
       selectedMovieId: selectedMovieId || undefined,
       snackDuty: [],
@@ -108,15 +86,9 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
           <label className="field-label" htmlFor="s-title">Tên kèo</label>
           <input id="s-title" type="text" required value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value)} className="input" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="field-label" htmlFor="s-date">Ngày chiếu</label>
-            <input id="s-date" type="date" required value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} className="input" />
-          </div>
-          <div>
-            <label className="field-label" htmlFor="s-time">Giờ bắt đầu</label>
-            <input id="s-time" type="time" required value={sessionTime} onChange={(e) => setSessionTime(e.target.value)} className="input" />
-          </div>
+        <div>
+          <label className="field-label" htmlFor="s-date">Ngày chiếu</label>
+          <input id="s-date" type="date" required value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} className="input" />
         </div>
         <div>
           <label className="field-label" htmlFor="s-loc">Địa điểm</label>
@@ -171,21 +143,16 @@ export const WeekendSessionSection: React.FC<WeekendSessionSectionProps> = ({
         <div className="lg:col-span-7">
           <h3 className="text-[clamp(24px,3vw,32px)] font-bold leading-tight">{currentSession.title}</h3>
           <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px] text-ink-2">
-            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" />{currentSession.time}</span>
             <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" />{currentSession.location}</span>
           </div>
 
-          <div className="mt-8 grid grid-cols-3 max-w-lg border-[1.5px] border-ink rounded-lg overflow-hidden bg-card">
-            {[
-              { v: countdown.days, l: 'Ngày' },
-              { v: countdown.hours, l: 'Giờ' },
-              { v: countdown.minutes, l: 'Phút' },
-            ].map((u, i) => (
-              <div key={u.l} className={`px-4 py-4 ${i > 0 ? 'border-l-[1.5px] border-ink' : ''}`}>
-                <div className="display text-[clamp(48px,8vw,80px)] leading-[0.85] tabular-nums">{String(u.v).padStart(2, '0')}</div>
-                <div className="label mt-2">{u.l}</div>
-              </div>
-            ))}
+          <div className="mt-8 inline-block border-[1.5px] border-ink rounded-lg bg-card px-6 py-4">
+            {daysToSunday === 0 ? (
+              <div className="display text-[clamp(48px,8vw,80px)] leading-[0.85]">Hôm nay!</div>
+            ) : (
+              <div className="display text-[clamp(48px,8vw,80px)] leading-[0.85] tabular-nums">{String(daysToSunday).padStart(2, '0')}</div>
+            )}
+            <div className="label mt-2">{daysToSunday === 0 ? 'Chủ nhật rồi, lên phim' : 'Ngày tới Chủ nhật'}</div>
           </div>
         </div>
 

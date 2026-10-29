@@ -128,7 +128,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               <button onClick={onOpenSession} className="group panel mt-4 w-full flex items-center gap-3 p-2.5 pr-4 text-left">
                 <img src={selectedMovie.posterUrl} alt="" referrerPolicy="no-referrer" className="w-10 h-14 object-cover border-[1.5px] border-ink" style={{ borderRadius: 'var(--radius-btn, 6px)' }} />
                 <span className="flex-1 min-w-0">
-                  <span className="block label !text-[10px]">Suất kế tiếp · {when?.weekday} {when?.dayMonth} · {upcomingSession.time}</span>
+                  <span className="block label !text-[10px]">Suất kế tiếp · {when?.weekday} {when?.dayMonth}</span>
                   <span className="block font-bold leading-snug truncate">{selectedMovie.title}</span>
                 </span>
                 <ArrowUpRight className="w-5 h-5 shrink-0 group-hover:text-accent transition-colors" />
@@ -155,7 +155,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               <div className="flex items-end justify-between gap-4 p-5 border-t-[1.5px] border-ink">
                 <div className="min-w-0">
                   <div className="label">
-                    {when?.weekday} {when?.dayMonth} · {upcomingSession.time} · {selectedMovie.platform}
+                    {when?.weekday} {when?.dayMonth} · {selectedMovie.platform}
                   </div>
                   <div className="mt-1.5 text-[19px] font-bold leading-snug line-clamp-2">{selectedMovie.title}</div>
                 </div>
