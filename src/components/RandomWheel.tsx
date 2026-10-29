@@ -137,18 +137,22 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   // Proposer rules (from GGMV): watched proposers, most recent first.
   // - Same proposer for the last 2 watched movies -> their movies sit out this spin.
   // - Proposer absent from the last 3 watched movies -> their movies get double odds.
-  const { restrictedProposer, recentThreeProposers } = useMemo(() => {
-    const history = movies
+  // - Movie has a genre absent from the last 3 watched movies -> x1.5 odds (stacks with the above).
+  const { restrictedProposer, recentThreeProposers, recentThreeGenres } = useMemo(() => {
+    const watched = movies
       .filter((m) => m.watched && m.watchedDate && m.suggestedBy)
-      .sort((a, b) => (b.watchedDate as string).localeCompare(a.watchedDate as string))
-      .map((m) => m.suggestedBy.trim());
+      .sort((a, b) => (b.watchedDate as string).localeCompare(a.watchedDate as string));
+    const history = watched.map((m) => m.suggestedBy.trim());
     return {
       restrictedProposer: history.length >= 2 && history[0] === history[1] ? history[0] : null,
       recentThreeProposers: history.slice(0, 3),
+      recentThreeGenres: new Set(watched.slice(0, 3).flatMap((m) => m.genres)),
     };
   }, [movies]);
 
   const isBuffed = (m: Movie) => !recentThreeProposers.includes(m.suggestedBy.trim());
+  const isGenreBuffed = (m: Movie) => m.genres.some((g) => !recentThreeGenres.has(g));
+  const buffMultiplier = (m: Movie) => (isBuffed(m) ? 2 : 1) * (isGenreBuffed(m) ? 1.5 : 1);
 
   // Filtered candidate movies
   const eligibleMovies = useMemo(() => {
@@ -169,7 +173,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
 
     const weights = eligibleMovies.map((m) => {
       const base = weightedByVotes ? Math.max(1, (m.votes?.length || 0) + 1) : 1;
-      return isBuffed(m) ? base * 2 : base;
+      return base * buffMultiplier(m);
     });
 
     const totalWeight = weights.reduce((acc, w) => acc + w, 0);
@@ -188,7 +192,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
         odds: weights[index] / totalWeight,
       };
     });
-  }, [eligibleMovies, weightedByVotes, recentThreeProposers]);
+  }, [eligibleMovies, weightedByVotes, recentThreeProposers, recentThreeGenres]);
 
   // Draw the wheel: four flat tones (ink, accent, card, sunk) split by ink rules.
   // spot (0..1) dims every slice except the one under the pointer.
@@ -755,12 +759,15 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                 return (
                   <li key={movie.id} className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-sunk transition-colors">
                     <span className="flex-1 min-w-0 text-[14px] font-medium truncate">{movie.title}</span>
-                    {isBuffed(movie) && (
+                    {buffMultiplier(movie) > 1 && (
                       <span
                         className="chip chip-accent !h-5"
-                        title={`${movie.suggestedBy} không có phim nào trong 3 phim xem gần nhất: cơ hội x2`}
+                        title={[
+                          isBuffed(movie) && `${movie.suggestedBy} không có phim nào trong 3 phim xem gần nhất: x2`,
+                          isGenreBuffed(movie) && 'Có thể loại không xuất hiện trong 3 phim xem gần nhất: x1.5',
+                        ].filter(Boolean).join('\n')}
                       >
-                        x2
+                        x{buffMultiplier(movie)}
                       </span>
                     )}
                     <span className="num text-[12px] text-ink-3 w-9 text-right">{movie.durationMinutes}′</span>
