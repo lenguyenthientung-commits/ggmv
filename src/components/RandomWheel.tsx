@@ -851,17 +851,15 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                 <RotateCcw className="w-4 h-4" />
                 Quay lại
               </button>
-              {winnerMovie.watchUrl && (
-                <a
-                  href={winnerMovie.watchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-sm btn-primary flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Xem phim
-                </a>
-              )}
+              <a
+                href={winnerMovie.watchUrl || `https://chophim.app/tim-kiem?keyword=${encodeURIComponent(winnerMovie.title)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-sm btn-primary flex items-center gap-1.5"
+              >
+                <ExternalLink className="w-4 h-4" />
+                {winnerMovie.watchUrl ? 'Xem phim' : 'Tìm trên Chophim'}
+              </a>
               {winnerMovie.trailerUrl && (
                 <button
                   onClick={() => {
