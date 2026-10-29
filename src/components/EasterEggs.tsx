@@ -173,6 +173,16 @@ export const BadgeToast: React.FC<{ badge: BadgeDef; copy?: string; onDone: () =
 export const badgeCopy = (id: string): string | undefined => UNLOCK_COPY[id as EggId];
 
 // ---------- Hidden effects ----------
+// One popped kernel in the medal style: puffs drawn twice (ink outline, then fill) so only the silhouette is outlined
+const PUFFS: [number, number, number][] = [[12, 12, 7], [21, 11, 6.5], [16, 19, 8], [9, 20, 5.5], [23, 20, 6]];
+const PopcornKernel: React.FC<{ size: number }> = ({ size }) => (
+  <svg viewBox="0 0 32 32" width={size} height={size} className="block">
+    {PUFFS.map(([cx, cy, r], i) => <circle key={`o${i}`} cx={cx} cy={cy} r={r + 1.5} fill="var(--color-ink)" />)}
+    {PUFFS.map(([cx, cy, r], i) => <circle key={`f${i}`} cx={cx} cy={cy} r={r} fill="#FFF6DE" />)}
+    <circle cx="17" cy="20" r="3" fill="#E9B949" />
+    <circle cx="11" cy="12" r="1.8" fill="#E9B949" />
+  </svg>
+);
 // Konami code -> old film, typing "popcorn" -> popcorn rain. Other parts of the app call playFx().
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const FX_MS: Record<FxKind, number> = { popcorn: 4500, oldfilm: 8000, projector: 2600, dizzy: 2400 };
@@ -221,8 +231,8 @@ export const FxLayer: React.FC = () => {
       {active.popcorn && (
         <div key={active.popcorn} className="fx-rain" aria-hidden="true">
           {Array.from({ length: 36 }, (_, i) => (
-            <span key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i * 0.137) % 1.4}s`, animationDuration: `${2.1 + ((i * 0.31) % 1.3)}s`, fontSize: `${18 + ((i * 7) % 16)}px` }}>
-              🍿
+            <span key={i} style={{ left: `${(i * 37) % 100}%`, animationDelay: `${(i * 0.137) % 1.4}s`, animationDuration: `${2.1 + ((i * 0.31) % 1.3)}s` }}>
+              <PopcornKernel size={20 + ((i * 7) % 18)} />
             </span>
           ))}
         </div>
