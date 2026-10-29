@@ -441,7 +441,7 @@ export default function App() {
         mode={mode}
         setMode={setMode}
         houseNote={DEFAULT_HOUSE_NOTE}
-        userBadgeGlyphs={(memberBadges(movies).get(currentUser) ?? []).map(b => b.glyph).join('')}
+        userBadges={memberBadges(movies).get(currentUser) ?? []}
         world={world}
         worldPref={worldPref}
         setWorldPref={setWorldPref}

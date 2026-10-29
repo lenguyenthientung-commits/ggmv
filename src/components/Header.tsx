@@ -6,7 +6,7 @@ import { AppearanceMenu } from './AppearanceMenu';
 import { ThemeId, Mode } from '../theme';
 import { World, WorldPref } from '../seasons/worlds';
 import { WorldMark } from '../seasons/art';
-import { playFx, unlockSecret } from '../badges';
+import { BadgeDef, playFx, unlockSecret } from '../badges';
 
 type Tab = 'movies' | 'wheel' | 'sessions' | 'archive' | 'achievements' | 'stats';
 
@@ -22,7 +22,7 @@ interface HeaderProps {
   mode: Mode;
   setMode: (m: Mode) => void;
   houseNote: string;
-  userBadgeGlyphs: string;
+  userBadges: BadgeDef[];
   world: World | null;
   worldPref: WorldPref;
   setWorldPref: (p: WorldPref) => void;
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
   mode,
   setMode,
   houseNote,
-  userBadgeGlyphs,
+  userBadges,
   world,
   worldPref,
   setWorldPref,
@@ -249,7 +249,11 @@ export const Header: React.FC<HeaderProps> = ({
                 {currentUser.charAt(0).toUpperCase()}
               </span>
               <span className="hidden sm:block text-[13px] font-semibold max-w-[88px] truncate">{currentUser}</span>
-              {userBadgeGlyphs && <span className="hidden sm:block text-[12px] leading-none" title="Danh hiệu đang giữ">{userBadgeGlyphs}</span>}
+              {userBadges.length > 0 && (
+                <span className="hidden sm:flex items-center gap-0.5 text-ink-2" title={`Danh hiệu: ${userBadges.map((b) => b.name).join(', ')}`}>
+                  {userBadges.map((b) => <b.icon key={b.id} className="w-3.5 h-3.5" strokeWidth={2.25} />)}
+                </span>
+              )}
               <ChevronDown className="w-3.5 h-3.5 text-ink-3" />
             </button>
 

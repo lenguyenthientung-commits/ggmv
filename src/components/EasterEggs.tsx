@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
@@ -83,72 +83,59 @@ export const IntermissionCard: React.FC<{ movies: Movie[] }> = ({ movies }) => {
 };
 
 // ---------- Badges ----------
+// Flat print look, same language as the rest of the UI: solid tones, ink outline, hard offset shadow.
+// [face, rim, line]
 const TIER_COLORS: Record<Tier | 'locked', [string, string, string]> = {
-  gold: ['#FFE27A', '#D9A106', '#7A5600'],
-  silver: ['#F4F6F8', '#AEB6BF', '#56616C'],
-  bronze: ['#F5B985', '#B8692E', '#6A3610'],
-  secret: ['#D4C4FF', '#7C4DFF', '#35197F'],
-  member: ['#A8F2E3', '#1FB89A', '#0D5A4C'],
-  locked: ['#E6E6E6', '#B9B9B9', '#7D7D7D'],
+  gold: ['#F3D36B', '#D4A72C', '#3A2A00'],
+  silver: ['#E6E9EC', '#AEB5BD', '#262E36'],
+  bronze: ['#EDBC95', '#BC7C4F', '#3A1F0C'],
+  secret: ['#D5CBF5', '#8E74DE', '#21104A'],
+  member: ['#B3E4D8', '#46A88F', '#0C352C'],
+  locked: ['#EEEDE9', '#D2D0C9', '#8C897F'],
 };
 const TIER_LABEL: Record<Tier, string> = { gold: 'Vàng', silver: 'Bạc', bronze: 'Đồng', secret: 'Bí mật', member: 'Danh hiệu' };
 
-// A rosette with 18 scallops, tier-colored, plus two ribbon tails
-const ROSETTE = Array.from({ length: 36 }, (_, i) => {
-  const a = (i / 36) * Math.PI * 2 - Math.PI / 2;
-  const r = i % 2 === 0 ? 46 : 41.5;
-  return `${(50 + r * Math.cos(a)).toFixed(2)},${(50 + r * Math.sin(a)).toFixed(2)}`;
+// A rosette with 16 scallops plus two ribbon tails
+const ROSETTE = Array.from({ length: 32 }, (_, i) => {
+  const a = (i / 32) * Math.PI * 2 - Math.PI / 2;
+  const r = i % 2 === 0 ? 44 : 39.5;
+  return `${(48 + r * Math.cos(a)).toFixed(2)},${(48 + r * Math.sin(a)).toFixed(2)}`;
 }).join(' ');
 
-export const BadgeMedal: React.FC<{ badge: BadgeDef; unlocked: boolean; size?: number; shine?: boolean }> = ({ badge, unlocked, size = 64, shine }) => {
-  const uid = useId().replace(/:/g, '');
-  const [hi, mid, lo] = TIER_COLORS[unlocked ? badge.tier : 'locked'];
-  const glyph = !unlocked && badge.tier === 'secret' ? '?' : badge.glyph;
+export const BadgeMedal: React.FC<{ badge: BadgeDef; unlocked: boolean; size?: number }> = ({ badge, unlocked, size = 64 }) => {
+  const [face, rim, line] = TIER_COLORS[unlocked ? badge.tier : 'locked'];
+  const Icon = badge.icon;
+  const hidden = !unlocked && badge.tier === 'secret';
   return (
     <svg
       viewBox="0 0 100 116"
       width={size}
       height={size * 1.16}
-      className={`badge-medal shrink-0 ${unlocked ? '' : 'is-locked'}`}
+      className="shrink-0"
       role="img"
       aria-label={`${badge.name}${unlocked ? '' : ' (chưa mở)'}`}
     >
-      <defs>
-        <linearGradient id={`g${uid}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor={hi} />
-          <stop offset="0.55" stopColor={mid} />
-          <stop offset="1" stopColor={lo} />
-        </linearGradient>
-        <linearGradient id={`s${uid}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#fff" stopOpacity="0" />
-          <stop offset="0.5" stopColor="#fff" stopOpacity="0.75" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
-        </linearGradient>
-        <clipPath id={`c${uid}`}>
-          <polygon points={ROSETTE} />
-        </clipPath>
-      </defs>
-      <polygon points="30,78 22,114 36,106 44,116 50,82" fill={lo} stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" />
-      <polygon points="70,78 78,114 64,106 56,116 50,82" fill={mid} stroke="var(--color-ink)" strokeWidth="2" strokeLinejoin="round" />
-      <polygon points={ROSETTE} fill={`url(#g${uid})`} stroke="var(--color-ink)" strokeWidth="2.5" strokeLinejoin="round" />
-      <circle cx="50" cy="50" r="31" fill={hi} fillOpacity="0.35" stroke={lo} strokeWidth="2" />
-      <circle cx="50" cy="50" r="26" fill="none" stroke="#fff" strokeOpacity="0.45" strokeWidth="1.5" strokeDasharray="2 3" />
-      <text x="50" y="51" textAnchor="middle" dominantBaseline="central" fontSize="30" opacity={unlocked ? 1 : 0.4}
-        fontWeight={900} fill={lo} style={{ filter: unlocked ? undefined : 'grayscale(1)' }}>
-        {glyph}
-      </text>
-      <g clipPath={`url(#c${uid})`}>
-        <rect className={`medal-shine ${shine ? 'is-auto' : ''}`} x="-60" y="-10" width="40" height="120" fill={`url(#s${uid})`} transform="skewX(-20)" />
+      <g stroke="var(--color-ink)" strokeWidth="2.5" strokeLinejoin="round">
+        <polygon points="28,74 20,112 34,104 42,114 48,80" fill={rim} />
+        <polygon points="68,74 76,112 62,104 54,114 48,80" fill={rim} />
+        {unlocked && <polygon points={ROSETTE} fill="var(--color-ink)" transform="translate(4 4)" />}
+        <polygon points={ROSETTE} fill={rim} />
+        <circle cx="48" cy="48" r="29" fill={face} />
       </g>
+      {hidden ? (
+        <text x="48" y="50" textAnchor="middle" dominantBaseline="central" className="display" fontSize="34" fill={line}>?</text>
+      ) : (
+        <Icon x={28} y={28} width={40} height={40} color={line} strokeWidth={2} opacity={unlocked ? 1 : 0.55} />
+      )}
     </svg>
   );
 };
 
-// A new badge (ledger, archive milestone or secret): medal flips in, popcorn bursts out
-const BURST = Array.from({ length: 16 }, (_, i) => {
-  const a = (i / 16) * Math.PI * 2;
-  const d = 70 + (i % 3) * 22;
-  return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, glyph: i % 4 === 0 ? '🍿' : i % 2 ? '✦' : '★' };
+// A new badge (ledger, archive milestone or secret): medal flips in, sparks burst out
+const BURST = Array.from({ length: 14 }, (_, i) => {
+  const a = (i / 14) * Math.PI * 2;
+  const d = 64 + (i % 3) * 20;
+  return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, glyph: i % 2 ? '✦' : '★' };
 });
 
 export const BadgeToast: React.FC<{ badge: BadgeDef; copy?: string; onDone: () => void }> = ({ badge, copy, onDone }) => {
@@ -161,7 +148,7 @@ export const BadgeToast: React.FC<{ badge: BadgeDef; copy?: string; onDone: () =
     <div role="status" aria-live="polite" className="egg-toast fixed z-50 bottom-4 right-4 left-4 sm:left-auto sm:w-[360px] bg-night text-night-ink border-[1.5px] border-night-line rounded-lg p-4 shadow-[4px_4px_0_var(--color-accent)]">
       <div className="flex items-center gap-4">
         <span className="relative shrink-0">
-          <span className="badge-flip block"><BadgeMedal badge={badge} unlocked size={60} shine /></span>
+          <span className="badge-flip block"><BadgeMedal badge={badge} unlocked size={60} /></span>
           <span className="absolute left-1/2 top-[40%]" aria-hidden="true">
             {BURST.map((p, i) => (
               <span key={i} className="badge-burst" style={{ '--dx': `${p.dx}px`, '--dy': `${p.dy}px`, animationDelay: `${250 + (i % 4) * 30}ms` } as React.CSSProperties}>
