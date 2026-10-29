@@ -6,7 +6,7 @@ import { AppearanceMenu } from './AppearanceMenu';
 import { ThemeId, Mode } from '../theme';
 import { World, WorldPref } from '../seasons/worlds';
 import { WorldMark } from '../seasons/art';
-import { BadgeDef, playFx, unlockSecret } from '../badges';
+import { playFx, unlockSecret } from '../badges';
 
 type Tab = 'movies' | 'wheel' | 'sessions' | 'archive' | 'achievements' | 'stats';
 
@@ -22,7 +22,6 @@ interface HeaderProps {
   mode: Mode;
   setMode: (m: Mode) => void;
   houseNote: string;
-  userBadges: BadgeDef[];
   world: World | null;
   worldPref: WorldPref;
   setWorldPref: (p: WorldPref) => void;
@@ -58,7 +57,6 @@ export const Header: React.FC<HeaderProps> = ({
   mode,
   setMode,
   houseNote,
-  userBadges,
   world,
   worldPref,
   setWorldPref,
@@ -152,8 +150,8 @@ export const Header: React.FC<HeaderProps> = ({
         key={tab.id}
         onClick={() => goTo(tab.id)}
         aria-current={active ? 'page' : undefined}
-        className={`relative shrink-0 font-semibold transition-colors ${
-          compact ? 'h-11 px-3 text-[13px]' : 'h-16 px-3.5 text-[14px]'
+        className={`relative shrink-0 whitespace-nowrap font-semibold transition-colors ${
+          compact ? 'h-11 px-3 text-[13px]' : 'h-16 px-3 text-[14px]'
         } ${active ? 'text-ink' : 'text-ink-3 hover:text-ink'}`}
       >
         {tab.label}
@@ -198,18 +196,8 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Desktop nav */}
-        <nav className="hidden lg:flex items-center" aria-label="Điều hướng chính">
+        <nav className="hidden xl:flex items-center" aria-label="Điều hướng chính">
           {TABS.map((t) => navButton(t))}
-          <button
-            onClick={() => {
-              sounds.playVintageSwitch();
-              onOpenRules();
-            }}
-            className="h-16 px-3.5 text-[14px] font-semibold text-ink-3 hover:text-ink transition-colors flex items-center gap-1.5"
-          >
-            <BookOpen className="w-4 h-4" />
-            Điều lệ
-          </button>
         </nav>
 
         {/* Actions */}
@@ -232,6 +220,18 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {isMuted ? <VolumeX className="w-[18px] h-[18px]" /> : <Volume2 className="w-[18px] h-[18px]" />}
           </button>
+          <button
+            onClick={() => {
+              sounds.playVintageSwitch();
+              onOpenRules();
+            }}
+            className="btn-icon hidden sm:inline-flex"
+            aria-label="Điều lệ"
+            title="Điều lệ"
+          >
+            <BookOpen className="w-[18px] h-[18px]" />
+          </button>
+          <span className="hidden sm:block w-px h-6 bg-line mx-1" aria-hidden="true" />
 
           {/* Member switcher */}
           <div className="relative">
@@ -249,11 +249,6 @@ export const Header: React.FC<HeaderProps> = ({
                 {currentUser.charAt(0).toUpperCase()}
               </span>
               <span className="hidden sm:block text-[13px] font-semibold max-w-[88px] truncate">{currentUser}</span>
-              {userBadges.length > 0 && (
-                <span className="hidden sm:flex items-center gap-0.5 text-ink-2" title={`Danh hiệu: ${userBadges.map((b) => b.name).join(', ')}`}>
-                  {userBadges.map((b) => <b.icon key={b.id} className="w-3.5 h-3.5" strokeWidth={2.25} />)}
-                </span>
-              )}
               <ChevronDown className="w-3.5 h-3.5 text-ink-3" />
             </button>
 
@@ -336,14 +331,14 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile / tablet nav */}
-      <nav className="lg:hidden scroll-x flex px-2 sm:px-4 border-t border-line" aria-label="Điều hướng chính">
+      <nav className="xl:hidden scroll-x flex px-2 sm:px-4 border-t border-line" aria-label="Điều hướng chính">
         {TABS.map((t) => navButton(t, true))}
         <button
           onClick={() => {
             sounds.playVintageSwitch();
             onOpenRules();
           }}
-          className="h-11 px-3 shrink-0 text-[13px] font-semibold text-ink-3 hover:text-ink transition-colors"
+          className="sm:hidden h-11 px-3 shrink-0 whitespace-nowrap text-[13px] font-semibold text-ink-3 hover:text-ink transition-colors"
         >
           Điều lệ
         </button>

@@ -17,7 +17,7 @@ import { WorldPref, loadWorldPref, saveWorldPref, resolveWorld, worldById } from
 import { WorldCurtain } from './seasons/WorldCurtain';
 import { EggEvent, DEFAULT_HOUSE_NOTE, takeUnseenEvents, markSurface, hasCrossSurfaceVisit } from './easterEggs';
 import { ProjectorDust, IntermissionCard, BadgeToast, FxLayer, badgeCopy } from './components/EasterEggs';
-import { clubBadges, archiveBadgeIds, takeNewArchiveBadges, memberBadges, findBadge } from './badges';
+import { clubBadges, archiveBadgeIds, takeNewArchiveBadges, findBadge } from './badges';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string>(() => {
@@ -441,7 +441,6 @@ export default function App() {
         mode={mode}
         setMode={setMode}
         houseNote={DEFAULT_HOUSE_NOTE}
-        userBadges={memberBadges(movies).get(currentUser) ?? []}
         world={world}
         worldPref={worldPref}
         setWorldPref={setWorldPref}
