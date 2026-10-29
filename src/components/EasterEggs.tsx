@@ -3,7 +3,8 @@ import { X } from 'lucide-react';
 import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
 import { EggEvent, EggId, Story, UNLOCK_COPY, latestLegendaryDate } from '../easterEggs';
-import { BadgeDef, FxKind, Tier, SECRET_BADGES, clubBadges, loadSecrets, memberBadges, playFx, unlockSecret } from '../badges';
+import { BadgeDef, FxKind, SecretId, Tier, SECRET_BADGES, clubBadges, loadSecrets, memberBadges, playFx, unlockSecret } from '../badges';
+import { BIRTHDAY_FACT, CINEMA_FACTS, CinemaFact } from '../cinemaFacts';
 import { BROTHERS_LIST } from './Header';
 
 // C3 Projector dust: when the pointer rests, a speck resolves under it. Never captures input.
@@ -172,6 +173,78 @@ export const BadgeToast: React.FC<{ badge: BadgeDef; copy?: string; onDone: () =
 
 export const badgeCopy = (id: string): string | undefined => UNLOCK_COPY[id as EggId];
 
+// ---------- Cinema facts: the footer's シネマクラブ deals a trivia card ----------
+const FACTS_SEEN_KEY = 'ggmv_facts_seen';
+const BIRTHDAY_KEY = 'ggmv_cinema_birthday';
+
+const readSeenFacts = (): number[] => {
+  try {
+    return JSON.parse(localStorage.getItem(FACTS_SEEN_KEY) || '[]');
+  } catch {
+    return [];
+  }
+};
+
+export const CinemaFactTrigger: React.FC = () => {
+  const [card, setCard] = useState<{ fact: CinemaFact; birthday?: boolean } | null>(null);
+
+  // 28 December: cinema's birthday card, once per day
+  useEffect(() => {
+    const now = new Date();
+    if (now.getMonth() !== 11 || now.getDate() !== 28) return;
+    const today = now.toDateString();
+    try {
+      if (localStorage.getItem(BIRTHDAY_KEY) === today) return;
+      localStorage.setItem(BIRTHDAY_KEY, today);
+    } catch {
+      // storage blocked: show it anyway
+    }
+    setCard({ fact: BIRTHDAY_FACT, birthday: true });
+  }, []);
+
+  const deal = () => {
+    sounds.playVintageSwitch();
+    const seen = readSeenFacts();
+    const unseen = CINEMA_FACTS.map((_, i) => i).filter((i) => !seen.includes(i));
+    const pool = unseen.length ? unseen : CINEMA_FACTS.map((_, i) => i);
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const next = [...new Set([...seen, pick])];
+    try {
+      localStorage.setItem(FACTS_SEEN_KEY, JSON.stringify(next));
+    } catch {
+      // storage blocked: facts still show
+    }
+    if (next.length >= 10) unlockSecret('CINEPHILE');
+    setCard({ fact: CINEMA_FACTS[pick] });
+  };
+
+  return (
+    <>
+      <button onClick={deal} className="jp text-[12px] hover:text-accent transition-colors" title="Kiến thức điện ảnh">
+        シネマクラブ
+      </button>
+      {card && (
+        <div role="status" className="egg-toast fixed z-50 bottom-4 left-4 right-4 sm:right-auto sm:w-[360px] bg-night text-night-ink border-[1.5px] border-night-line rounded-lg p-4 shadow-[4px_4px_0_var(--color-accent)]">
+          <div className="flex items-start justify-between gap-3">
+            <span className="label !text-accent !text-[10px]">
+              {card.birthday ? 'Hôm nay · Sinh nhật điện ảnh' : `Kiến thức điện ảnh · ${card.fact.tag}`}
+            </span>
+            <button onClick={() => setCard(null)} className="text-night-ink/60 hover:text-night-ink -mr-1 -mt-0.5" aria-label="Đóng">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="mt-2 font-bold text-[16px] leading-snug">{card.fact.title}</div>
+          <p className="mt-1.5 text-[13.5px] text-night-ink/75 leading-relaxed">{card.fact.body}</p>
+          <div className="mt-3 flex items-center justify-between">
+            <span className="num text-[11px] text-night-ink/40">{readSeenFacts().length}/{CINEMA_FACTS.length} thẻ đã đọc</span>
+            <button onClick={deal} className="label !text-night-ink hover:!text-accent">Thẻ khác →</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 // ---------- Hidden effects ----------
 // One popped kernel in the medal style: puffs drawn twice (ink outline, then fill) so only the silhouette is outlined
 const PUFFS: [number, number, number][] = [[12, 12, 7], [21, 11, 6.5], [16, 19, 8], [9, 20, 5.5], [23, 20, 6]];
@@ -185,7 +258,18 @@ const PopcornKernel: React.FC<{ size: number }> = ({ size }) => (
 );
 // Konami code -> old film, typing "popcorn" -> popcorn rain. Other parts of the app call playFx().
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
-const FX_MS: Record<FxKind, number> = { popcorn: 4500, oldfilm: 8000, projector: 2600, dizzy: 2400 };
+const FX_MS: Record<FxKind, number> = { popcorn: 4500, oldfilm: 8000, projector: 2600, dizzy: 2400, snow: 7000, mirror: 4000, vertigo: 2800 };
+
+// Typed words (outside text fields): film references, each with its own effect
+const WORDS: [string, FxKind | null, SecretId][] = [
+  ['popcorn', 'popcorn', 'POPCORN'],
+  ['rosebud', 'snow', 'ROSEBUD'],
+  ['redrum', 'mirror', 'REDRUM'],
+  ['vertigo', 'vertigo', 'VERTIGO'],
+  ['mcguffin', null, 'MCGUFFIN'],
+];
+const isTyping = (t: EventTarget | null) =>
+  t instanceof HTMLElement && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName));
 
 export const FxLayer: React.FC = () => {
   const [active, setActive] = useState<Partial<Record<FxKind, number>>>({});
@@ -205,15 +289,20 @@ export const FxLayer: React.FC = () => {
 
     let keys: string[] = [];
     const onKey = (e: KeyboardEvent) => {
+      if (isTyping(e.target)) return;
       keys = [...keys, e.key.toLowerCase()].slice(-10);
       if (keys.join() === KONAMI.join()) {
         keys = [];
         playFx('oldfilm');
         unlockSecret('KONAMI');
-      } else if (keys.slice(-7).join('') === 'popcorn') {
+        return;
+      }
+      const typed = keys.join('');
+      const hit = WORDS.find(([word]) => typed.endsWith(word));
+      if (hit) {
         keys = [];
-        playFx('popcorn');
-        unlockSecret('POPCORN');
+        if (hit[1]) playFx(hit[1]);
+        unlockSecret(hit[2]);
       }
     };
 
@@ -237,7 +326,14 @@ export const FxLayer: React.FC = () => {
           ))}
         </div>
       )}
-      {active.oldfilm && <div key={active.oldfilm} className="fx-oldfilm-layer" aria-hidden="true"><span className="fx-scratch" /><span className="fx-scratch fx-scratch-2" /></div>}
+      {active.snow && (
+        <div key={active.snow} className="fx-rain fx-snowfall" aria-hidden="true">
+          {Array.from({ length: 60 }, (_, i) => (
+            <span key={i} style={{ left: `${(i * 41) % 100}%`, animationDelay: `${(i * 0.173) % 3}s`, animationDuration: `${3.6 + ((i * 0.29) % 2.4)}s`, width: 4 + (i % 4) * 2, height: 4 + (i % 4) * 2 }} />
+          ))}
+        </div>
+      )}
+      {active.oldfilm &&<div key={active.oldfilm} className="fx-oldfilm-layer" aria-hidden="true"><span className="fx-scratch" /><span className="fx-scratch fx-scratch-2" /></div>}
       {active.projector && <div key={active.projector} className="fx-projector-layer" aria-hidden="true" />}
     </>
   );

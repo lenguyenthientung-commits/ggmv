@@ -6,8 +6,8 @@
 
 import type { LucideIcon } from 'lucide-react';
 import {
-  Armchair, Bomb, Church, Clapperboard, Compass, Crown, Dices, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Handshake, Heart, Hourglass,
-  Megaphone, Package, Palette, PenLine, Popcorn, Projector, Scale, ScrollText, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
+  Armchair, Award, Bird, Bomb, Briefcase, Church, Clapperboard, Compass, Crown, Dices, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Handshake, Heart, Hourglass,
+  FlipHorizontal2, Focus, GraduationCap, Megaphone, Package, Palette, PenLine, Popcorn, Projector, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
 } from 'lucide-react';
 import { Movie } from './types/cinema';
 import { ACHIEVEMENTS, EggEvent, judgeScores, rankScore } from './easterEggs';
@@ -90,6 +90,23 @@ const ARCHIVE_BADGES: (BadgeDef & { check: (watched: Movie[]) => string | null }
       return null;
     },
   },
+  {
+    id: 'HITCHCOCK', name: 'Đi Tìm Cameo', icon: Bird, tier: 'silver',
+    description: 'Hội đã xem một phim của Hitchcock. Ông có xuất hiện đâu đó trong phim, ai thấy không?',
+    rule: 'Xem một phim do Alfred Hitchcock đạo diễn.',
+    check: (w) => w.find((m) => /hitchcock/i.test(m.director ?? ''))?.title ?? null,
+  },
+  {
+    id: 'AUTEUR', name: 'Fan Cứng Đạo Diễn', icon: Award, tier: 'gold',
+    description: 'Lý thuyết tác giả: có một đạo diễn mà cả hội cứ quay lại xem mãi.',
+    rule: 'Xem ít nhất 3 phim của cùng một đạo diễn.',
+    check: (w) => {
+      const counts = new Map<string, number>();
+      w.forEach((m) => (m.director ?? '').split(',').map((d) => d.trim()).filter(Boolean).forEach((d) => counts.set(d, (counts.get(d) ?? 0) + 1)));
+      const top = [...counts].sort((a, b) => b[1] - a[1])[0];
+      return top && top[1] >= 3 ? `${top[0]} · ${top[1]} phim` : null;
+    },
+  },
 ];
 
 export function clubBadges(movies: Movie[], events: EggEvent[]): EarnedBadge[] {
@@ -109,13 +126,18 @@ export function clubBadges(movies: Movie[], events: EggEvent[]): EarnedBadge[] {
 export const archiveBadgeIds = ARCHIVE_BADGES.map((b) => b.id);
 
 // ---------- Secret: found by poking at the app ----------
-export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE';
+export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE';
 
 export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'KONAMI', name: 'Mã Gian Lận', icon: Gamepad2, tier: 'secret', description: 'Bạn biết mã của thời băng VHS. Phim tua về năm xưa.', rule: '↑ ↑ ↓ ↓ ← → ← → B A', hint: 'Những người chơi game thùng còn nhớ.' },
-  { id: 'POPCORN', name: 'Nghiện Bỏng Ngô', icon: Popcorn, tier: 'secret', description: 'Gõ đúng món ăn vặt của rạp, trời đổ mưa bỏng ngô.', rule: 'Gõ chữ "popcorn" ở bất kỳ đâu.', hint: 'Món ăn vặt của rạp, đánh vần bằng tiếng Anh.' },
+  { id: 'POPCORN', name: 'Nghiện Bỏng Ngô', icon: Popcorn, tier: 'secret', description: 'Gõ đúng món ăn vặt của rạp, trời đổ mưa bỏng ngô.', rule: 'Gõ chữ "popcorn" (ngoài ô nhập liệu).', hint: 'Món ăn vặt của rạp, đánh vần bằng tiếng Anh.' },
   { id: 'PROJECTIONIST', name: 'Thợ Chiếu Phim', icon: Projector, tier: 'secret', description: 'Bạn nghịch máy chiếu đến mức nó chập chờn.', rule: 'Bấm logo GG 7 lần liên tiếp.', hint: 'Cái logo trông có vẻ bấm được nhiều lần.' },
   { id: 'INDECISIVE', name: 'Kẻ Do Dự', icon: Tornado, tier: 'secret', description: 'Quay mãi không chốt, đến vòng quay cũng chóng mặt.', rule: 'Quay 10 lần liền mà chưa chốt phim nào.', hint: 'Vòng quay không thích bị bắt quay mãi.' },
+  { id: 'ROSEBUD', name: 'Nụ Hồng', icon: Snowflake, tier: 'secret', description: 'Lời cuối của Charles Foster Kane trong "Citizen Kane" (1941), bí ẩn cả bộ phim đi tìm. Tuyết rơi như trong quả cầu thủy tinh.', rule: 'Gõ chữ "rosebud".', hint: 'Lời trăng trối nổi tiếng nhất lịch sử điện ảnh, năm 1941.' },
+  { id: 'REDRUM', name: 'Chữ Trong Gương', icon: FlipHorizontal2, tier: 'secret', description: 'Đọc ngược lại là "murder". Chữ viết trên cửa trong "The Shining" (1980), chỉ hiểu được khi nhìn qua gương.', rule: 'Gõ chữ "redrum".', hint: 'Một chữ chỉ có nghĩa khi soi gương, khách sạn Overlook.' },
+  { id: 'VERTIGO', name: 'Chóng Mặt', icon: Focus, tier: 'secret', description: 'Dolly zoom: máy lùi, ống kính zoom tới, thế giới co giãn quanh nhân vật. Hitchcock dùng nó để diễn tả cơn sợ độ cao.', rule: 'Gõ chữ "vertigo".', hint: 'Một phim Hitchcock 1958, và một kỹ thuật máy quay mang tên nó.' },
+  { id: 'MCGUFFIN', name: 'Chiếc Cặp Bí Ẩn', icon: Briefcase, tier: 'secret', description: 'MacGuffin: thứ ai cũng tranh giành nhưng chẳng ai cần biết nó là gì. Huy hiệu này cũng vậy.', rule: 'Gõ chữ "mcguffin".', hint: 'Thuật ngữ Hitchcock dùng cho cái cớ của cả cốt truyện.' },
+  { id: 'CINEPHILE', name: 'Mọt Phim', icon: GraduationCap, tier: 'secret', description: 'Đã đọc 10 thẻ kiến thức điện ảnh khác nhau.', rule: 'Bấm vào chữ シネマクラブ ở cuối trang để rút thẻ, đọc đủ 10 thẻ.', hint: 'Cuối trang có một dòng chữ Nhật biết kể chuyện.' },
 ];
 
 const SECRETS_KEY = 'ggmv_secret_badges';
@@ -141,7 +163,7 @@ function writeJson(key: string, value: unknown) {
 export const loadSecrets = (): SecretId[] => readJson<SecretId[]>(SECRETS_KEY, []);
 
 // Fire-and-forget hooks for any component: effects and badge unlocks travel as window events
-export type FxKind = 'popcorn' | 'oldfilm' | 'projector' | 'dizzy';
+export type FxKind = 'popcorn' | 'oldfilm' | 'projector' | 'dizzy' | 'snow' | 'mirror' | 'vertigo';
 export const playFx = (kind: FxKind) => window.dispatchEvent(new CustomEvent('ggmv:fx', { detail: kind }));
 export const announceBadge = (id: string) => window.dispatchEvent(new CustomEvent('ggmv:badge', { detail: id }));
 
