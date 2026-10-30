@@ -313,19 +313,6 @@ const USHER_SPOTS: [number, number][] = [[0.84, 0.72], [0.08, 0.58], [0.8, 0.3],
 const USHER_LINES = ["Hey. You've been scrolling for a while. Need some popcorn?", 'Too slow.', 'The usher does not get caught.', 'Shiba left this behind.'];
 const USHER_MISSES = 3;
 
-const PopcornBag: React.FC = () => (
-  <svg viewBox="0 0 60 72" width="66" height="79" aria-hidden="true">
-    <g stroke="#16140f" strokeWidth="2.5" strokeLinejoin="round">
-      <circle cx="17" cy="20" r="9" fill="#FFF6DE" />
-      <circle cx="30" cy="14" r="10" fill="#FFF6DE" />
-      <circle cx="43" cy="20" r="9" fill="#FFF6DE" />
-      <path d="M8 24h44l-6 46H14z" fill="#FFF6DE" />
-      <path d="M17 24l3 46h7l-1-46zM34 24l-1 46h7l3-46z" fill="#D0281C" strokeWidth="0" />
-      <path d="M8 24h44l-6 46H14z" fill="none" />
-    </g>
-  </svg>
-);
-
 export const ShibaUsher: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [misses, setMisses] = useState(0);
@@ -413,7 +400,7 @@ export const ShibaUsher: React.FC = () => {
           </div>
           {caught ? (
             <button onClick={takePopcorn} className="block mx-auto" aria-label="Nhặt gói bắp rang">
-              <PopcornBag />
+              <img src="/assets/shiba/popcorn-bag.png" alt="" width={66} height={79} draggable={false} />
             </button>
           ) : (
             <button onClick={() => setMisses((m) => m + 1)} className="block" aria-label="Bắt Shiba">
