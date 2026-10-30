@@ -213,6 +213,7 @@ html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-
     transition: border-color 200ms, box-shadow 200ms;
   }
   textarea.input { height: auto; padding: 10px 12px; line-height: 1.55; resize: none; }
+  .input option { background: var(--color-card); color: var(--color-ink); }
   .input::placeholder { color: var(--color-ink-3); }
   .input:focus { outline: none; border-color: var(--color-ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 28%, transparent); }
   .field-label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--color-ink-2); }

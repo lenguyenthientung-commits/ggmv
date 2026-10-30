@@ -100,7 +100,8 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   const [fakeStage, setFakeStage] = useState<'jackpot' | 'denied' | null>(null);
   const [nearMiss, setNearMiss] = useState(false);
   const vetoedMovieRef = useRef<string | null>(null);
-  // R3 The Prophecy: an optional guess filed with the server before the reel moves
+  // R3 The Prophecy: a guess filed with the server before the reel moves. Required for
+  // every spin except the veto re-spin, which rule 2.4 makes automatic.
   const [guessId, setGuessId] = useState('');
   const [prophecyBy, setProphecyBy] = useState<string | null>(null);
   const operationRef = useRef('');
@@ -361,6 +362,9 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   //   'creep'  stalls just short of the winning slice, then creeps over the line
   //   'tip'    rolls past into the next slice, hangs there, then rolls back
   //   'settle' a plain long stop with a small rebound
+  // A filter can remove the guessed film from the wheel, so check against what is on it now
+  const guessReady = eligibleMovies.some((m) => m.id === guessId);
+
   const handleSpin = () => {
     if (isSpinning || slices.length === 0) return;
 
@@ -681,35 +685,35 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              setVetoNotice(null);
-              handleSpin();
-            }}
-            disabled={isSpinning || eligibleMovies.length === 0}
-            className="btn btn-primary btn-lg mt-4 min-w-[220px]"
-          >
-            <Shuffle className={`w-[18px] h-[18px] ${isSpinning ? 'animate-spin' : ''}`} strokeWidth={2.5} />
-            {isSpinning ? 'Đang quay…' : 'Quay!'}
-          </button>
-          {/* R3 The Prophecy: optional, filed with the server when Quay! is pressed */}
-          <div className="mt-5 flex items-center gap-2.5 bg-card border-[1.5px] border-line rounded-lg pl-3 pr-1.5 py-1.5 max-w-full">
-            <label htmlFor="prophecy" className="label shrink-0" title="Ghi lời đoán trước khi quay. Đoán trúng sẽ được rạp ghi nhận.">
-              Tiên tri
+          {/* R3 The Prophecy: filed with the server when Quay! is pressed */}
+          <div className="mt-4 w-full max-w-[340px] text-center bg-card border-[1.5px] border-line rounded-lg p-3">
+            <label htmlFor="prophecy" className="field-label !text-ink" title="Ghi lời đoán trước khi quay. Đoán trúng sẽ được rạp ghi nhận.">
+              Tiên tri: bạn đoán phim nào?
             </label>
             <select
               id="prophecy"
               value={guessId}
               onChange={(e) => setGuessId(e.target.value)}
               disabled={isSpinning}
-              className="input !h-8 !border-0 !bg-transparent !px-1 text-[13px] min-w-0 max-w-[240px]"
+              className="input"
             >
-              <option value="">Không đoán</option>
+              <option value="" disabled>Chọn phim bạn đoán…</option>
               {eligibleMovies.map((m) => (
                 <option key={m.id} value={m.id}>{m.title}</option>
               ))}
             </select>
           </div>
+          <button
+            onClick={() => {
+              setVetoNotice(null);
+              handleSpin();
+            }}
+            disabled={isSpinning || !guessReady}
+            className="btn btn-primary btn-lg mt-4 min-w-[220px] disabled:!opacity-75"
+          >
+            <Shuffle className={`w-[18px] h-[18px] ${isSpinning ? 'animate-spin' : ''}`} strokeWidth={2.5} />
+            {isSpinning ? 'Đang quay…' : guessReady || eligibleMovies.length === 0 ? 'Quay!' : 'Đoán phim trước đã'}
+          </button>
           {vetoNotice && (
             <p className="mt-4 bg-card border-[1.5px] border-ink rounded-md px-3 py-1.5 text-[13px] font-semibold text-center">
               {vetoNotice}
@@ -858,13 +862,7 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
             )}
 
             <div className="relative flex flex-wrap items-center gap-2.5 px-6 sm:px-9 py-5 border-t-[1.5px] border-night-line">
-              <button
-                onClick={() => {
-                  handleSpin();
-                  setShowWinnerModal(false);
-                }}
-                className="btn btn-sm"
-              >
+              <button onClick={() => setShowWinnerModal(false)} className="btn btn-sm">
                 <RotateCcw className="w-4 h-4" />
                 Quay lại
               </button>
