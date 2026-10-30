@@ -207,8 +207,8 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={toggleMusic}
             className={`btn-icon ${musicOn ? '!text-accent' : ''}`}
             aria-pressed={musicOn}
-            aria-label={musicOn ? 'Tắt nhạc nền' : 'Bật nhạc nền GG Theme'}
-            title={musicOn ? 'Tắt nhạc nền' : 'Bật nhạc nền GG Theme'}
+            aria-label={musicOn ? 'Tắt nhạc nền' : `Bật nhạc nền ${world?.name ?? 'GG Theme'}`}
+            title={musicOn ? 'Tắt nhạc nền' : `Bật nhạc nền ${world?.name ?? 'GG Theme'}`}
           >
             <Music className={`w-[18px] h-[18px] ${musicOn ? 'animate-pulse' : ''}`} />
           </button>

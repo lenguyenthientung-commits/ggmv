@@ -1,46 +1,18 @@
-// "GG Theme": the club's own soundtrack, synthesized live with Web Audio (no audio files,
-// no licensed music). City-pop / anime lo-fi at 92 BPM in G major over the "royal road"
-// progression (IVmaj7 - V7 - iii7 - vi7). The leitmotif is two G notes: "G-G", the club's
-// initials as music; every sting in the app reuses it.
+// The club's own soundtrack, synthesized live with Web Audio (no audio files, no licensed
+// music). The scores live in scores.ts: the everyday "GG Theme" plus one per seasonal world.
+// The leitmotif is two G notes: "G-G", the club's initials; every sting in the app reuses it.
 //
-// Behaviour: off by default (opt-in), ducks while the wheel spins, turns into a filtered
-// "after hours" mix in dark mode, pauses while the tab is hidden.
+// Behaviour: off by default (opt-in), follows the active world, ducks while the wheel spins,
+// turns into a filtered "after hours" mix in dark mode, pauses while the tab is hidden.
 
-const BPM = 92;
-const STEP = 60 / BPM / 4; // one 16th note
+import { Score, scoreFor } from './scores';
+
 const BAR_STEPS = 16;
 const BARS = 8;
-export const LOOP_SECONDS = STEP * BAR_STEPS * BARS;
+const stepOf = (score: Score) => 60 / score.bpm / 4; // one 16th note
+export const loopSeconds = (score: Score) => stepOf(score) * BAR_STEPS * BARS;
 
 const hz = (midi: number) => 440 * Math.pow(2, (midi - 69) / 12);
-
-// One chord per bar (bar 6 moves sus4 -> dominant halfway). Voicings sit around G3-E4.
-const HARMONY: { notes: number[]; bass: number; at?: number }[][] = [
-  [{ notes: [55, 59, 60, 64], bass: 36 }],                 // Cmaj7
-  [{ notes: [54, 57, 60, 62], bass: 38 }],                 // D7
-  [{ notes: [54, 57, 59, 62], bass: 35 }],                 // Bm7
-  [{ notes: [55, 59, 62, 64], bass: 40 }],                 // Em7
-  [{ notes: [55, 57, 60, 64], bass: 45 }],                 // Am7
-  [{ notes: [55, 57, 60, 62], bass: 38 }, { notes: [54, 57, 60, 62], bass: 38, at: 8 }], // D7sus4 -> D7
-  [{ notes: [54, 59, 62, 67], bass: 43 }],                 // Gmaj7
-  [{ notes: [54, 59, 62, 67], bass: 43 }],                 // Gmaj7
-];
-
-// Melody: [step in loop, midi, length in 16ths]. Bars 1, 3 and 7 open with the G-G motif.
-const MELODY: [number, number, number][] = [
-  [0, 67, 2], [2, 67, 2], [4, 74, 4], [8, 71, 6],
-  [16, 69, 2], [18, 72, 2], [20, 71, 2], [22, 69, 4], [28, 66, 4],
-  [32, 67, 2], [34, 67, 2], [36, 74, 4], [40, 76, 6],
-  [48, 74, 3], [51, 71, 3], [54, 67, 6],
-  [64, 76, 2], [66, 76, 2], [68, 74, 2], [70, 72, 2], [72, 71, 4], [76, 69, 4],
-  [80, 72, 4], [84, 71, 2], [86, 69, 2], [88, 66, 8],
-  [96, 67, 2], [98, 67, 2], [100, 74, 2], [102, 79, 10],
-  [112, 78, 4], [116, 74, 4],
-];
-
-// Electric-piano comping: city-pop push on 1 and the "and" of 2, plus a pickup in bar 4 and 8
-const COMP_STEPS = [0, 6, 10];
-const BASS_PATTERN: [number, number][] = [[0, 0], [6, 12], [10, 7], [14, 0]]; // [step, semitone offset]
 
 interface Voices {
   keys: AudioNode;
@@ -107,8 +79,48 @@ function lead(ctx: BaseAudioContext, dest: AudioNode, midi: number, t: number, l
   lfo.stop(t + len + 0.2);
 }
 
-function kick(ctx: BaseAudioContext, dest: AudioNode, t: number) {
-  const g = env(ctx, dest, t, 0.55, 0.002, 0.28);
+// A long swell under the music box
+function pad(ctx: BaseAudioContext, dest: AudioNode, midi: number, t: number) {
+  const g = env(ctx, dest, t, 0.03, 0.5, 2.4);
+  osc(ctx, 'triangle', hz(midi), g, t, 3);
+  osc(ctx, 'sine', hz(midi) * 1.004, g, t, 3); // slightly out of tune, on purpose
+}
+
+// Zither-like: the note slides into pitch and dies away
+function pluck(ctx: BaseAudioContext, dest: AudioNode, midi: number, t: number, vel: number) {
+  const o = osc(ctx, 'triangle', hz(midi) * 1.02, env(ctx, dest, t, 0.1 * vel, 0.003, 0.55), t, 0.6);
+  o.frequency.exponentialRampToValueAtTime(hz(midi), t + 0.07);
+  osc(ctx, 'sine', hz(midi) * 2, env(ctx, dest, t, 0.025 * vel, 0.002, 0.2), t, 0.25);
+}
+
+function bell(ctx: BaseAudioContext, dest: AudioNode, midi: number, t: number, vel: number) {
+  osc(ctx, 'sine', hz(midi), env(ctx, dest, t, 0.07 * vel, 0.002, 0.9), t, 1);
+  osc(ctx, 'sine', hz(midi) * 3, env(ctx, dest, t, 0.018 * vel, 0.002, 0.3), t, 0.35);
+}
+
+// Two tines a hair apart, so it sounds old and not quite right
+function musicBox(ctx: BaseAudioContext, dest: AudioNode, midi: number, t: number) {
+  const g = env(ctx, dest, t, 0.06, 0.002, 1.3);
+  osc(ctx, 'sine', hz(midi), g, t, 1.4);
+  osc(ctx, 'sine', hz(midi) * 1.003, g, t, 1.4);
+  osc(ctx, 'sine', hz(midi) * 4, env(ctx, dest, t, 0.012, 0.001, 0.15), t, 0.2);
+}
+
+// A slow attack: `flute` carries more vibrato, `soft` barely any
+function softLead(ctx: BaseAudioContext, dest: AudioNode, midi: number, t: number, len: number, vibrato: number) {
+  const o = osc(ctx, 'sine', hz(midi), env(ctx, dest, t, 0.1, 0.07, len + 0.15), t, len + 0.25);
+  const lfo = ctx.createOscillator();
+  const depth = ctx.createGain();
+  lfo.frequency.setValueAtTime(5, t);
+  depth.gain.setValueAtTime(vibrato, t);
+  lfo.connect(depth);
+  depth.connect(o.detune);
+  lfo.start(t + 0.15);
+  lfo.stop(t + len + 0.25);
+}
+
+function kick(ctx: BaseAudioContext, dest: AudioNode, t: number, level: number) {
+  const g = env(ctx, dest, t, level, 0.002, 0.28);
   const o = osc(ctx, 'sine', 150, g, t, 0.3);
   o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
 }
@@ -126,20 +138,26 @@ function snare(ctx: BaseAudioContext, dest: AudioNode, t: number) {
   osc(ctx, 'triangle', 190, env(ctx, dest, t, 0.08, 0.002, 0.08), t, 0.1);
 }
 
-function hat(ctx: BaseAudioContext, dest: AudioNode, t: number, vel: number) {
+function woodblock(ctx: BaseAudioContext, dest: AudioNode, t: number) {
+  osc(ctx, 'sine', 880, env(ctx, dest, t, 0.09, 0.001, 0.06), t, 0.08);
+  osc(ctx, 'triangle', 1320, env(ctx, dest, t, 0.03, 0.001, 0.03), t, 0.05);
+}
+
+// `release` long and bright = sleigh bells, short = a closed hat
+function hat(ctx: BaseAudioContext, dest: AudioNode, t: number, vel: number, cutoff = 7500, release = 0.04) {
   const src = ctx.createBufferSource();
   src.buffer = noise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = 'highpass';
-  hp.frequency.setValueAtTime(7500, t);
+  hp.frequency.setValueAtTime(cutoff, t);
   src.connect(hp);
-  hp.connect(env(ctx, dest, t, 0.05 * vel, 0.001, 0.04));
+  hp.connect(env(ctx, dest, t, 0.05 * vel, 0.001, release));
   src.start(t);
-  src.stop(t + 0.06);
+  src.stop(t + release + 0.02);
 }
 
 // Builds the instrument buses (lead gets a dotted-8th echo) feeding `out`
-export function createVoices(ctx: BaseAudioContext, out: AudioNode): Voices {
+export function createVoices(ctx: BaseAudioContext, out: AudioNode, score: Score): Voices {
   const mix = (g: number) => {
     const n = ctx.createGain();
     n.gain.value = g;
@@ -148,7 +166,7 @@ export function createVoices(ctx: BaseAudioContext, out: AudioNode): Voices {
   };
   const leadBus = mix(1);
   const delay = ctx.createDelay(1);
-  delay.delayTime.value = STEP * 3;
+  delay.delayTime.value = stepOf(score) * 3;
   const feedback = ctx.createGain();
   feedback.gain.value = 0.28;
   const tone = ctx.createBiquadFilter();
@@ -166,28 +184,48 @@ export function createVoices(ctx: BaseAudioContext, out: AudioNode): Voices {
 }
 
 // Schedules one full 8-bar loop starting at t0. Pure scheduling, so it also works offline.
-export function scheduleLoop(ctx: BaseAudioContext, v: Voices, t0: number) {
-  const swing = (s: number) => (s % 2 === 1 ? STEP * 0.12 : 0); // light shuffle on off-16ths
+export function scheduleLoop(ctx: BaseAudioContext, v: Voices, t0: number, score: Score) {
+  const STEP = stepOf(score);
+  const swing = (s: number) => (s % 2 === 1 ? STEP * score.swing : 0); // late off-16ths
+  const playKeys = (midi: number, t: number, vel: number) => {
+    if (score.keys === 'pad') pad(ctx, v.keys, midi, t);
+    else if (score.keys === 'pluck') pluck(ctx, v.keys, midi, t, vel * 0.5);
+    else if (score.keys === 'bell') bell(ctx, v.keys, midi, t, vel * 0.6);
+    else epiano(ctx, v.keys, midi, t, vel);
+  };
   for (let bar = 0; bar < BARS; bar++) {
     const barT = t0 + bar * BAR_STEPS * STEP;
-    HARMONY[bar].forEach((chord, i) => {
+    score.harmony[bar].forEach((chord, i) => {
       const from = chord.at ?? 0;
-      const to = HARMONY[bar][i + 1]?.at ?? BAR_STEPS;
-      COMP_STEPS.filter((s) => s >= from && s < to).forEach((s) =>
-        chord.notes.forEach((n) => epiano(ctx, v.keys, n, barT + s * STEP + swing(s), s === 0 ? 1 : 0.7))
-      );
-      BASS_PATTERN.filter(([s]) => s >= from && s < to).forEach(([s, off]) =>
+      const to = score.harmony[bar][i + 1]?.at ?? BAR_STEPS;
+      score.comp.filter((s) => s >= from && s < to).forEach((s, n) => {
+        const notes = score.arpeggio ? [chord.notes[n % chord.notes.length]] : chord.notes;
+        notes.forEach((midi) => playKeys(midi, barT + s * STEP + swing(s), s === 0 ? 1 : 0.7));
+      });
+      score.bass.filter(([s]) => s >= from && s < to).forEach(([s, off]) =>
         bass(ctx, v.bass, chord.bass + off, barT + s * STEP, STEP * (s === 0 ? 5 : 2))
       );
     });
     for (let s = 0; s < BAR_STEPS; s++) {
       const t = barT + s * STEP + swing(s);
-      if (s === 0 || s === 8 || (s === 11 && bar % 2 === 1)) kick(ctx, v.drums, t);
-      if (s === 4 || s === 12) snare(ctx, v.drums, t);
-      if (s % 2 === 0) hat(ctx, v.hats, t, s % 4 === 0 ? 1 : 0.6);
+      if (score.kick.includes(s) || (bar % 2 === 1 && score.kickOddBars?.includes(s))) kick(ctx, v.drums, t, score.kickLevel);
+      if (score.snare.includes(s)) (score.snareVoice === 'wood' ? woodblock : snare)(ctx, v.drums, t);
+      if (score.hats.includes(s)) {
+        if (score.hatVoice === 'sleigh') hat(ctx, v.hats, t, s % 4 === 0 ? 0.9 : 0.55, 9000, 0.09);
+        else hat(ctx, v.hats, t, s % 4 === 0 ? 1 : 0.6);
+      }
     }
   }
-  MELODY.forEach(([s, n, len]) => lead(ctx, v.lead, n, t0 + s * STEP + swing(s), len * STEP));
+  score.melody.forEach(([s, n, len]) => {
+    const t = t0 + s * STEP + swing(s);
+    const dur = len * STEP;
+    if (score.lead === 'musicbox') musicBox(ctx, v.lead, n, t);
+    else if (score.lead === 'pluck') pluck(ctx, v.lead, n, t, 0.9);
+    else if (score.lead === 'bell') bell(ctx, v.lead, n, t, 1);
+    else if (score.lead === 'flute') softLead(ctx, v.lead, n, t, dur, 9);
+    else if (score.lead === 'soft') softLead(ctx, v.lead, n, t, dur, 3);
+    else lead(ctx, v.lead, n, t, dur);
+  });
 }
 
 // Short GG-motif stings for app moments, played through any destination
@@ -210,6 +248,9 @@ class Soundtrack {
   private duckGain: GainNode | null = null;
   private night: BiquadFilterNode | null = null;
   private voices: Voices | null = null;
+  private bus: GainNode | null = null;
+  private world: string | undefined;
+  private score: Score = scoreFor();
   private nextLoop = 0;
   private timer: ReturnType<typeof setInterval> | undefined;
   private observer: MutationObserver | null = null;
@@ -231,8 +272,31 @@ class Soundtrack {
     }
   }
 
+  // A seasonal world brings its own mix, the same way it takes over the palette
   private isNight() {
-    return document.documentElement.dataset.mode === 'dark';
+    return document.documentElement.dataset.mode === 'dark' && !document.documentElement.dataset.world;
+  }
+
+  // Everything is scheduled ahead, so a change of score fades out the whole old bus
+  private loadScore() {
+    if (!this.ctx || !this.duckGain) return;
+    const ctx = this.ctx;
+    const world = document.documentElement.dataset.world;
+    if (this.bus && world === this.world) return;
+    const old = this.bus;
+    if (old) {
+      old.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.25);
+      setTimeout(() => old.disconnect(), 1500);
+    }
+    const bus = ctx.createGain();
+    bus.gain.setValueAtTime(old ? 0.0001 : 1, ctx.currentTime);
+    if (old) bus.gain.setTargetAtTime(1, ctx.currentTime + 0.3, 0.3);
+    bus.connect(this.duckGain);
+    this.bus = bus;
+    this.world = world;
+    this.score = scoreFor(world);
+    this.voices = createVoices(ctx, bus, this.score);
+    this.nextLoop = ctx.currentTime + (old ? 0.4 : 0.15);
   }
 
   // Dark mode = "after hours": darker filter, quieter hats
@@ -270,7 +334,7 @@ class Soundtrack {
     this.ctx = ctx;
     this.duckGain = duck;
     this.night = night;
-    this.voices = createVoices(ctx, duck);
+    this.loadScore();
     this.playing = true;
     this.setPreference(true);
     // Not awaited: without a user gesture the browser keeps this pending; the music simply
@@ -278,19 +342,22 @@ class Soundtrack {
     ctx.resume().catch(() => {});
     this.applyMood();
 
-    this.nextLoop = ctx.currentTime + 0.15;
     const tick = () => {
       if (!this.ctx || !this.voices) return;
       // keep one loop scheduled ahead
       while (this.nextLoop < this.ctx.currentTime + 2) {
-        scheduleLoop(this.ctx, this.voices, this.nextLoop);
-        this.nextLoop += LOOP_SECONDS;
+        scheduleLoop(this.ctx, this.voices, this.nextLoop, this.score);
+        this.nextLoop += loopSeconds(this.score);
       }
     };
     tick();
     this.timer = setInterval(tick, 500);
-    this.observer = new MutationObserver(() => this.applyMood());
-    this.observer.observe(document.documentElement, { attributeFilter: ['data-mode'] });
+    this.observer = new MutationObserver(() => {
+      this.loadScore();
+      tick();
+      this.applyMood();
+    });
+    this.observer.observe(document.documentElement, { attributeFilter: ['data-mode', 'data-world'] });
     document.addEventListener('visibilitychange', this.onVisibility);
     return true;
   }
@@ -306,6 +373,7 @@ class Soundtrack {
     setTimeout(() => ctx.close(), 600);
     this.ctx = null;
     this.voices = null;
+    this.bus = null;
     this.playing = false;
   }
 
