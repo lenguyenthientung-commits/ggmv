@@ -6,6 +6,7 @@ import { sounds } from '../utils/soundEffects';
 import { SectionHeader } from './ui';
 import { SearchEgg, searchEggFor } from './EasterEggs';
 import { Shiba } from './Shiba';
+import { countriesOf, countryName } from '../data/filmCountries';
 
 interface MovieListProps {
   movies: Movie[];
@@ -79,7 +80,8 @@ export const MovieList: React.FC<MovieListProps> = ({
           (m.originalTitle && m.originalTitle.toLowerCase().includes(q)) ||
           m.suggestedBy.toLowerCase().includes(q) ||
           (m.director && m.director.toLowerCase().includes(q)) ||
-          m.genres.some(g => g.toLowerCase().includes(q))
+          m.genres.some(g => g.toLowerCase().includes(q)) ||
+          countriesOf(m).some(c => c.toLowerCase().includes(q) || countryName(c).toLowerCase().includes(q))
       );
     }
 
@@ -119,7 +121,7 @@ export const MovieList: React.FC<MovieListProps> = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3 pointer-events-none" />
             <input
               type="text"
-              placeholder="Tìm phim, người đề xuất…"
+              placeholder="Tìm phim, người đề xuất, quốc gia…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input !pl-9"

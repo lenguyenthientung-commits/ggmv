@@ -15,6 +15,7 @@ export interface Movie {
   durationMinutes: number;
   genres: string[];
   director?: string;
+  country?: string; // OMDb's list, e.g. "Canada, United States"
   suggestedBy: string; // Tên anh em đề xuất
   vibe: string; // "Hài bựa", "Căng não", "Hành động đỉnh cao", "Kinh dị thót tim", "Ấm áp gia đình"
   platform: 'Netflix' | 'HBO Max' | 'VieON' | 'FPT Play' | 'Torrent/Stremio' | 'Rạp' | 'Khác';

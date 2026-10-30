@@ -159,6 +159,7 @@ export default function App() {
           durationMinutes: movieData.durationMinutes || 120,
           genres: movieData.genres || ['Chính kịch'],
           director: movieData.director,
+          country: movieData.country,
           suggestedBy: movieData.suggestedBy || currentUser,
           vibe: movieData.vibe || 'Hành động đỉnh cao',
           platform: movieData.platform || 'Netflix',

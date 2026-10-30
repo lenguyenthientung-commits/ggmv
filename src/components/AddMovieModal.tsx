@@ -54,6 +54,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
   const [year, setYear] = useState(new Date().getFullYear());
   const [durationMinutes, setDurationMinutes] = useState(120);
   const [director, setDirector] = useState('');
+  const [country, setCountry] = useState(''); // only from OMDb; no field of its own
   const [suggestedBy, setSuggestedBy] = useState(currentUser);
   const [vibe, setVibe] = useState('Hành động đỉnh cao');
   const [platform, setPlatform] = useState<Movie['platform']>('Netflix');
@@ -121,6 +122,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
         setYear(Number(details.year) || new Date().getFullYear());
         setDurationMinutes(Number(details.durationMinutes) || 120);
         setDirector(details.director || '');
+        setCountry(details.country || '');
         if (Array.isArray(details.genres) && details.genres.length > 0) {
           setSelectedGenres(details.genres);
         }
@@ -173,6 +175,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
       year: Number(year),
       durationMinutes: Number(durationMinutes),
       director: director.trim() || undefined,
+      country: country || undefined,
       suggestedBy: suggestedBy.trim() || currentUser,
       vibe,
       platform,

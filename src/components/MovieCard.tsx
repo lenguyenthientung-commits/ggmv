@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Movie } from '../types/cinema';
 import { ThumbsUp, Play, CalendarPlus, Check, Star, Trash2, ExternalLink, Tv, Edit3, MessageSquarePlus } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader } from './ui';
 import { BROTHERS_LIST } from './Header';
+import { genreReel } from '../easterEggs';
+import { markReelRead } from '../badges';
+import { countriesOf, countryName } from '../data/filmCountries';
 
 interface MovieCardProps {
   movie: Movie;
@@ -34,6 +37,12 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   const [watchUrlInput, setWatchUrlInput] = useState(movie.watchUrl || '');
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [markWatchedImmediately, setMarkWatchedImmediately] = useState(false);
+
+  const reel = genreReel(movie);
+  const wokenGenre = isDetailOpen && reel?.state === 'awake' ? reel.genre : null;
+  useEffect(() => {
+    if (wokenGenre) markReelRead(wokenGenre);
+  }, [wokenGenre]);
 
   const myReview = movie.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
   const [reviewScore, setReviewScore] = useState<number>(myReview ? myReview.rating : 7.5);
@@ -256,12 +265,19 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 <div className="flex flex-wrap gap-1.5">
                   {movie.genres.map(g => <span key={g} className="chip">{g}</span>)}
                   {movie.director && <span className="chip !border-line !text-ink-2">ĐD {movie.director}</span>}
+                  {countriesOf(movie).map(c => <span key={c} className="chip !border-line !text-ink-2">{countryName(c)}</span>)}
                 </div>
                 <p className="text-[14.5px] leading-relaxed text-ink-2 max-h-40 overflow-y-auto">{movie.synopsis}</p>
                 <blockquote className="border-l-[3px] border-accent pl-4">
                   <div className="label">{movie.suggestedBy} đề xuất</div>
                   <p className="mt-1 text-[15px] font-medium">“{movie.whyWatch}”</p>
                 </blockquote>
+                {reel && (
+                  <p className="text-[13px] text-ink-3 leading-snug">
+                    <span className="label !text-[10px] mr-2">{reel.state === 'awake' ? `Cuộn phim · ${reel.genre}` : 'Cuộn phim'}</span>
+                    {reel.state === 'awake' ? reel.line : 'Cuộn phim này đang ngủ. Chiếu xong mới dậy.'}
+                  </p>
+                )}
                 {/* Rating & Review Section */}
                 <div className="pt-3 border-t-[1.5px] border-line">
                   <div className="flex flex-wrap items-center justify-between gap-2">

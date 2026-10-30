@@ -102,6 +102,40 @@ export function shibaReview(movie: Movie, hour = new Date().getHours()): string 
   return null;
 }
 
+// Genre reels (season 2, E14): one line per screened film, the rarest of its genres speaks.
+// Asleep until the film is screened; sensitive films never carry one.
+const GENRE_REELS: [string, (m: Movie, score: number) => string][] = [
+  ['Hoạt hình', (m) => `Nếu vẽ 12 hình mỗi giây, phim này là khoảng ${(m.durationMinutes * 720).toLocaleString('vi-VN')} bức vẽ.`],
+  ['Tài liệu', () => 'BASED ON A TRUE STORY. (The archive checked.)'],
+  ['Âm nhạc', () => 'Có một bàn chân đã nhịp theo trong phòng. Không ai nhận.'],
+  ['Kinh dị', () => 'Máy chiếu vừa do dự. Nó sẽ không nói vì sao.'],
+  ['Khoa học viễn tưởng', (_m, s) => (s > 0 ? `${s.toFixed(2)} điểm. Viết theo hệ nhị phân: ${s.toString(2).slice(0, 12)}.` : 'Tín hiệu đã nhận. Chưa có điểm nào được gửi về Trái Đất.')],
+  ['Hài hước', (_m, s) => (s > 0 && s < 5 ? 'Phim hài, không ai cười. Đây mới là trò đùa.' : 'Rạp ghi nhận có tiếng cười. Chưa xác minh được của ai.')],
+  ['Lãng mạn', () => 'Có người nói chỉ là bụi bay vào mắt. Rạp không bình luận.'],
+  ['Võ thuật', () => 'Ghế trong phòng không bị hư hại. Lần này.'],
+  ['Giả tưởng', () => 'Bản đồ ở đầu phim đã được kiểm tra. Không dùng đi đường được.'],
+  ['Gia đình', () => 'Phù hợp với mọi lứa tuổi. Không phù hợp với mọi cuộc cãi nhau.'],
+  ['Tiểu sử', () => 'Dựa trên một cuộc đời có thật. Phần buồn chán đã được cắt.'],
+  ['Lịch sử', () => 'Kết phim đã biết từ trước. Cả hội vẫn ngồi xem.'],
+  ['Giật gân', () => 'Có người vừa quay ra sau lưng. Không có gì đâu. Chắc vậy.'],
+  ['Bí ẩn', () => 'Đáp án nằm đâu đó trong phim. Rạp không gợi ý thêm.'],
+  ['Tội phạm', () => 'Hồ sơ đã đóng. Vật chứng duy nhất: một tấm vé.'],
+  ['Phiêu lưu', () => 'Cả hội đã đi rất xa mà không phải rời ghế.'],
+  ['Tâm lý', () => 'Xem xong, mời mỗi người tự nhận là mình ổn.'],
+  ['Hành động', () => 'Mọi thứ nổ đều đã được kiểm kê.'],
+  ['Kịch tính', () => 'Không ai cười. Đúng như dự kiến.'],
+];
+
+export type GenreReel = { state: 'asleep' } | { state: 'awake'; genre: string; line: string };
+
+export function genreReel(movie: Movie): GenreReel | null {
+  if (isSensitiveFilm(movie)) return null;
+  const hit = GENRE_REELS.find(([genre]) => movie.genres.includes(genre));
+  if (!hit) return null;
+  if (!movie.watched) return { state: 'asleep' };
+  return { state: 'awake', genre: hit[0], line: hit[1](movie, rankScore(movie)) };
+}
+
 // Per-movie stories derived from saved scores and metadata (never changes them)
 export function movieStories(movie: Movie, events: EggEvent[]): Story[] {
   const scores = judgeScores(movie);

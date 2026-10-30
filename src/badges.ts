@@ -7,10 +7,11 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Armchair, AudioWaveform, Award, Bird, Bomb, Briefcase, Church, Clapperboard, Compass, Crown, Dices, Dog, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Hamburger, Handshake, Heart, Hotel, Hourglass,
-  Archive, FlipHorizontal2, Focus, Ghost, GraduationCap, Megaphone, Package, Palette, PenLine, PersonStanding, Popcorn, Projector, Rabbit, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
+  Archive, Earth, FlipHorizontal2, Focus, Ghost, GraduationCap, Megaphone, Plane, Sunrise, Package, Palette, PenLine, PersonStanding, Popcorn, Projector, Rabbit, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
 } from 'lucide-react';
 import { Movie } from './types/cinema';
 import { ACHIEVEMENTS, EggEvent, judgeScores, rankScore } from './easterEggs';
+import { countriesOf } from './data/filmCountries';
 
 export type Tier = 'bronze' | 'silver' | 'gold' | 'secret' | 'member';
 
@@ -91,6 +92,24 @@ const ARCHIVE_BADGES: (BadgeDef & { check: (watched: Movie[]) => string | null }
     },
   },
   {
+    id: 'GLOBETROTTER', name: 'Hộ Chiếu Đầy Dấu', icon: Plane, tier: 'gold',
+    description: 'Không ai rời phòng khách, nhưng hộ chiếu thì đã đi nhiều nơi.',
+    rule: 'Các phim đã xem đến từ ít nhất 5 quốc gia.',
+    check: (w) => { const n = new Set(w.flatMap(countriesOf)).size; return n >= 5 ? `${n} quốc gia` : null; },
+  },
+  {
+    id: 'OUTSIDE_HOLLYWOOD', name: 'Ngoài Hollywood', icon: Earth, tier: 'silver',
+    description: 'Có một bộ phim mà Hollywood không tham gia vào.',
+    rule: 'Xem một phim không có Mỹ trong danh sách quốc gia sản xuất.',
+    check: (w) => w.find((m) => { const c = countriesOf(m); return c.length > 0 && !c.includes('United States'); })?.title ?? null,
+  },
+  {
+    id: 'HOME_SCREEN', name: 'Phim Nhà', icon: Sunrise, tier: 'silver',
+    description: 'Hội đã xem một phim Việt Nam. Hộ chiếu cuối cùng cũng về nhà.',
+    rule: 'Xem một phim có Việt Nam trong danh sách quốc gia sản xuất.',
+    check: (w) => w.find((m) => countriesOf(m).includes('Vietnam'))?.title ?? null,
+  },
+  {
     id: 'HITCHCOCK', name: 'Đi Tìm Cameo', icon: Bird, tier: 'silver',
     description: 'Hội đã xem một phim của Hitchcock. Ông có xuất hiện đâu đó trong phim, ai thấy không?',
     rule: 'Xem một phim do Alfred Hitchcock đạo diễn.',
@@ -126,7 +145,7 @@ export function clubBadges(movies: Movie[], events: EggEvent[]): EarnedBadge[] {
 export const archiveBadgeIds = ARCHIVE_BADGES.map((b) => b.id);
 
 // ---------- Secret: found by poking at the app ----------
-export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE' | 'WHITE_RABBIT' | 'BURGER_TALK' | 'WILHELM' | 'CAUGHT' | 'SYMMETRY' | 'CAMEO_HUNTER' | 'LOST_FILM' | 'LAST_ONE';
+export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE' | 'WHITE_RABBIT' | 'BURGER_TALK' | 'WILHELM' | 'CAUGHT' | 'SYMMETRY' | 'CAMEO_HUNTER' | 'LOST_FILM' | 'LAST_ONE' | 'REEL_WAKER';
 
 export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'KONAMI', name: 'Mã Gian Lận', icon: Gamepad2, tier: 'secret', description: 'Bạn biết mã của thời băng VHS. Phim tua về năm xưa.', rule: '↑ ↑ ↓ ↓ ← → ← → B A', hint: 'Những người chơi game thùng còn nhớ.' },
@@ -146,6 +165,7 @@ export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'CAMEO_HUNTER', name: 'Thợ Săn Cameo', icon: PersonStanding, tier: 'secret', description: 'Bạn đã bắt được 5 lần xuất hiện chớp nhoáng của bóng người lạ.', rule: 'Bấm vào bóng người nấp ở mép trang đủ 5 lần.', hint: 'Có người đứng ở rìa khung hình. Mở vài tab và nhìn kỹ hai bên.' },
   { id: 'LOST_FILM', name: 'Thủ Thư Của Điều Không Thể', icon: Archive, tier: 'secret', description: 'Bạn đọc hết hồ sơ của một bộ phim không hề tồn tại.', rule: 'Tìm "the last popcorn" ở Kho phim và đọc đủ 3 mục hồ sơ.', hint: 'Trên hộp bắp rang Shiba để lại có in tên một bộ phim.' },
   { id: 'LAST_ONE', name: 'Người Cuối Cùng Trong Rạp', icon: Ghost, tier: 'secret', description: 'Bạn đã gặp đủ 3 lần vị khán giả không mua vé.', rule: 'Bấm vào bóng ma ở mép trang 3 lần, mùa Halloween hoặc khi bật thế giới Bị Ám.', hint: 'Mùa Halloween, có khán giả đứng ở rìa khung hình.' },
+  { id: 'REEL_WAKER', name: 'Đa Thể Loại', icon: Film, tier: 'secret', description: 'Cả hội không có gu. Cả hội có tất cả các gu.', rule: 'Đọc cuộn phim của 6 thể loại khác nhau, trong hồ sơ các phim đã xem.', hint: 'Hồ sơ phim đã chiếu có một dòng nhỏ. Mỗi thể loại nói một kiểu.' },
 ];
 
 const SECRETS_KEY = 'ggmv_secret_badges';
@@ -180,6 +200,15 @@ export function unlockSecret(id: SecretId) {
   if (owned.includes(id)) return;
   writeJson(SECRETS_KEY, [...owned, id]);
   announceBadge(id);
+}
+
+const REELS_READ_KEY = 'ggmv_reels_read';
+
+export function markReelRead(genre: string) {
+  const read = readJson<string[]>(REELS_READ_KEY, []);
+  if (read.includes(genre)) return;
+  writeJson(REELS_READ_KEY, [...read, genre]);
+  if (read.length + 1 >= 6) unlockSecret('REEL_WAKER');
 }
 
 // Archive milestones this viewer has not been told about yet. A first-time viewer adopts

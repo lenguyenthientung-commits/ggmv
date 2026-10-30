@@ -274,6 +274,7 @@ async function startServer() {
           durationMinutes,
           genres,
           director: data.Director !== 'N/A' ? data.Director : '',
+          country: data.Country && data.Country !== 'N/A' ? data.Country : '',
           synopsis: data.Plot !== 'N/A' ? data.Plot : '',
           posterUrl: data.Poster !== 'N/A' ? data.Poster : '',
           vibe,
@@ -295,7 +296,7 @@ async function startServer() {
   }));
 
   app.post('/api/movies', asyncHandler(async (req, res) => {
-    const { title, originalTitle, year, durationMinutes, genres, director, suggestedBy, vibe, platform, posterUrl, trailerUrl, watchUrl, synopsis, whyWatch } = req.body;
+    const { title, originalTitle, year, durationMinutes, genres, director, country, suggestedBy, vibe, platform, posterUrl, trailerUrl, watchUrl, synopsis, whyWatch } = req.body;
     if (!title || !suggestedBy) {
       res.status(400).json({ error: 'Tên phim và người đề xuất là bắt buộc' });
       return;
@@ -309,6 +310,7 @@ async function startServer() {
       durationMinutes: Number(durationMinutes) || 120,
       genres: Array.isArray(genres) && genres.length > 0 ? genres : ['Chính kịch'],
       director: director ? director.trim() : undefined,
+      country: typeof country === 'string' && country.trim() ? country.trim().slice(0, 200) : undefined,
       suggestedBy: suggestedBy.trim(),
       vibe: vibe || 'Hành động đỉnh cao',
       platform: platform || 'Netflix',

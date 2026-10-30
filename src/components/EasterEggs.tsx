@@ -6,6 +6,7 @@ import { EggEvent, EggId, Story, UNLOCK_COPY, isSensitiveFilm, latestLegendaryDa
 import { isHaunted } from '../seasons/worlds';
 import { BadgeDef, FxKind, SecretId, Tier, SECRET_BADGES, clubBadges, loadSecrets, memberBadges, playFx, unlockSecret } from '../badges';
 import { BIRTHDAY_FACT, CAMEO_FACTS, CINEMA_FACTS, CinemaFact } from '../cinemaFacts';
+import { NATIONAL_CINEMA, countriesOf, countryName } from '../data/filmCountries';
 import { BROTHERS_LIST } from './Header';
 import { Shiba } from './Shiba';
 
@@ -775,6 +776,57 @@ export const ClassifiedArchive: React.FC<{ stories: Story[]; openSignal?: number
   );
 };
 
+// Cinema passport: one stamp per country the club has actually watched, read from the archive
+const CinemaPassport: React.FC<{ movies: Movie[] }> = ({ movies }) => {
+  const [open, setOpen] = useState<string | null>(null);
+  const visits = new Map<string, Movie[]>();
+  movies.filter((m) => m.watched).forEach((m) =>
+    countriesOf(m).forEach((c) => visits.set(c, [...(visits.get(c) ?? []), m]))
+  );
+  const stamps = [...visits].sort((a, b) => b[1].length - a[1].length);
+  const films = open ? visits.get(open) ?? [] : [];
+
+  return (
+    <>
+      <div className="mt-12 mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div className="label">Hộ chiếu điện ảnh</div>
+          <p className="mt-1.5 text-[14px] text-ink-2">Mỗi quốc gia một con dấu, tính theo phim cả hội đã xem. Bấm vào dấu để đọc.</p>
+        </div>
+        <span className="label">{stamps.length} quốc gia</span>
+      </div>
+      {stamps.length ? (
+        <div className="panel screentone p-5 flex flex-wrap items-center justify-center gap-3">
+          {stamps.map(([country, list], i) => (
+            <button
+              key={country}
+              onClick={() => { sounds.playVintageSwitch(); setOpen(country); }}
+              className="stamp bg-card text-accent hover:bg-sunk transition-colors"
+              style={{ rotate: `${[-5, 3, -2, 6, -4, 2][i % 6]}deg` }}
+            >
+              {countryName(country)} · {list.length}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[14px] text-ink-3">Hộ chiếu còn trắng. Chưa phim nào có thông tin quốc gia.</p>
+      )}
+      {stamps.length > 0 && !visits.has('Vietnam') && (
+        <p className="mt-3 text-[13px] text-ink-3">Hộ chiếu đi khắp nơi mà chưa có dấu Việt Nam. Hơi kỳ.</p>
+      )}
+      {open && (
+        <FactCard
+          label={`Hộ chiếu · ${countryName(open)}${NATIONAL_CINEMA[open]?.fact ? ` · ${NATIONAL_CINEMA[open].fact!.tag}` : ''}`}
+          fact={NATIONAL_CINEMA[open]?.fact ?? { tag: '', title: countryName(open), body: 'Rạp chưa có ghi chép nào về nền điện ảnh này.' }}
+          onClose={() => setOpen(null)}
+        >
+          <span className="text-[12px] text-night-ink/50 leading-snug">Đã xem: {films.map((m) => m.title).join(', ')}</span>
+        </FactCard>
+      )}
+    </>
+  );
+};
+
 // Hall of badges (GGMV getAchievementHallOfFame + medals, member titles, secrets)
 export const AchievementHall: React.FC<{ events: EggEvent[]; movies: Movie[] }> = ({ events, movies }) => {
   const stats = new Map<string, { count: number; first: string }>();
@@ -826,6 +878,8 @@ export const AchievementHall: React.FC<{ events: EggEvent[]; movies: Movie[] }> 
           );
         })}
       </div>
+
+      <CinemaPassport movies={movies} />
 
       <div className="mt-12 mb-5">
         <div className="label">Danh hiệu thành viên</div>
