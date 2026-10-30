@@ -2,6 +2,8 @@ import React from 'react';
 import { Movie } from '../types/cinema';
 import { X, ExternalLink } from 'lucide-react';
 import { Modal } from './ui';
+import { Shiba } from './Shiba';
+import { shibaReview } from '../easterEggs';
 
 interface CinemaScreenModalProps {
   movie: Movie | null;
@@ -34,6 +36,7 @@ export const CinemaScreenModal: React.FC<CinemaScreenModalProps> = ({ movie, onC
   if (!movie) return null;
 
   const embedUrl = getEmbedUrl(movie.trailerUrl);
+  const review = shibaReview(movie);
 
   return (
     <Modal onClose={onClose} tone="night" size="xl" label={`Trailer ${movie.title}`}>
@@ -92,6 +95,13 @@ export const CinemaScreenModal: React.FC<CinemaScreenModalProps> = ({ movie, onC
           {movie.year} · {movie.durationMinutes} phút · đang xem: {currentUser}
         </span>
       </div>
+
+      {review && (
+        <div className="flex items-center gap-3 px-5 sm:px-6 py-3 border-t-[1.5px] border-night-line">
+          <Shiba size={36} className="shrink-0" />
+          <p className="text-[13.5px] text-night-ink/75">{review}</p>
+        </div>
+      )}
     </Modal>
   );
 };

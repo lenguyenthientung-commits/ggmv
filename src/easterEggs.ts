@@ -83,6 +83,25 @@ const normalizeTitle = (value: string) =>
 const byWatchDate = (movies: Movie[]) =>
   movies.filter((m) => m.watched && m.watchedDate).slice().sort((a, b) => (a.watchedDate as string).localeCompare(b.watchedDate as string));
 
+// Films about real tragedies or crimes: playful eggs stay away from them (design doc, season 2)
+const SENSITIVE_TITLES = /schindler|pianist|hoi uc ke sat nhan|memories of murder|cuoc san lung|the hunt\b/;
+
+export function isSensitiveFilm(movie: Movie): boolean {
+  const text = `${movie.title} ${movie.originalTitle ?? ''}`.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+  return SENSITIVE_TITLES.test(text);
+}
+
+// Shiba the critic: one reaction per film, read from its own record. Most films get none.
+export function shibaReview(movie: Movie, hour = new Date().getHours()): string | null {
+  if (isSensitiveFilm(movie)) return null;
+  if (movie.durationMinutes >= 180) return `${movie.durationMinutes} phút. Shiba đã mang theo gối.`;
+  if (movie.genres.includes('Kinh dị') && (hour >= 22 || hour < 5)) return 'Phim kinh dị, giờ này. Shiba xem từ sau thùng bắp rang.';
+  const score = rankScore(movie);
+  if (score >= 8.5) return `${score.toFixed(2)} điểm. Shiba gật gù, chuyện này không xảy ra thường xuyên.`;
+  if (score > 0 && score < 5) return `${score.toFixed(2)} điểm. Shiba đã xem, và Shiba không muốn nói về chuyện đó.`;
+  return null;
+}
+
 // Per-movie stories derived from saved scores and metadata (never changes them)
 export function movieStories(movie: Movie, events: EggEvent[]): Story[] {
   const scores = judgeScores(movie);

@@ -104,6 +104,9 @@ export function scheduledWorld(now = vnToday()): WorldId | null {
   return null;
 }
 
+// The Halloween egg runs on the calendar even with worlds off; pinning the world opens it any time
+export const isHaunted = () => scheduledWorld() === 'halloween' || resolveWorld(loadWorldPref()) === 'halloween';
+
 // ---------- Preference (per viewer) ----------
 const KEY = 'ggmv_world';
 

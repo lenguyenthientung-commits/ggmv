@@ -7,7 +7,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Armchair, AudioWaveform, Award, Bird, Bomb, Briefcase, Church, Clapperboard, Compass, Crown, Dices, Dog, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Hamburger, Handshake, Heart, Hotel, Hourglass,
-  FlipHorizontal2, Focus, GraduationCap, Megaphone, Package, Palette, PenLine, PersonStanding, Popcorn, Projector, Rabbit, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
+  Archive, FlipHorizontal2, Focus, Ghost, GraduationCap, Megaphone, Package, Palette, PenLine, PersonStanding, Popcorn, Projector, Rabbit, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
 } from 'lucide-react';
 import { Movie } from './types/cinema';
 import { ACHIEVEMENTS, EggEvent, judgeScores, rankScore } from './easterEggs';
@@ -126,7 +126,7 @@ export function clubBadges(movies: Movie[], events: EggEvent[]): EarnedBadge[] {
 export const archiveBadgeIds = ARCHIVE_BADGES.map((b) => b.id);
 
 // ---------- Secret: found by poking at the app ----------
-export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE' | 'WHITE_RABBIT' | 'BURGER_TALK' | 'WILHELM' | 'CAUGHT' | 'SYMMETRY' | 'CAMEO_HUNTER';
+export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE' | 'WHITE_RABBIT' | 'BURGER_TALK' | 'WILHELM' | 'CAUGHT' | 'SYMMETRY' | 'CAMEO_HUNTER' | 'LOST_FILM' | 'LAST_ONE';
 
 export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'KONAMI', name: 'Mã Gian Lận', icon: Gamepad2, tier: 'secret', description: 'Bạn biết mã của thời băng VHS. Phim tua về năm xưa.', rule: '↑ ↑ ↓ ↓ ← → ← → B A', hint: 'Những người chơi game thùng còn nhớ.' },
@@ -144,6 +144,8 @@ export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'CAUGHT', name: 'Bắt Quả Tang', icon: Dog, tier: 'secret', description: 'Bạn đuổi theo Shiba ba lần, không bắt được, và vẫn được bắp rang.', rule: 'Đuổi Shiba 3 lần rồi nhặt gói bắp rang.', hint: 'Lướt trang đủ lâu sẽ có người hỏi thăm. Hoặc gọi Shiba ở cuối trang.' },
   { id: 'SYMMETRY', name: 'Mê Đối Xứng', icon: Hotel, tier: 'secret', description: 'Bố cục đối xứng kiểu Wes Anderson. Bật tắt trong menu Giao diện.', rule: 'Chọn liên tiếp Sakura, Matcha, Vàng đen trong bảng màu.', hint: 'Bảng màu có thứ tự riêng: hoa, trà, rồi vàng.' },
   { id: 'CAMEO_HUNTER', name: 'Thợ Săn Cameo', icon: PersonStanding, tier: 'secret', description: 'Bạn đã bắt được 5 lần xuất hiện chớp nhoáng của bóng người lạ.', rule: 'Bấm vào bóng người nấp ở mép trang đủ 5 lần.', hint: 'Có người đứng ở rìa khung hình. Mở vài tab và nhìn kỹ hai bên.' },
+  { id: 'LOST_FILM', name: 'Thủ Thư Của Điều Không Thể', icon: Archive, tier: 'secret', description: 'Bạn đọc hết hồ sơ của một bộ phim không hề tồn tại.', rule: 'Tìm "the last popcorn" ở Kho phim và đọc đủ 3 mục hồ sơ.', hint: 'Trên hộp bắp rang Shiba để lại có in tên một bộ phim.' },
+  { id: 'LAST_ONE', name: 'Người Cuối Cùng Trong Rạp', icon: Ghost, tier: 'secret', description: 'Bạn đã gặp đủ 3 lần vị khán giả không mua vé.', rule: 'Bấm vào bóng ma ở mép trang 3 lần, mùa Halloween hoặc khi bật thế giới Bị Ám.', hint: 'Mùa Halloween, có khán giả đứng ở rìa khung hình.' },
 ];
 
 const SECRETS_KEY = 'ggmv_secret_badges';

@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
-import { EggEvent, EggId, Story, UNLOCK_COPY, latestLegendaryDate } from '../easterEggs';
+import { EggEvent, EggId, Story, UNLOCK_COPY, isSensitiveFilm, latestLegendaryDate } from '../easterEggs';
+import { isHaunted } from '../seasons/worlds';
 import { BadgeDef, FxKind, SecretId, Tier, SECRET_BADGES, clubBadges, loadSecrets, memberBadges, playFx, unlockSecret } from '../badges';
 import { BIRTHDAY_FACT, CAMEO_FACTS, CINEMA_FACTS, CinemaFact } from '../cinemaFacts';
 import { BROTHERS_LIST } from './Header';
@@ -256,42 +257,88 @@ export const CinemaFactTrigger: React.FC = () => {
 const CAMEO_KEY = 'ggmv_cameos';
 const CAMEO_GOAL = 5;
 
-export const HiddenCameo: React.FC = () => {
-  // Remounted per tab: about one tab visit in three has a cameo
+// Halloween: the silhouette becomes the world's ticketless viewer, and returns each year
+const ghostKey = () => `ggmv_ghosts_${new Date().getFullYear()}`;
+const GHOST_GOAL = 3;
+const GHOST_LINES: CinemaFact[] = [
+  { tag: 'Halloween', title: 'Ghế giữa đã có người.', body: 'Không ai thấy nó mua vé. Nó vẫn xem rất chăm.' },
+  { tag: 'Halloween', title: 'Nó đã vote rồi.', body: 'Phiếu này không được tính. Nhưng nó có ý kiến.' },
+];
+
+const readCount = (key: string) => {
+  try {
+    return Number(localStorage.getItem(key) || 0);
+  } catch {
+    return 0;
+  }
+};
+const bumpCount = (key: string) => {
+  const count = readCount(key) + 1;
+  try {
+    localStorage.setItem(key, String(count));
+  } catch {
+    // storage blocked: the card still shows
+  }
+  return count;
+};
+
+export const HiddenCameo: React.FC<{ movies: Movie[] }> = ({ movies }) => {
+  const [haunted] = useState(() => isHaunted() && readCount(ghostKey()) < GHOST_GOAL);
+  // Remounted per tab: about one tab visit in three has a cameo, one in two for the ghost
   const [spot, setSpot] = useState(() =>
-    Math.random() < 1 / 3 ? { side: Math.random() < 0.5 ? 'left' : 'right', top: 12 + Math.random() * 76 } : null
+    Math.random() < (haunted ? 1 / 2 : 1 / 3) ? { side: Math.random() < 0.5 ? 'left' : 'right', top: 12 + Math.random() * 76 } : null
   );
-  const [found, setFound] = useState<{ fact: CinemaFact; count: number } | null>(null);
+  const [found, setFound] = useState<{ fact: CinemaFact; count: number; goal: number } | null>(null);
+
+  const catchGhost = () => {
+    const count = bumpCount(ghostKey());
+    if (count < GHOST_GOAL) return { fact: GHOST_LINES[count - 1], count, goal: GHOST_GOAL };
+    unlockSecret('LAST_ONE');
+    const horror = movies.filter((m) => m.genres.includes('Kinh dị') && !isSensitiveFilm(m)).slice(0, 5).map((m) => m.title);
+    return {
+      fact: {
+        tag: 'Halloween',
+        title: 'Last one in the theater.',
+        body: horror.length ? `Mọi người về hết rồi. Nó để lại danh sách phim kinh dị trong kho: ${horror.join(', ')}.` : 'Mọi người về hết rồi. Kho chưa có phim kinh dị nào, nên nó tự đi tìm phim khác.',
+      },
+      count,
+      goal: GHOST_GOAL,
+    };
+  };
 
   const catchCameo = () => {
     sounds.playVintageSwitch();
-    let count = 1;
-    try {
-      count = Number(localStorage.getItem(CAMEO_KEY) || 0) + 1;
-      localStorage.setItem(CAMEO_KEY, String(count));
-    } catch {
-      // storage blocked: the fact still shows
-    }
-    if (count >= CAMEO_GOAL) unlockSecret('CAMEO_HUNTER');
     setSpot(null);
-    setFound({ fact: CAMEO_FACTS[(count - 1) % CAMEO_FACTS.length], count });
+    if (haunted) {
+      setFound(catchGhost());
+      return;
+    }
+    const count = bumpCount(CAMEO_KEY);
+    if (count >= CAMEO_GOAL) unlockSecret('CAMEO_HUNTER');
+    setFound({ fact: CAMEO_FACTS[(count - 1) % CAMEO_FACTS.length], count, goal: CAMEO_GOAL });
   };
 
   return (
     <>
       {spot && (
-        <button onClick={catchCameo} className="egg-cameo" style={{ top: `${spot.top}%`, [spot.side]: 0 }} aria-label="Một bóng người" title="?">
+        <button onClick={catchCameo} className="egg-cameo" style={{ top: `${spot.top}%`, [spot.side]: 0 }} aria-label={haunted ? 'Một bóng ma' : 'Một bóng người'} title="?">
           <svg viewBox="0 0 22 36" width="22" height="36" aria-hidden="true" fill="currentColor">
-            <path d="M5 8h12v2H5z" />
-            <path d="M7 2h8v6H7z" />
-            <circle cx="11" cy="13" r="5" />
-            <path d="M3 36c-2-11 1-18 8-18s10 7 8 18z" />
+            {haunted ? (
+              <path fillRule="evenodd" d="M11 2C5 2 2 7 2 13v21l4-3 3 3 2-3 2 3 3-3 4 3V13c0-6-3-11-9-11zM7 11a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm8 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" />
+            ) : (
+              <>
+                <path d="M5 8h12v2H5z" />
+                <path d="M7 2h8v6H7z" />
+                <circle cx="11" cy="13" r="5" />
+                <path d="M3 36c-2-11 1-18 8-18s10 7 8 18z" />
+              </>
+            )}
           </svg>
         </button>
       )}
       {found && (
-        <FactCard label={`Cameo · ${found.fact.tag}`} fact={found.fact} onClose={() => setFound(null)}>
-          <span className="num text-[11px] text-night-ink/40">{Math.min(found.count, CAMEO_GOAL)}/{CAMEO_GOAL} lần bắt gặp</span>
+        <FactCard label={`${haunted ? 'Khán giả không vé' : 'Cameo'} · ${found.fact.tag}`} fact={found.fact} onClose={() => setFound(null)}>
+          <span className="num text-[11px] text-night-ink/40">{Math.min(found.count, found.goal)}/{found.goal} lần bắt gặp</span>
         </FactCard>
       )}
     </>
@@ -310,7 +357,7 @@ export const SymmetryTitle: React.FC = () => (
 // ---------- Shiba, the usher: appears after a long scroll, dodges the pointer, leaves popcorn ----------
 const USHER_DAY_KEY = 'ggmv_usher_day';
 const USHER_SPOTS: [number, number][] = [[0.84, 0.72], [0.08, 0.58], [0.8, 0.3], [0.12, 0.72]];
-const USHER_LINES = ["Hey. You've been scrolling for a while. Need some popcorn?", 'Too slow.', 'The usher does not get caught.', 'Shiba left this behind.'];
+const USHER_LINES = ["Hey. You've been scrolling for a while. Need some popcorn?", 'Too slow.', 'The usher does not get caught.', 'Shiba left this behind. Printed on the box: The Last Popcorn, 1977.'];
 const USHER_MISSES = 3;
 
 export const ShibaUsher: React.FC = () => {
@@ -414,13 +461,15 @@ export const ShibaUsher: React.FC = () => {
 };
 
 // ---------- Search keywords: the Kho phim search box hides a few film references ----------
-export type SearchEggId = 'matrix' | 'burger' | 'wilhelm';
+export type SearchEggId = 'matrix' | 'burger' | 'wilhelm' | 'lostfilm';
 
 const SEARCH_WORDS = new Map<string, SearchEggId>([
   ['wake up', 'matrix'],
   ['royal with cheese', 'burger'],
   ['wilhelm', 'wilhelm'],
   ['wilhelm scream', 'wilhelm'],
+  ['the last popcorn', 'lostfilm'],
+  ['last popcorn', 'lostfilm'],
 ]);
 export const searchEggFor = (query: string) => SEARCH_WORDS.get(query.trim().toLowerCase().replace(/\s+/g, ' ')) ?? null;
 
@@ -445,6 +494,56 @@ const BURGER_TALKS = [
     'Trường hợp nào cũng đừng gọi tráng miệng.',
   ],
 ];
+
+// The club's own invented film. Its dossier ends by admitting it; it never enters the real archive.
+const LOST_FILM_FILES = [
+  { tab: 'Hồ sơ', lines: ['Năm sản xuất: 1977, theo nhãn trên hộp bắp rang.', 'Thời lượng: 94 phút. Bản đạo diễn: 412 phút, gồm 318 phút nhai.', 'Xếp loại: không phù hợp với người đang đói.'] },
+  { tab: 'Nhân sự', lines: ['Đạo diễn: không ký tên, và không trả lời thư.', 'Vai chính: một hạt bắp, vai diễn đầu tay. Không có phim thứ hai.', 'Người chiếu phim: tên bị gạch khỏi mọi tài liệu, kể cả tài liệu này.'] },
+  { tab: 'Biên bản', lines: ['Bản phim duy nhất được cất trong một hộp bắp rang.', 'Hộp đã được một nhân viên rạp mở ra, trong giờ nghỉ.', 'Kết quả kiểm kê: không còn gì để chiếu.'] },
+];
+
+const LostFilmDossier: React.FC = () => {
+  const [tab, setTab] = useState(0);
+  const [read, setRead] = useState([0]);
+  const allRead = read.length === LOST_FILM_FILES.length;
+
+  useEffect(() => {
+    if (allRead) unlockSecret('LOST_FILM');
+  }, [allRead]);
+
+  const open = (i: number) => {
+    sounds.playVintageSwitch();
+    setTab(i);
+    setRead((r) => (r.includes(i) ? r : [...r, i]));
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row gap-5">
+      <div className="shrink-0 w-[150px] mx-auto sm:mx-0 rounded-md border-[1.5px] border-night-line bg-night-2 p-4 text-center" aria-hidden="true">
+        <img src="/assets/shiba/popcorn-bag.png" alt="" width={80} height={96} draggable={false} className="mx-auto" />
+        <div className="display mt-3 text-[20px]">The Last Popcorn</div>
+        <div className="label !text-night-ink/50 !text-[10px] mt-1.5">1977</div>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="label !text-accent">Kho lưu trữ · Phim thất lạc</div>
+        <p className="mt-2 font-bold text-[16px] leading-snug">In a world where every cinema has run out of popcorn, one projectionist must protect the last surviving kernel.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {LOST_FILM_FILES.map((f, i) => (
+            <button key={f.tab} onClick={() => open(i)} aria-pressed={tab === i} className={`btn btn-sm ${tab === i ? 'btn-primary' : ''}`}>{f.tab}</button>
+          ))}
+        </div>
+        <ul className="mt-3 space-y-1.5 text-[13.5px] text-night-ink/75 leading-snug">
+          {LOST_FILM_FILES[tab].lines.map((line) => <li key={line}>{line}</li>)}
+        </ul>
+        {allRead && (
+          <p className="mt-4 pt-3 border-t border-night-line text-[13.5px] font-bold">
+            Kết luận: bộ phim này không tồn tại. Rạp dựng nó lên để có người đi tìm, và bạn vừa tìm xong.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export const SearchEgg: React.FC<{ egg: SearchEggId; movies: Movie[]; onClear: () => void }> = ({ egg, movies, onClear }) => {
   const [redPill, setRedPill] = useState(false);
@@ -515,6 +614,8 @@ export const SearchEgg: React.FC<{ egg: SearchEggId; movies: Movie[]; onClear: (
           </p>
         </>
       )}
+
+      {egg === 'lostfilm' && <LostFilmDossier />}
 
       {egg === 'wilhelm' && (
         <>
