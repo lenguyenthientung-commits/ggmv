@@ -245,6 +245,127 @@ export const CinemaFactTrigger: React.FC = () => {
   );
 };
 
+// ---------- Search keywords: the Kho phim search box hides a few film references ----------
+export type SearchEggId = 'matrix' | 'burger' | 'wilhelm';
+
+const SEARCH_WORDS = new Map<string, SearchEggId>([
+  ['wake up', 'matrix'],
+  ['royal with cheese', 'burger'],
+  ['wilhelm', 'wilhelm'],
+  ['wilhelm scream', 'wilhelm'],
+]);
+export const searchEggFor = (query: string) => SEARCH_WORDS.get(query.trim().toLowerCase().replace(/\s+/g, ' ')) ?? null;
+
+const SIMULATION_FILES = [
+  { title: 'The Matrix', year: 1999, note: 'Thế giới quanh bạn là một chương trình, và có người đang tìm cách thoát ra.' },
+  { title: 'Dark City', year: 1998, note: 'Mỗi đêm cả thành phố bị sắp đặt lại, ký ức của cư dân cũng vậy.' },
+  { title: 'The Truman Show', year: 1998, note: 'Một người đàn ông phát hiện cả cuộc đời mình là một trường quay.' },
+  { title: 'Ex Machina', year: 2014, note: 'Một bài kiểm tra xem máy có ý thức không, nhưng ai đang kiểm tra ai?' },
+];
+
+const BURGER_TALKS = [
+  [
+    'Hai tiếng rưỡi phim, mà hai ông ngồi trong xe nói về bánh mì kẹp thịt.',
+    'Đoạn đó mới là phim. Phần còn lại chỉ để hai ông có chỗ mà đi tới.',
+    'Bánh mì thì liên quan gì tới cốt truyện?',
+    'Không liên quan. Nên mới nhớ tới giờ.',
+  ],
+  [
+    'Để ý không, phim nào có bữa ăn ngon thì nửa sau có người chết.',
+    'Cái đó gọi là điềm báo.',
+    'Hay tại nhà bếp dở.',
+    'Trường hợp nào cũng đừng gọi tráng miệng.',
+  ],
+];
+
+export const SearchEgg: React.FC<{ egg: SearchEggId; movies: Movie[]; onClear: () => void }> = ({ egg, movies, onClear }) => {
+  const [redPill, setRedPill] = useState(false);
+  const [talk] = useState(() => BURGER_TALKS[Math.floor(Math.random() * BURGER_TALKS.length)]);
+  const [crimePick] = useState(() => {
+    const crime = movies.filter((m) => !m.watched && m.genres.includes('Tội phạm'));
+    return crime.length ? crime[Math.floor(Math.random() * crime.length)] : null;
+  });
+
+  useEffect(() => {
+    if (egg === 'burger') unlockSecret('BURGER_TALK');
+    if (egg === 'wilhelm') unlockSecret('WILHELM');
+  }, [egg]);
+
+  const takeRedPill = () => {
+    sounds.playVintageSwitch();
+    setRedPill(true);
+    unlockSecret('WHITE_RABBIT');
+  };
+  const inStock = (title: string) =>
+    movies.some((m) => [m.title, m.originalTitle].some((t) => t?.toLowerCase() === title.toLowerCase()));
+
+  return (
+    <div className="enter bg-night text-night-ink rounded-lg border-[1.5px] border-ink p-5 sm:p-6 mb-8" role="status">
+      {egg === 'matrix' && (
+        <>
+          <div className="label !text-[#7CFC9A]">Wake up</div>
+          {!redPill ? (
+            <>
+              <p className="mt-2 font-bold text-[18px] leading-snug">The archive has you.</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button onClick={onClear} className="btn">Viên xanh: về kho phim</button>
+                <button onClick={takeRedPill} className="btn btn-primary">Viên đỏ: mở hồ sơ</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="mt-2 font-bold text-[18px] leading-snug">Hồ sơ: những thế giới không có thật.</p>
+              <ul className="mt-4 grid sm:grid-cols-2 gap-3">
+                {SIMULATION_FILES.map((f) => (
+                  <li key={f.title} className="border border-night-line rounded-md p-3">
+                    <div className="font-bold">{f.title} <span className="num text-[12px] text-night-ink/50">{f.year}</span></div>
+                    <p className="mt-1 text-[13px] text-night-ink/70 leading-snug">{f.note}</p>
+                    {inStock(f.title) && <div className="label !text-[10px] !text-[#7CFC9A] mt-2">Có trong kho</div>}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+      )}
+
+      {egg === 'burger' && (
+        <>
+          <div className="label !text-accent">Quán ăn · 45 phút sau</div>
+          <dl className="mt-3 space-y-2 text-[14px] leading-snug">
+            {talk.map((line, i) => (
+              <div key={i} className="flex gap-3">
+                <dt className="label !text-night-ink/50 w-4 shrink-0">{i % 2 ? 'B' : 'A'}</dt>
+                <dd>{line}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 pt-3 border-t border-night-line text-[13.5px] text-night-ink/75">
+            {crimePick
+              ? <>Hết chuyện rồi thì xem phim đi: <span className="font-bold text-night-ink">{crimePick.title}</span>, phim tội phạm chưa xem trong kho.</>
+              : 'Kho không còn phim tội phạm nào chưa xem. Đó cũng là một tội.'}
+          </p>
+        </>
+      )}
+
+      {egg === 'wilhelm' && (
+        <>
+          <div className="egg-wave flex items-center gap-1 h-10" aria-hidden="true">
+            {Array.from({ length: 28 }, (_, i) => (
+              <span key={i} style={{ height: `${20 + ((i * 37) % 80)}%`, animationDelay: `${(i * 0.07) % 0.6}s` }} />
+            ))}
+          </div>
+          <p className="mt-3 font-bold text-[18px] leading-snug">Congratulations. You have discovered one of cinema's most recognizable sound effects.</p>
+          <p className="mt-2 text-[13.5px] text-night-ink/75 leading-relaxed">
+            Tiếng hét được thu cho "Distant Drums" (1951), rồi mang tên Wilhelm, một nhân vật trong "The Charge at Feather River" (1953).
+            Nhà thiết kế âm thanh Ben Burtt tìm lại nó trong kho lưu trữ và cài vào "Star Wars" (1977). Từ đó, cài tiếng hét này vào phim thành một trò đùa nội bộ của dân làm âm thanh.
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
 // ---------- Hidden effects ----------
 // One popped kernel in the medal style: puffs drawn twice (ink outline, then fill) so only the silhouette is outlined
 const PUFFS: [number, number, number][] = [[12, 12, 7], [21, 11, 6.5], [16, 19, 8], [9, 20, 5.5], [23, 20, 6]];

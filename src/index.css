@@ -411,6 +411,10 @@ html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-
 .fx-vertigo main { transform-origin: 50% 40vh; animation: dolly-zoom 2.8s ease-in-out both; }
 .fx-vertigo, .fx-vertigo body { overflow-x: clip; }
 
+/* wilhelm scream: a silent waveform */
+@keyframes wave-pulse { 0%, 100% { transform: scaleY(0.55); } 50% { transform: scaleY(1); } }
+.egg-wave span { flex: 1; max-width: 6px; background: var(--color-accent); border-radius: 2px; animation: wave-pulse 0.9s ease-in-out infinite; }
+
 /* ---------- Rulebook: pages turn around the spine ---------- */
 .book { perspective: 2200px; }
 .book-page.is-left { background-image: linear-gradient(to left, rgb(0 0 0 / 0.09), transparent 7%); }
@@ -429,7 +433,7 @@ html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-
   .enter, .overlay-enter, .reveal { animation: none; }
   .egg-dust { animation: none; opacity: 0.35; transform: translate(-50%, -50%); }
   .stamp-land, .egg-slate, .egg-toast, .witness-sleeve { animation: none; }
-  .badge-flip, .badge-burst, .fx-oldfilm-layer, .fx-scratch, .fx-projector main, .fx-dizzy canvas, .fx-mirror main, .fx-vertigo main { animation: none !important; }
+  .badge-flip, .badge-burst, .fx-oldfilm-layer, .fx-scratch, .fx-projector main, .fx-dizzy canvas, .fx-mirror main, .fx-vertigo main, .egg-wave span { animation: none !important; }
   .badge-burst, .fx-rain { display: none; }
   .fx-projector-layer { animation: none; opacity: 0.35; }
   .btn, .poster-lift { transition: background-color 200ms, color 200ms; }

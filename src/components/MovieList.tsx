@@ -4,6 +4,7 @@ import { MovieCard } from './MovieCard';
 import { Search, RotateCcw, Plus } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
 import { SectionHeader } from './ui';
+import { SearchEgg, searchEggFor } from './EasterEggs';
 
 interface MovieListProps {
   movies: Movie[];
@@ -84,6 +85,8 @@ export const MovieList: React.FC<MovieListProps> = ({
     return list;
   }, [movies, activeFilterTab, genreFilter, searchQuery]);
 
+  const searchEgg = searchEggFor(searchQuery);
+
   const tabs: { id: FilterTab; label: string }[] = [
     { id: 'all', label: `Tất cả ${movies.length}` },
     { id: 'unwatched', label: `Chưa xem ${movies.filter(m => !m.watched).length}` },
@@ -154,6 +157,8 @@ export const MovieList: React.FC<MovieListProps> = ({
         </div>
       </div>
 
+      {searchEgg && <SearchEgg key={searchEgg} egg={searchEgg} movies={movies} onClear={() => setSearchQuery('')} />}
+
       {filteredMovies.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-10">
           {filteredMovies.map(movie => (
@@ -171,7 +176,7 @@ export const MovieList: React.FC<MovieListProps> = ({
             />
           ))}
         </div>
-      ) : (
+      ) : !searchEgg && (
         <div className="panel screentone py-16 px-6 text-center">
           <div className="inline-block bg-card px-6 py-5 rounded-lg border-[1.5px] border-ink">
             <div className="display text-[40px]">Trống trơn</div>

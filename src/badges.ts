@@ -6,8 +6,8 @@
 
 import type { LucideIcon } from 'lucide-react';
 import {
-  Armchair, Award, Bird, Bomb, Briefcase, Church, Clapperboard, Compass, Crown, Dices, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Handshake, Heart, Hourglass,
-  FlipHorizontal2, Focus, GraduationCap, Megaphone, Package, Palette, PenLine, Popcorn, Projector, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
+  Armchair, AudioWaveform, Award, Bird, Bomb, Briefcase, Church, Clapperboard, Compass, Crown, Dices, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Hamburger, Handshake, Heart, Hourglass,
+  FlipHorizontal2, Focus, GraduationCap, Megaphone, Package, Palette, PenLine, Popcorn, Projector, Rabbit, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
 } from 'lucide-react';
 import { Movie } from './types/cinema';
 import { ACHIEVEMENTS, EggEvent, judgeScores, rankScore } from './easterEggs';
@@ -126,7 +126,7 @@ export function clubBadges(movies: Movie[], events: EggEvent[]): EarnedBadge[] {
 export const archiveBadgeIds = ARCHIVE_BADGES.map((b) => b.id);
 
 // ---------- Secret: found by poking at the app ----------
-export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE';
+export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE' | 'WHITE_RABBIT' | 'BURGER_TALK' | 'WILHELM';
 
 export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'KONAMI', name: 'Mã Gian Lận', icon: Gamepad2, tier: 'secret', description: 'Bạn biết mã của thời băng VHS. Phim tua về năm xưa.', rule: '↑ ↑ ↓ ↓ ← → ← → B A', hint: 'Những người chơi game thùng còn nhớ.' },
@@ -138,6 +138,9 @@ export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'VERTIGO', name: 'Chóng Mặt', icon: Focus, tier: 'secret', description: 'Dolly zoom: máy lùi, ống kính zoom tới, thế giới co giãn quanh nhân vật. Hitchcock dùng nó để diễn tả cơn sợ độ cao.', rule: 'Gõ chữ "vertigo".', hint: 'Một phim Hitchcock 1958, và một kỹ thuật máy quay mang tên nó.' },
   { id: 'MCGUFFIN', name: 'Chiếc Cặp Bí Ẩn', icon: Briefcase, tier: 'secret', description: 'MacGuffin: thứ ai cũng tranh giành nhưng chẳng ai cần biết nó là gì. Huy hiệu này cũng vậy.', rule: 'Gõ chữ "mcguffin".', hint: 'Thuật ngữ Hitchcock dùng cho cái cớ của cả cốt truyện.' },
   { id: 'CINEPHILE', name: 'Mọt Phim', icon: GraduationCap, tier: 'secret', description: 'Đã đọc 10 thẻ kiến thức điện ảnh khác nhau.', rule: 'Bấm vào chữ シネマクラブ ở cuối trang để rút thẻ, đọc đủ 10 thẻ.', hint: 'Cuối trang có một dòng chữ Nhật biết kể chuyện.' },
+  { id: 'WHITE_RABBIT', name: 'Theo Thỏ Trắng', icon: Rabbit, tier: 'secret', description: 'Bạn chọn viên đỏ và mở hồ sơ về những thế giới giả lập.', rule: 'Tìm "wake up" ở Kho phim, rồi chọn viên đỏ.', hint: 'Ô tìm phim cũng có thể bị đánh thức. Năm 1999.' },
+  { id: 'BURGER_TALK', name: 'Chuyện Bàn Ăn', icon: Hamburger, tier: 'secret', description: 'Hội thoại dài về chuyện không liên quan: chữ ký của Tarantino từ "Pulp Fiction" (1994).', rule: 'Tìm "royal with cheese" ở Kho phim.', hint: 'Ở Paris, món này có một cái tên khác. Thử tìm nó trong kho.' },
+  { id: 'WILHELM', name: 'Thám Tử Âm Thanh', icon: AudioWaveform, tier: 'secret', description: 'Bạn lần ra tiếng hét được cài vào phim suốt hơn nửa thế kỷ.', rule: 'Tìm "wilhelm scream" ở Kho phim.', hint: 'Một tiếng hét có tên riêng. Thử tìm nó trong kho.' },
 ];
 
 const SECRETS_KEY = 'ggmv_secret_badges';
