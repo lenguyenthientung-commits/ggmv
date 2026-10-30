@@ -6,8 +6,8 @@
 
 import type { LucideIcon } from 'lucide-react';
 import {
-  Armchair, AudioWaveform, Award, Bird, Bomb, Briefcase, Church, Clapperboard, Compass, Crown, Dices, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Hamburger, Handshake, Heart, Hourglass,
-  FlipHorizontal2, Focus, GraduationCap, Megaphone, Package, Palette, PenLine, Popcorn, Projector, Rabbit, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
+  Armchair, AudioWaveform, Award, Bird, Bomb, Briefcase, Church, Clapperboard, Compass, Crown, Dices, Dog, Eye, EyeOff, Film, Gamepad2, Gavel, Gem, Hamburger, Handshake, Heart, Hotel, Hourglass,
+  FlipHorizontal2, Focus, GraduationCap, Megaphone, Package, Palette, PenLine, PersonStanding, Popcorn, Projector, Rabbit, Scale, ScrollText, Snowflake, Sparkles, Star, Swords, Ticket, Tornado, Trophy, Vote, Wine,
 } from 'lucide-react';
 import { Movie } from './types/cinema';
 import { ACHIEVEMENTS, EggEvent, judgeScores, rankScore } from './easterEggs';
@@ -126,7 +126,7 @@ export function clubBadges(movies: Movie[], events: EggEvent[]): EarnedBadge[] {
 export const archiveBadgeIds = ARCHIVE_BADGES.map((b) => b.id);
 
 // ---------- Secret: found by poking at the app ----------
-export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE' | 'WHITE_RABBIT' | 'BURGER_TALK' | 'WILHELM';
+export type SecretId = 'KONAMI' | 'POPCORN' | 'PROJECTIONIST' | 'INDECISIVE' | 'ROSEBUD' | 'REDRUM' | 'VERTIGO' | 'MCGUFFIN' | 'CINEPHILE' | 'WHITE_RABBIT' | 'BURGER_TALK' | 'WILHELM' | 'CAUGHT' | 'SYMMETRY' | 'CAMEO_HUNTER';
 
 export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'KONAMI', name: 'Mã Gian Lận', icon: Gamepad2, tier: 'secret', description: 'Bạn biết mã của thời băng VHS. Phim tua về năm xưa.', rule: '↑ ↑ ↓ ↓ ← → ← → B A', hint: 'Những người chơi game thùng còn nhớ.' },
@@ -141,6 +141,9 @@ export const SECRET_BADGES: (BadgeDef & { id: SecretId; hint: string })[] = [
   { id: 'WHITE_RABBIT', name: 'Theo Thỏ Trắng', icon: Rabbit, tier: 'secret', description: 'Bạn chọn viên đỏ và mở hồ sơ về những thế giới giả lập.', rule: 'Tìm "wake up" ở Kho phim, rồi chọn viên đỏ.', hint: 'Ô tìm phim cũng có thể bị đánh thức. Năm 1999.' },
   { id: 'BURGER_TALK', name: 'Chuyện Bàn Ăn', icon: Hamburger, tier: 'secret', description: 'Hội thoại dài về chuyện không liên quan: chữ ký của Tarantino từ "Pulp Fiction" (1994).', rule: 'Tìm "royal with cheese" ở Kho phim.', hint: 'Ở Paris, món này có một cái tên khác. Thử tìm nó trong kho.' },
   { id: 'WILHELM', name: 'Thám Tử Âm Thanh', icon: AudioWaveform, tier: 'secret', description: 'Bạn lần ra tiếng hét được cài vào phim suốt hơn nửa thế kỷ.', rule: 'Tìm "wilhelm scream" ở Kho phim.', hint: 'Một tiếng hét có tên riêng. Thử tìm nó trong kho.' },
+  { id: 'CAUGHT', name: 'Bắt Quả Tang', icon: Dog, tier: 'secret', description: 'Bạn đuổi theo Shiba ba lần, không bắt được, và vẫn được bắp rang.', rule: 'Đuổi Shiba 3 lần rồi nhặt gói bắp rang.', hint: 'Lướt trang đủ lâu sẽ có người hỏi thăm. Hoặc gọi Shiba ở cuối trang.' },
+  { id: 'SYMMETRY', name: 'Mê Đối Xứng', icon: Hotel, tier: 'secret', description: 'Bố cục đối xứng kiểu Wes Anderson. Bật tắt trong menu Giao diện.', rule: 'Chọn liên tiếp Sakura, Matcha, Vàng đen trong bảng màu.', hint: 'Bảng màu có thứ tự riêng: hoa, trà, rồi vàng.' },
+  { id: 'CAMEO_HUNTER', name: 'Thợ Săn Cameo', icon: PersonStanding, tier: 'secret', description: 'Bạn đã bắt được 5 lần xuất hiện chớp nhoáng của bóng người lạ.', rule: 'Bấm vào bóng người nấp ở mép trang đủ 5 lần.', hint: 'Có người đứng ở rìa khung hình. Mở vài tab và nhìn kỹ hai bên.' },
 ];
 
 const SECRETS_KEY = 'ggmv_secret_badges';

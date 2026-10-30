@@ -415,6 +415,45 @@ html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-
 @keyframes wave-pulse { 0%, 100% { transform: scaleY(0.55); } 50% { transform: scaleY(1); } }
 .egg-wave span { flex: 1; max-width: 6px; background: var(--color-accent); border-radius: 2px; animation: wave-pulse 0.9s ease-in-out infinite; }
 
+/* Shiba the usher: jumps between spots */
+.egg-usher { position: fixed; z-index: 40; width: 88px; transition: left 260ms var(--ease-snap), top 260ms var(--ease-snap); }
+
+/* Hidden cameo: stands in the page gutter, barely there until you look */
+.egg-cameo { position: absolute; z-index: 10; color: var(--color-ink); opacity: 0.3; transition: opacity 200ms; }
+.egg-cameo:hover, .egg-cameo:focus-visible { opacity: 1; }
+
+/* ---------- Symmetry mode (Wes Anderson): palette, centred layout, framed cards ---------- */
+.sym-only { display: none; }
+html[data-symmetry="on"] .sym-only { display: block; }
+/* Seasonal worlds keep their own palette */
+html[data-symmetry="on"]:not([data-world]) {
+  color-scheme: light;
+  --color-paper: #f7d9dc;
+  --color-card: #fdf1e3;
+  --color-sunk: #f2c6cc;
+  --color-line: #d9a5ae;
+  --color-ink: #3d2a4f;
+  --color-ink-2: #5f4a70;
+  --color-ink-3: #7a6586;
+  --color-accent: #b5432f;
+  --color-on-accent: #ffffff;
+  --color-shadow: #3d2a4f;
+}
+html[data-symmetry="on"] main { text-align: center; }
+html[data-symmetry="on"]:not([data-world]) { --hero-size: clamp(44px, 9vw, 104px); }
+html[data-symmetry="on"] main .display { font-family: Futura, 'Century Gothic', var(--font-sans); font-weight: 700; font-stretch: 100%; letter-spacing: 0.08em; }
+html[data-symmetry="on"] .hero-grid { display: flex; flex-direction: column; }
+html[data-symmetry="on"] .hero-grid > div { width: 100%; }
+html[data-symmetry="on"] .hero-grid > div:last-child { max-width: 520px; }
+html[data-symmetry="on"] .hero-grid > div > div { justify-content: center; }
+html[data-symmetry="on"] .hero-grid p, html[data-symmetry="on"] .hero-grid dl { margin-inline: auto; }
+html[data-symmetry="on"] nav { justify-content: safe center; }
+html[data-symmetry="on"] main section > header { justify-content: center; }
+html[data-symmetry="on"] main section > header > div > div { justify-content: center; }
+html[data-symmetry="on"] main section > header p { margin-inline: auto; }
+html[data-symmetry="on"] .movie-grid { display: flex; flex-wrap: wrap; justify-content: center; }
+html[data-symmetry="on"] .movie-grid > article { width: clamp(150px, 19vw, 220px); padding: 12px; background: var(--color-card); border: 1.5px solid var(--color-ink); }
+
 /* ---------- Rulebook: pages turn around the spine ---------- */
 .book { perspective: 2200px; }
 .book-page.is-left { background-image: linear-gradient(to left, rgb(0 0 0 / 0.09), transparent 7%); }
@@ -432,6 +471,7 @@ html[data-mode="dark"][data-theme="mono"] { --color-accent: #f2eee6; --color-on-
 @media (prefers-reduced-motion: reduce) {
   .enter, .overlay-enter, .reveal { animation: none; }
   .egg-dust { animation: none; opacity: 0.35; transform: translate(-50%, -50%); }
+  .egg-usher { transition: none; }
   .stamp-land, .egg-slate, .egg-toast, .witness-sleeve { animation: none; }
   .badge-flip, .badge-burst, .fx-oldfilm-layer, .fx-scratch, .fx-projector main, .fx-dizzy canvas, .fx-mirror main, .fx-vertigo main, .egg-wave span { animation: none !important; }
   .badge-burst, .fx-rain { display: none; }

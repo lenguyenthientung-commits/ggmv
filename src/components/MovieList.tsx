@@ -5,6 +5,7 @@ import { Search, RotateCcw, Plus } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
 import { SectionHeader } from './ui';
 import { SearchEgg, searchEggFor } from './EasterEggs';
+import { Shiba } from './Shiba';
 
 interface MovieListProps {
   movies: Movie[];
@@ -160,7 +161,7 @@ export const MovieList: React.FC<MovieListProps> = ({
       {searchEgg && <SearchEgg key={searchEgg} egg={searchEgg} movies={movies} onClear={() => setSearchQuery('')} />}
 
       {filteredMovies.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-10">
+        <div className="movie-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 sm:gap-x-6 gap-y-10">
           {filteredMovies.map(movie => (
             <MovieCard
               key={movie.id}
@@ -179,6 +180,7 @@ export const MovieList: React.FC<MovieListProps> = ({
       ) : !searchEgg && (
         <div className="panel screentone py-16 px-6 text-center">
           <div className="inline-block bg-card px-6 py-5 rounded-lg border-[1.5px] border-ink">
+            <Shiba size={72} className="mx-auto mb-3" />
             <div className="display text-[40px]">Trống trơn</div>
             <p className="mt-2 text-[14px] text-ink-2 max-w-xs">Không phim nào khớp bộ lọc. Thử từ khóa khác hoặc thêm phim mới.</p>
             <button

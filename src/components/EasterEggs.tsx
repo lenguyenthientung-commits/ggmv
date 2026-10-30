@@ -4,8 +4,9 @@ import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
 import { EggEvent, EggId, Story, UNLOCK_COPY, latestLegendaryDate } from '../easterEggs';
 import { BadgeDef, FxKind, SecretId, Tier, SECRET_BADGES, clubBadges, loadSecrets, memberBadges, playFx, unlockSecret } from '../badges';
-import { BIRTHDAY_FACT, CINEMA_FACTS, CinemaFact } from '../cinemaFacts';
+import { BIRTHDAY_FACT, CAMEO_FACTS, CINEMA_FACTS, CinemaFact } from '../cinemaFacts';
 import { BROTHERS_LIST } from './Header';
+import { Shiba } from './Shiba';
 
 // C3 Projector dust: when the pointer rests, a speck resolves under it. Never captures input.
 export const ProjectorDust: React.FC = () => {
@@ -185,6 +186,20 @@ const readSeenFacts = (): number[] => {
   }
 };
 
+const FactCard: React.FC<{ label: string; fact: CinemaFact; onClose: () => void; children: React.ReactNode }> = ({ label, fact, onClose, children }) => (
+  <div role="status" className="egg-toast fixed z-50 bottom-4 left-4 right-4 sm:right-auto sm:w-[360px] bg-night text-night-ink border-[1.5px] border-night-line rounded-lg p-4 shadow-[4px_4px_0_var(--color-accent)]">
+    <div className="flex items-start justify-between gap-3">
+      <span className="label !text-accent !text-[10px]">{label}</span>
+      <button onClick={onClose} className="text-night-ink/60 hover:text-night-ink -mr-1 -mt-0.5" aria-label="Đóng">
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+    <div className="mt-2 font-bold text-[16px] leading-snug">{fact.title}</div>
+    <p className="mt-1.5 text-[13.5px] text-night-ink/75 leading-relaxed">{fact.body}</p>
+    <div className="mt-3 flex items-center justify-between">{children}</div>
+  </div>
+);
+
 export const CinemaFactTrigger: React.FC = () => {
   const [card, setCard] = useState<{ fact: CinemaFact; birthday?: boolean } | null>(null);
 
@@ -224,21 +239,187 @@ export const CinemaFactTrigger: React.FC = () => {
         シネマクラブ
       </button>
       {card && (
-        <div role="status" className="egg-toast fixed z-50 bottom-4 left-4 right-4 sm:right-auto sm:w-[360px] bg-night text-night-ink border-[1.5px] border-night-line rounded-lg p-4 shadow-[4px_4px_0_var(--color-accent)]">
-          <div className="flex items-start justify-between gap-3">
-            <span className="label !text-accent !text-[10px]">
-              {card.birthday ? 'Hôm nay · Sinh nhật điện ảnh' : `Kiến thức điện ảnh · ${card.fact.tag}`}
-            </span>
-            <button onClick={() => setCard(null)} className="text-night-ink/60 hover:text-night-ink -mr-1 -mt-0.5" aria-label="Đóng">
+        <FactCard
+          label={card.birthday ? 'Hôm nay · Sinh nhật điện ảnh' : `Kiến thức điện ảnh · ${card.fact.tag}`}
+          fact={card.fact}
+          onClose={() => setCard(null)}
+        >
+          <span className="num text-[11px] text-night-ink/40">{readSeenFacts().length}/{CINEMA_FACTS.length} thẻ đã đọc</span>
+          <button onClick={deal} className="label !text-night-ink hover:!text-accent">Thẻ khác →</button>
+        </FactCard>
+      )}
+    </>
+  );
+};
+
+// ---------- Hidden cameo: a silhouette stands in the page gutter, so it never covers a control ----------
+const CAMEO_KEY = 'ggmv_cameos';
+const CAMEO_GOAL = 5;
+
+export const HiddenCameo: React.FC = () => {
+  // Remounted per tab: about one tab visit in three has a cameo
+  const [spot, setSpot] = useState(() =>
+    Math.random() < 1 / 3 ? { side: Math.random() < 0.5 ? 'left' : 'right', top: 12 + Math.random() * 76 } : null
+  );
+  const [found, setFound] = useState<{ fact: CinemaFact; count: number } | null>(null);
+
+  const catchCameo = () => {
+    sounds.playVintageSwitch();
+    let count = 1;
+    try {
+      count = Number(localStorage.getItem(CAMEO_KEY) || 0) + 1;
+      localStorage.setItem(CAMEO_KEY, String(count));
+    } catch {
+      // storage blocked: the fact still shows
+    }
+    if (count >= CAMEO_GOAL) unlockSecret('CAMEO_HUNTER');
+    setSpot(null);
+    setFound({ fact: CAMEO_FACTS[(count - 1) % CAMEO_FACTS.length], count });
+  };
+
+  return (
+    <>
+      {spot && (
+        <button onClick={catchCameo} className="egg-cameo" style={{ top: `${spot.top}%`, [spot.side]: 0 }} aria-label="Một bóng người" title="?">
+          <svg viewBox="0 0 22 36" width="22" height="36" aria-hidden="true" fill="currentColor">
+            <path d="M5 8h12v2H5z" />
+            <path d="M7 2h8v6H7z" />
+            <circle cx="11" cy="13" r="5" />
+            <path d="M3 36c-2-11 1-18 8-18s10 7 8 18z" />
+          </svg>
+        </button>
+      )}
+      {found && (
+        <FactCard label={`Cameo · ${found.fact.tag}`} fact={found.fact} onClose={() => setFound(null)}>
+          <span className="num text-[11px] text-night-ink/40">{Math.min(found.count, CAMEO_GOAL)}/{CAMEO_GOAL} lần bắt gặp</span>
+        </FactCard>
+      )}
+    </>
+  );
+};
+
+// ---------- Symmetry mode: the title card, shown only while the mode is on (CSS) ----------
+export const SymmetryTitle: React.FC = () => (
+  <div className="sym-only mb-12">
+    <Shiba outfit="lobby" size={128} className="mx-auto" />
+    <div className="display mt-4 text-[clamp(26px,4vw,40px)]">Chapter One: The Screening</div>
+    <div className="label mt-3">A Gay Gang Cinema Picture · Perfectly Centered</div>
+  </div>
+);
+
+// ---------- Shiba, the usher: appears after a long scroll, dodges the pointer, leaves popcorn ----------
+const USHER_DAY_KEY = 'ggmv_usher_day';
+const USHER_SPOTS: [number, number][] = [[0.84, 0.72], [0.08, 0.58], [0.8, 0.3], [0.12, 0.72]];
+const USHER_LINES = ["Hey. You've been scrolling for a while. Need some popcorn?", 'Too slow.', 'The usher does not get caught.', 'Shiba left this behind.'];
+const USHER_MISSES = 3;
+
+const PopcornBag: React.FC = () => (
+  <svg viewBox="0 0 60 72" width="66" height="79" aria-hidden="true">
+    <g stroke="#16140f" strokeWidth="2.5" strokeLinejoin="round">
+      <circle cx="17" cy="20" r="9" fill="#FFF6DE" />
+      <circle cx="30" cy="14" r="10" fill="#FFF6DE" />
+      <circle cx="43" cy="20" r="9" fill="#FFF6DE" />
+      <path d="M8 24h44l-6 46H14z" fill="#FFF6DE" />
+      <path d="M17 24l3 46h7l-1-46zM34 24l-1 46h7l3-46z" fill="#D0281C" strokeWidth="0" />
+      <path d="M8 24h44l-6 46H14z" fill="none" />
+    </g>
+  </svg>
+);
+
+export const ShibaUsher: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const [misses, setMisses] = useState(0);
+  const [look, setLook] = useState({ x: 0, y: 0 });
+  const lastDodge = useRef(0);
+  const caught = misses >= USHER_MISSES;
+
+  const summon = () => {
+    setMisses(0);
+    setOpen(true);
+  };
+
+  // A long scroll brings Shiba out, at most once a day
+  useEffect(() => {
+    let last = window.scrollY;
+    let total = 0;
+    const onScroll = () => {
+      total += Math.abs(window.scrollY - last);
+      last = window.scrollY;
+      if (total < window.innerHeight * 8) return;
+      window.removeEventListener('scroll', onScroll);
+      const today = new Date().toDateString();
+      try {
+        if (localStorage.getItem(USHER_DAY_KEY) === today) return;
+        localStorage.setItem(USHER_DAY_KEY, today);
+      } catch {
+        // storage blocked: show it anyway
+      }
+      summon();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const spot = USHER_SPOTS[misses % USHER_SPOTS.length];
+  const left = Math.min(spot[0] * window.innerWidth, window.innerWidth - 96);
+  const top = Math.min(spot[1] * window.innerHeight, window.innerHeight - 124);
+
+  // Eyes follow the mouse; getting close makes Shiba jump. Touch and keyboard go through onClick.
+  useEffect(() => {
+    if (!open || caught) return;
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      const dx = e.clientX - (left + 44);
+      const dy = e.clientY - (top + 53);
+      setLook({ x: Math.max(-1, Math.min(1, dx / 200)), y: Math.max(-1, Math.min(1, dy / 200)) });
+      if (Math.hypot(dx, dy) < 75 && Date.now() - lastDodge.current > 450) {
+        lastDodge.current = Date.now();
+        setMisses((m) => m + 1);
+      }
+    };
+    document.addEventListener('pointermove', onMove, { passive: true });
+    return () => document.removeEventListener('pointermove', onMove);
+  }, [open, caught, left, top]);
+
+  // Nobody played: leave quietly
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => setOpen(false), 45_000);
+    return () => clearTimeout(t);
+  }, [open, misses]);
+
+  const takePopcorn = () => {
+    playFx('popcorn');
+    unlockSecret('CAUGHT');
+    setOpen(false);
+  };
+  const onRight = left > window.innerWidth / 2;
+
+  return (
+    <>
+      <button onClick={summon} className="shrink-0 hover:-translate-y-0.5 transition-transform" aria-label="Gọi Shiba" title="Shiba">
+        <Shiba size={36} />
+      </button>
+      {open && (
+        <div className="egg-usher" style={{ left, top }}>
+          <div
+            role="status"
+            className={`absolute bottom-full mb-2 w-[210px] bg-night text-night-ink border-[1.5px] border-night-line rounded-lg p-2.5 text-[13px] leading-snug flex items-start gap-2 ${onRight ? 'right-0 flex-row-reverse' : 'left-0'}`}
+          >
+            <span className="flex-1">{USHER_LINES[Math.min(misses, USHER_LINES.length - 1)]}</span>
+            <button onClick={() => setOpen(false)} className="text-night-ink/60 hover:text-night-ink shrink-0" aria-label="Đóng">
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="mt-2 font-bold text-[16px] leading-snug">{card.fact.title}</div>
-          <p className="mt-1.5 text-[13.5px] text-night-ink/75 leading-relaxed">{card.fact.body}</p>
-          <div className="mt-3 flex items-center justify-between">
-            <span className="num text-[11px] text-night-ink/40">{readSeenFacts().length}/{CINEMA_FACTS.length} thẻ đã đọc</span>
-            <button onClick={deal} className="label !text-night-ink hover:!text-accent">Thẻ khác →</button>
-          </div>
+          {caught ? (
+            <button onClick={takePopcorn} className="block mx-auto" aria-label="Nhặt gói bắp rang">
+              <PopcornBag />
+            </button>
+          ) : (
+            <button onClick={() => setMisses((m) => m + 1)} className="block" aria-label="Bắt Shiba">
+              <Shiba outfit="usher" look={look} />
+            </button>
+          )}
         </div>
       )}
     </>

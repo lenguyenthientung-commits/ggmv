@@ -47,7 +47,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   const when = upcomingSession ? formatSessionDate(upcomingSession.date) : null;
 
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center mb-14 sm:mb-20 pt-2 sm:pt-6">
+    <section className="hero-grid grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center mb-14 sm:mb-20 pt-2 sm:pt-6">
       {/* Headline */}
       <div className="lg:col-span-7">
         <div className="flex items-center gap-3">

@@ -46,7 +46,28 @@ export function saveAppearance(theme: ThemeId, mode: Mode) {
   }
 }
 
-export const systemPrefersDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
+// Secret symmetry mode: its own switch, because it changes layout as well as colour
+const SYMMETRY_KEY = 'ggmv_symmetry';
+
+export function loadSymmetry(): boolean {
+  try {
+    return localStorage.getItem(SYMMETRY_KEY) === 'on';
+  } catch {
+    return false;
+  }
+}
+
+export function setSymmetry(on: boolean) {
+  if (on) document.documentElement.dataset.symmetry = 'on';
+  else delete document.documentElement.dataset.symmetry;
+  try {
+    localStorage.setItem(SYMMETRY_KEY, on ? 'on' : 'off');
+  } catch {
+    // storage blocked: the choice still applies for this visit
+  }
+}
+
+export const systemPrefersDark =() => window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 // A seasonal world (if any) sits on top: it carries its own full palette
 export function applyAppearance(theme: ThemeId, mode: Mode, world: string | null = null) {

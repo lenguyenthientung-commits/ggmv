@@ -16,7 +16,7 @@ import { ThemeId, Mode, loadTheme, loadMode, saveAppearance, applyAppearance } f
 import { WorldPref, loadWorldPref, saveWorldPref, resolveWorld, worldById } from './seasons/worlds';
 import { WorldCurtain } from './seasons/WorldCurtain';
 import { EggEvent, DEFAULT_HOUSE_NOTE, takeUnseenEvents, markSurface, hasCrossSurfaceVisit } from './easterEggs';
-import { ProjectorDust, IntermissionCard, BadgeToast, FxLayer, CinemaFactTrigger, badgeCopy } from './components/EasterEggs';
+import { ProjectorDust, IntermissionCard, BadgeToast, FxLayer, CinemaFactTrigger, HiddenCameo, ShibaUsher, SymmetryTitle, badgeCopy } from './components/EasterEggs';
 import { clubBadges, archiveBadgeIds, takeNewArchiveBadges, findBadge } from './badges';
 
 export default function App() {
@@ -447,7 +447,10 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <main className="relative flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <HiddenCameo key={activeTab} />
+        <SymmetryTitle />
+
         {/* Hero: home tab only */}
         {activeTab === 'movies' && (
           <HeroBanner
@@ -538,7 +541,10 @@ export default function App() {
       <footer className="mt-16 border-t-[1.5px] border-ink overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <CinemaFactTrigger />
+            <span className="flex items-center gap-3">
+              <ShibaUsher />
+              <CinemaFactTrigger />
+            </span>
             <span className="label">
               {creditShifted
                 ? 'Continuity supervised by three people who disagree about everything.'

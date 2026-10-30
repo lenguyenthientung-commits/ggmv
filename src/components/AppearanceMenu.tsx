@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Palette, Sun, Moon, Monitor } from 'lucide-react';
-import { THEMES, ThemeId, Mode } from '../theme';
+import { THEMES, ThemeId, Mode, loadSymmetry, setSymmetry } from '../theme';
 import { sounds } from '../utils/soundEffects';
+import { loadSecrets, unlockSecret } from '../badges';
 import { WORLDS, World, WorldPref, scheduledWorld, worldById } from '../seasons/worlds';
 
 interface AppearanceMenuProps {
@@ -20,9 +21,29 @@ const MODES: { id: Mode; label: string; icon: React.ReactNode }[] = [
   { id: 'system', label: 'Hệ thống', icon: <Monitor className="w-3.5 h-3.5" /> },
 ];
 
+// Picking these palettes in a row opens the symmetry mode
+const SYMMETRY_ORDER: ThemeId[] = ['sakura', 'matcha', 'gold'];
+
 export const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ themeId, setThemeId, mode, setMode, world, worldPref, setWorldPref }) => {
   const [open, setOpen] = useState(false);
+  const [symmetryOn, setSymmetryOn] = useState(loadSymmetry);
   const ref = useRef<HTMLDivElement>(null);
+  const picks = useRef<ThemeId[]>([]);
+
+  const toggleSymmetry = (on: boolean) => {
+    setSymmetry(on);
+    setSymmetryOn(on);
+  };
+
+  const pickTheme = (id: ThemeId) => {
+    sounds.playVintageSwitch();
+    setThemeId(id);
+    picks.current = [...picks.current, id].slice(-SYMMETRY_ORDER.length);
+    if (picks.current.join() === SYMMETRY_ORDER.join()) {
+      toggleSymmetry(true);
+      unlockSecret('SYMMETRY');
+    }
+  };
 
   // Close on outside click / Escape
   useEffect(() => {
@@ -126,10 +147,7 @@ export const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ themeId, setThem
                   key={t.id}
                   role="radio"
                   aria-checked={active}
-                  onClick={() => {
-                    sounds.playVintageSwitch();
-                    setThemeId(t.id);
-                  }}
+                  onClick={() => pickTheme(t.id)}
                   className={`flex items-center gap-2.5 h-11 px-2.5 rounded-md border-[1.5px] text-left transition-colors ${
                     active ? 'border-ink bg-sunk' : 'border-transparent hover:bg-sunk'
                   }`}
@@ -145,6 +163,15 @@ export const AppearanceMenu: React.FC<AppearanceMenuProps> = ({ themeId, setThem
             })}
           </div>
 
+          {loadSecrets().includes('SYMMETRY') && (
+            <>
+              <div className="label mt-5 mb-2">Chế độ đối xứng</div>
+              <div className="seg w-full">
+                <button aria-pressed={!symmetryOn} onClick={() => toggleSymmetry(false)} className="flex-1">Tắt</button>
+                <button aria-pressed={symmetryOn} onClick={() => toggleSymmetry(true)} className="flex-1">Bật</button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

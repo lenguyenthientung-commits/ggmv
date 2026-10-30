@@ -15,6 +15,7 @@
         // A pinned seasonal world (not "auto": its calendar lives in src/seasons/worlds.ts)
         var w = localStorage.getItem('ggmv_world');
         if (w && w !== 'off' && w !== 'auto') document.documentElement.dataset.world = w;
+        if (localStorage.getItem('ggmv_symmetry') === 'on') document.documentElement.dataset.symmetry = 'on';
       } catch (e) {}
     </script>
     <title>GAY GANG CINEMA - Hôm nay xem gì?</title>

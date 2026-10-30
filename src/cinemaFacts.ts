@@ -29,5 +29,16 @@ export const CINEMA_FACTS: CinemaFact[] = [
   { tag: 'Thuật ngữ', title: 'Cameo', body: 'Một lần xuất hiện ngắn của người nổi tiếng. Hitchcock tự cameo trong rất nhiều phim của mình, khán giả từng chơi trò đi tìm ông.' },
 ];
 
+// Handed out by the hidden silhouette: where Hitchcock actually hid
+export const CAMEO_FACTS: CinemaFact[] = [
+  { tag: '1959', title: 'Lỡ chuyến xe', body: 'Trong "North by Northwest", Hitchcock xuất hiện ngay đầu phim: cửa xe buýt đóng sập trước mặt ông.' },
+  { tag: '1954', title: 'Chỉnh đồng hồ', body: 'Trong "Rear Window", ông đứng lên dây đồng hồ trong căn hộ của anh nhạc sĩ, ở phía bên kia sân.' },
+  { tag: '1960', title: 'Chiếc mũ cao bồi', body: 'Trong "Psycho", ông đứng trên vỉa hè ngoài văn phòng của Marion, đội một chiếc mũ cao bồi.' },
+  { tag: '1963', title: 'Hai con chó', body: 'Trong "The Birds", ông bước ra khỏi tiệm thú cưng, dắt theo hai con chó sục. Đó là chó của chính ông.' },
+  { tag: '1944', title: 'Trên một con thuyền', body: '"Lifeboat" diễn ra toàn bộ trên một chiếc xuồng, nên ông xuất hiện trong mẩu quảng cáo thuốc giảm cân trên tờ báo cũ.' },
+  { tag: '1954', title: 'Tấm ảnh họp lớp', body: '"Dial M for Murder" gần như chỉ có một căn hộ, nên ông nằm trong tấm ảnh họp lớp treo trên tường.' },
+  { tag: '1976', title: 'Cameo cuối cùng', body: 'Trong "Family Plot", phim cuối của ông, chỉ thấy bóng ông in trên cánh cửa kính của phòng hộ tịch.' },
+];
+
 // 28 December: the Lumière screening, cinema's birthday
 export const BIRTHDAY_FACT = CINEMA_FACTS[0];
