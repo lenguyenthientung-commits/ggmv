@@ -14,7 +14,7 @@ interface RandomWheelProps {
   movies: Movie[];
   currentUser: string;
   onOpenRules?: () => void;
-  onSelectForWeekend: (movie: Movie) => void;
+  onLockIn: (movie: Movie) => void;
   onOpenTrailer: (movie: Movie) => void;
   onEggsChanged?: () => void;
 }
@@ -72,7 +72,7 @@ const SpeedLines: React.FC = () => (
 export const RandomWheel: React.FC<RandomWheelProps> = ({
   movies,
   currentUser,
-  onSelectForWeekend,
+  onLockIn,
   onOpenTrailer,
   onEggsChanged,
 }) => {
@@ -890,13 +890,13 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
               <button
                 onClick={() => {
                   unconfirmedSpins = 0;
-                  onSelectForWeekend(winnerMovie);
+                  onLockIn(winnerMovie);
                   setShowWinnerModal(false);
                 }}
                 className="btn btn-primary sm:ml-auto"
               >
                 <Check className="w-4 h-4" strokeWidth={3} />
-                Chốt chiếu tuần này
+                Chốt phim
               </button>
             </div>
           </div>

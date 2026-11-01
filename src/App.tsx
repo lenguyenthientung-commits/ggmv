@@ -29,6 +29,7 @@ export default function App() {
   const [sessions, setSessions] = useState<WeekendSession[]>(INITIAL_SESSIONS);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [cinemaModalMovie, setCinemaModalMovie] = useState<Movie | null>(null);
+  const [pendingScoreId, setPendingScoreId] = useState<string | null>(null);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
   const [themeId, setThemeId] = useState<ThemeId>(() => loadTheme());
   const [mode, setMode] = useState<Mode>(() => loadMode());
@@ -289,9 +290,9 @@ export default function App() {
   // Save judges' scores (Teng, Lộc, Thành)
   const handleUpdateJudgesScore = async (
     movieId: string,
-    scoreTeng: number,
-    scoreLoc: number,
-    scoreThanh: number,
+    scoreTeng: number | null,
+    scoreLoc: number | null,
+    scoreThanh: number | null,
     adminNote: string
   ) => {
     try {
@@ -313,8 +314,7 @@ export default function App() {
     }
   };
 
-  // Select movie for upcoming weekend
-  const handleSelectForWeekend = async (movie: Movie) => {
+  const assignToSession = async (movie: Movie) => {
     const firstSession = sessions[0];
     if (firstSession) {
       const updated = { ...firstSession, selectedMovieId: movie.id };
@@ -329,7 +329,21 @@ export default function App() {
         // Fallback
       }
     }
+  };
+
+  // Select movie for upcoming weekend
+  const handleSelectForWeekend = async (movie: Movie) => {
+    await assignToSession(movie);
     setActiveTab('sessions');
+  };
+
+  // The wheel is spun on the day, so locking a film in means it is being watched now:
+  // it joins the ranking straight away and the scoring sheet opens there.
+  const handleLockIn = (movie: Movie) => {
+    assignToSession(movie);
+    if (!movie.watched) handleMarkWatched(movie);
+    setPendingScoreId(movie.id);
+    setActiveTab('archive');
   };
 
   // Attendee Check-in
@@ -490,7 +504,7 @@ export default function App() {
             <RandomWheel
               movies={movies}
               currentUser={currentUser}
-              onSelectForWeekend={handleSelectForWeekend}
+              onLockIn={handleLockIn}
               onOpenTrailer={(m) => setCinemaModalMovie(m)}
               onEggsChanged={fetchEggs}
             />
@@ -518,6 +532,8 @@ export default function App() {
             onOpenRules={() => setIsRulesOpen(true)}
             onSubmitReview={handleSubmitReview}
             onUpdateJudgesScore={handleUpdateJudgesScore}
+            scoreMovieId={pendingScoreId}
+            onScoreOpened={() => setPendingScoreId(null)}
             eggEvents={eggEvents}
             onEggsChanged={fetchEggs}
           />

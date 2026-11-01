@@ -63,8 +63,11 @@ export function judgeScores(movie: Movie): number[] {
 }
 
 // Hall of fame ranking score: judges' average, else the members' review average, else 0.
+// A film only some judges have scored stays at 0 until the third score is in.
 // The archive sorts by this, and the House Edge tie clue reads the same number.
 export function rankScore(movie: Movie): number {
+  const judged = judgeScores(movie).length;
+  if (judged > 0 && judged < 3) return 0;
   if (typeof movie.scoreAvg === 'number') return movie.scoreAvg;
   return movie.reviews && movie.reviews.length > 0
     ? movie.reviews.reduce((acc, r) => acc + r.rating, 0) / movie.reviews.length

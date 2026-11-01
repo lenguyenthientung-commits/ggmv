@@ -1,15 +1,16 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Movie } from '../types/cinema';
-import { BookOpen, MessageSquarePlus, SlidersHorizontal, Search } from 'lucide-react';
+import { BookOpen, ExternalLink, MessageSquarePlus, SlidersHorizontal, Search } from 'lucide-react';
 import { BROTHERS_LIST } from './Header';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader, SectionHeader, Stat } from './ui';
 import {
-  EggEvent, movieStories, classifiedStories, recordScoredScreening, rankScore, houseEdge,
+  EggEvent, movieStories, classifiedStories, recordScoredScreening, rankScore, judgeScores, houseEdge,
   missingFields, missingFrameRecords, isMissingFrameQuery, firstScreeningDate, a13Movie, creditsEvent,
   loadChainUnlocks, saveChainUnlock,
 } from '../easterEggs';
 import { ClassifiedArchive, AchievementHall, EndCard } from './EasterEggs';
+import { parseScoreInput } from '../utils/judging';
 
 // Short archive tags for per-movie stories (the full copy lives in the classified archive)
 const STORY_TAGS: Record<string, string> = {
@@ -28,11 +29,14 @@ interface WatchedArchiveProps {
   onSubmitReview: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
   onUpdateJudgesScore?: (
     movieId: string,
-    scoreTeng: number,
-    scoreLoc: number,
-    scoreThanh: number,
+    scoreTeng: number | null,
+    scoreLoc: number | null,
+    scoreThanh: number | null,
     adminNote: string
   ) => void;
+  // Set when the wheel has just locked a film in: open its scoring sheet once
+  scoreMovieId?: string | null;
+  onScoreOpened?: () => void;
   eggEvents?: EggEvent[];
   onEggsChanged?: () => void;
 }
@@ -43,6 +47,8 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
   onOpenRules,
   onSubmitReview,
   onUpdateJudgesScore,
+  scoreMovieId,
+  onScoreOpened,
   eggEvents = [],
   onEggsChanged,
 }) => {
@@ -91,9 +97,9 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
 
   // Judges scoring sheet (Rule 3.1 & 3.2)
   const [scoringMovie, setScoringMovie] = useState<Movie | null>(null);
-  const [tengScore, setTengScore] = useState<number>(8.5);
-  const [locScore, setLocScore] = useState<number>(8.5);
-  const [thanhScore, setThanhScore] = useState<number>(8.5);
+  const [tengScore, setTengScore] = useState('');
+  const [locScore, setLocScore] = useState('');
+  const [thanhScore, setThanhScore] = useState('');
   const [judgeNote, setJudgeNote] = useState<string>('');
 
   // Member review sheet
@@ -174,19 +180,30 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
   const handleOpenScoreModal = (movie: Movie) => {
     sounds.playVintageSwitch();
     setScoringMovie(movie);
-    setTengScore(movie.scoreTeng ?? 8.0);
-    setLocScore(movie.scoreLoc ?? 8.0);
-    setThanhScore(movie.scoreThanh ?? 8.0);
+    setTengScore(String(movie.scoreTeng ?? ''));
+    setLocScore(String(movie.scoreLoc ?? ''));
+    setThanhScore(String(movie.scoreThanh ?? ''));
     setJudgeNote(movie.adminNote ?? '');
   };
 
-  const calculatedAvg = Number(((tengScore + locScore + thanhScore) / 3).toFixed(2));
+  useEffect(() => {
+    if (!scoreMovieId) return;
+    const movie = movies.find((m) => m.id === scoreMovieId);
+    if (movie) handleOpenScoreModal(movie);
+    onScoreOpened?.();
+  }, [scoreMovieId]);
+
+  const typedScores = [tengScore, locScore, thanhScore].map(parseScoreInput);
+  const scoredCount = typedScores.filter((s) => s !== null).length;
+  const calculatedAvg = scoredCount === 3
+    ? Number(((typedScores[0]! + typedScores[1]! + typedScores[2]!) / 3).toFixed(2))
+    : null;
 
   const handleSaveJudgesScore = (e: React.FormEvent) => {
     e.preventDefault();
     if (!scoringMovie) return;
     sounds.playWinnerFanfare();
-    onUpdateJudgesScore?.(scoringMovie.id, tengScore, locScore, thanhScore, judgeNote);
+    onUpdateJudgesScore?.(scoringMovie.id, typedScores[0], typedScores[1], typedScores[2], judgeNote);
     // R7 End-credit survivor: the third distinct screening scored in this browser
     const award = recordScoredScreening(scoringMovie.id);
     if (award) {
@@ -215,7 +232,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
     setActiveReviewMovie(null);
   };
 
-  const judges: { name: string; key: 'scoreTeng' | 'scoreLoc' | 'scoreThanh'; value: number; set: (n: number) => void }[] = [
+  const judges: { name: string; key: 'scoreTeng' | 'scoreLoc' | 'scoreThanh'; value: string; set: (s: string) => void }[] = [
     { name: 'Lil Teng', key: 'scoreTeng', value: tengScore, set: setTengScore },
     { name: 'Lộc', key: 'scoreLoc', value: locScore, set: setLocScore },
     { name: 'Thành', key: 'scoreThanh', value: thanhScore, set: setThanhScore },
@@ -277,7 +294,9 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
           {visibleMovies.map((movie) => {
             const rank = rankById.get(movie.id) ?? 0;
             const stories = movieStories(movie, eggEvents);
-            const avgScore = movie.scoreAvg ?? (
+            const judged = judgeScores(movie).length;
+            const partlyJudged = judged > 0 && judged < 3;
+            const avgScore = partlyJudged ? null : movie.scoreAvg ?? (
               movie.reviews && movie.reviews.length > 0
                 ? Number((movie.reviews.reduce((acc, r) => acc + r.rating, 0) / movie.reviews.length).toFixed(2))
                 : null
@@ -364,7 +383,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                       <div className={`display text-[56px] leading-[0.85] tabular-nums ${rank === 1 ? 'text-accent' : ''}`}>
                         {avgScore !== null ? avgScore.toFixed(2) : '—'}
                       </div>
-                      <div className="label mt-1.5">Điểm TB</div>
+                      <div className="label mt-1.5">{partlyJudged ? `${judged}/3 đã chấm` : 'Điểm TB'}</div>
                       {/* C6 The exact average: the score is untouched, the committee just declines comment */}
                       {stories.some(st => st.id === 'exact-average') && (
                         <span className="stamp stamp-land text-accent mt-2" title="The committee has declined to interpret this.">Under review</span>
@@ -467,6 +486,15 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
             <p className="text-[13px] text-ink-2 -mt-1 mb-5">
               Thang 0–10 trên 6 phương diện: kịch bản, diễn xuất, hình ảnh, âm thanh, cảm xúc, giá trị xem lại (Điều 3.1).
             </p>
+            <a
+              href={scoringMovie.watchUrl || `https://chophim.app/tim-kiem?keyword=${encodeURIComponent(scoringMovie.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sm mb-5"
+            >
+              <ExternalLink className="w-4 h-4" />
+              {scoringMovie.watchUrl ? 'Xem phim' : 'Tìm trên Chophim'}
+            </a>
             <div className="space-y-4">
               {judges.map((j) => (
                 <div key={j.key}>
@@ -476,11 +504,13 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                       <input
                         type="text"
                         inputMode="decimal"
+                        placeholder="—"
+                        aria-label={`Điểm của ${j.name}`}
                         value={j.value}
                         onChange={(e) => {
-                          const normalized = e.target.value.replace(',', '.').trim();
-                          const val = parseFloat(normalized);
-                          if (!isNaN(val)) j.set(Math.min(10, Math.max(0, Number(val.toFixed(2)))));
+                          const raw = e.target.value.trim();
+                          if (!/^\d*[.,]?\d{0,2}$/.test(raw)) return;
+                          j.set(parseFloat(raw.replace(',', '.')) > 10 ? '10' : raw);
                         }}
                         className="w-14 bg-transparent text-right font-mono font-bold text-[14px] text-accent focus:outline-none"
                       />
@@ -493,8 +523,8 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                     min="0"
                     max="10"
                     step="0.01"
-                    value={j.value}
-                    onChange={(e) => j.set(Number(e.target.value))}
+                    value={parseScoreInput(j.value) ?? 5}
+                    onChange={(e) => j.set(e.target.value)}
                     className="w-full cursor-pointer accent-accent"
                   />
                 </div>
@@ -504,9 +534,11 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
             <div className="mt-6 flex items-end justify-between gap-4 py-4 border-y-[1.5px] border-ink">
               <div>
                 <div className="label">Điểm trung bình</div>
-                <div className="text-[13px] text-ink-3 mt-1">Lưu xong tự gắn Vé vàng VIP</div>
+                <div className="text-[13px] text-ink-3 mt-1">Lưu xong tự gắn Vé vàng VIP · đủ 3 điểm mới xếp hạng</div>
               </div>
-              <div className="display text-[56px] leading-[0.85] text-accent tabular-nums">{calculatedAvg.toFixed(2)}</div>
+              <div className="display text-[56px] leading-[0.85] text-accent tabular-nums">
+                {calculatedAvg !== null ? calculatedAvg.toFixed(2) : `${scoredCount}/3`}
+              </div>
             </div>
 
             <div className="mt-5">
@@ -522,8 +554,8 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-6">
-              <button type="button" onClick={() => setScoringMovie(null)} className="btn btn-quiet">Hủy</button>
-              <button type="submit" className="btn btn-primary">Lưu điểm</button>
+              <button type="button" onClick={() => setScoringMovie(null)} className="btn btn-quiet">Để sau</button>
+              <button type="submit" disabled={scoredCount === 0} className="btn btn-primary disabled:!opacity-75">Lưu điểm</button>
             </div>
           </form>
         </Modal>

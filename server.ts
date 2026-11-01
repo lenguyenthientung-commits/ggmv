@@ -9,6 +9,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import type { CollectionReference, DocumentData } from 'firebase-admin/firestore';
 import { INITIAL_MOVIES, INITIAL_SESSIONS } from './src/data/initialData.ts';
 import type { Movie, MovieReview, WeekendSession } from './src/types/cinema.ts';
+import { applyJudgeScores, recalcAverage } from './src/utils/judging.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -418,12 +419,8 @@ async function startServer() {
         if (norm(trimmedAuthor) === norm('Thành')) movie.scoreThanh = Number(rating);
 
         const jScores = [movie.scoreTeng, movie.scoreLoc, movie.scoreThanh].filter((s): s is number => typeof s === 'number' && Number.isFinite(s));
-        if (jScores.length > 0) {
-          movie.scoreAvg = Number((jScores.reduce((a, b) => a + b, 0) / jScores.length).toFixed(2));
-          movie.statusBadge = '🎟️ Vé Vàng VIP';
-        } else if (movie.reviews && movie.reviews.length > 0) {
-          movie.scoreAvg = Number((movie.reviews.reduce((a, b) => a + b.rating, 0) / movie.reviews.length).toFixed(2));
-        }
+        if (jScores.length > 0) movie.statusBadge = '🎟️ Vé Vàng VIP';
+        recalcAverage(movie);
 
         // Automatic watched: when all users who voted have rated, OR all 3 judges have rated, OR explicitly marked
         const voterCount = Array.isArray(movie.votes) ? movie.votes.length : 0;
@@ -448,19 +445,18 @@ async function startServer() {
     res.json(movie);
   }));
 
-  // Save the three judges' scores: marks the movie watched with the VIP gold ticket
+  // Save the judges' scores (null = not scored yet): marks the movie watched with the VIP gold ticket
   app.post('/api/movies/:id/scores', asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { scoreTeng, scoreLoc, scoreThanh, adminNote } = req.body;
-    const scores = [scoreTeng, scoreLoc, scoreThanh].map(Number);
-    if (scores.some(s => !Number.isFinite(s) || s < 0 || s > 10)) {
+    const scores = [scoreTeng, scoreLoc, scoreThanh].map(s => (s === null || s === undefined ? null : Number(s)));
+    if (scores.some(s => s !== null && (!Number.isFinite(s) || s < 0 || s > 10))) {
       res.status(400).json({ error: 'Điểm phải là số từ 0 đến 10' });
       return;
     }
 
     const movie = await updateDoc<Movie>(moviesCol, id, movie => {
-      [movie.scoreTeng, movie.scoreLoc, movie.scoreThanh] = scores;
-      movie.scoreAvg = Number(((scores[0] + scores[1] + scores[2]) / 3).toFixed(2));
+      applyJudgeScores(movie, scores);
       movie.adminNote = typeof adminNote === 'string' ? adminNote.trim() : '';
       movie.statusBadge = '🎟️ Vé Vàng VIP';
       movie.watched = true;
