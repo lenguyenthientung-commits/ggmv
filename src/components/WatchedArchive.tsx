@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Movie } from '../types/cinema';
-import { BookOpen, ExternalLink, MessageSquarePlus, SlidersHorizontal, Search } from 'lucide-react';
+import { BookOpen, ExternalLink, MessageSquarePlus, Search, Star, X } from 'lucide-react';
 import { BROTHERS_LIST } from './Header';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader, SectionHeader, Stat } from './ui';
@@ -27,6 +27,7 @@ interface WatchedArchiveProps {
   currentUser: string;
   onOpenRules?: () => void;
   onSubmitReview: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
+  onDeleteReview?: (movieId: string, reviewId: string) => void;
   onUpdateJudgesScore?: (
     movieId: string,
     scoreTeng: number | null,
@@ -46,6 +47,7 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
   currentUser,
   onOpenRules,
   onSubmitReview,
+  onDeleteReview,
   onUpdateJudgesScore,
   scoreMovieId,
   onScoreOpened,
@@ -95,19 +97,39 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
     setOpenSignal((n) => n + 1);
   }, []);
 
-  // Judges scoring sheet (Rule 3.1 & 3.2)
-  const [scoringMovie, setScoringMovie] = useState<Movie | null>(null);
-  const [tengScore, setTengScore] = useState('');
-  const [locScore, setLocScore] = useState('');
-  const [thanhScore, setThanhScore] = useState('');
-  const [judgeNote, setJudgeNote] = useState<string>('');
-
-  // Member review sheet
+  // Member review & scoring sheet
   const [activeReviewMovie, setActiveReviewMovie] = useState<Movie | null>(null);
-  const [rating, setRating] = useState(9);
-  const [ratingInputStr, setRatingInputStr] = useState('9');
+  const [rating, setRating] = useState(8);
+  const [ratingInputStr, setRatingInputStr] = useState('8');
   const [comment, setComment] = useState('');
+  const [reviewBadge, setReviewBadge] = useState('Siêu phẩm');
   const [author, setAuthor] = useState(currentUser);
+
+  const handleOpenReviewModal = (movie: Movie, chosenAuthor?: string) => {
+    sounds.playVintageSwitch();
+    setActiveReviewMovie(movie);
+    const targetAuthor = chosenAuthor || currentUser;
+    setAuthor(targetAuthor);
+    const cur = movie.reviews?.find(r => r.author.trim().toLowerCase() === targetAuthor.trim().toLowerCase());
+    const initialScore = cur ? cur.rating : (typeof movie.scoreAvg === 'number' ? movie.scoreAvg : 8);
+    setRating(initialScore);
+    setRatingInputStr(String(initialScore));
+    setComment(cur?.comment || '');
+    setReviewBadge(cur?.badge || 'Siêu phẩm');
+  };
+
+  const handleAuthorChange = (nextAuthor: string) => {
+    setAuthor(nextAuthor);
+    const cur = activeReviewMovie?.reviews?.find(r => r.author.trim().toLowerCase() === nextAuthor.trim().toLowerCase());
+    if (cur) {
+      handleRatingChange(cur.rating);
+      setComment(cur.comment || '');
+      setReviewBadge(cur.badge || 'Siêu phẩm');
+    } else {
+      setComment('');
+      setReviewBadge('Siêu phẩm');
+    }
+  };
 
   const handleRatingChange = (newRating: number) => {
     const clamped = Math.min(10, Math.max(0, Number(newRating.toFixed(2))));
@@ -177,35 +199,26 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
     ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(2)
     : '—';
 
-  const handleOpenScoreModal = (movie: Movie) => {
-    sounds.playVintageSwitch();
-    setScoringMovie(movie);
-    setTengScore(String(movie.scoreTeng ?? ''));
-    setLocScore(String(movie.scoreLoc ?? ''));
-    setThanhScore(String(movie.scoreThanh ?? ''));
-    setJudgeNote(movie.adminNote ?? '');
-  };
-
   useEffect(() => {
     if (!scoreMovieId) return;
     const movie = movies.find((m) => m.id === scoreMovieId);
-    if (movie) handleOpenScoreModal(movie);
+    if (movie) handleOpenReviewModal(movie);
     onScoreOpened?.();
   }, [scoreMovieId]);
 
-  const typedScores = [tengScore, locScore, thanhScore].map(parseScoreInput);
-  const scoredCount = typedScores.filter((s) => s !== null).length;
-  const calculatedAvg = scoredCount === 3
-    ? Number(((typedScores[0]! + typedScores[1]! + typedScores[2]!) / 3).toFixed(2))
-    : null;
-
-  const handleSaveJudgesScore = (e: React.FormEvent) => {
+  const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!scoringMovie) return;
+    if (!activeReviewMovie) return;
     sounds.playWinnerFanfare();
-    onUpdateJudgesScore?.(scoringMovie.id, typedScores[0], typedScores[1], typedScores[2], judgeNote);
+    const normalized = ratingInputStr.replace(',', '.').trim();
+    const parsed = parseFloat(normalized);
+    const finalRating = !isNaN(parsed)
+      ? Math.min(10, Math.max(0, Number(parsed.toFixed(2))))
+      : rating;
+    onSubmitReview(activeReviewMovie.id, finalRating, comment.trim(), reviewBadge, author);
+
     // R7 End-credit survivor: the third distinct screening scored in this browser
-    const award = recordScoredScreening(scoringMovie.id);
+    const award = recordScoredScreening(activeReviewMovie.id);
     if (award) {
       fetch('/api/eggs/end-credit', {
         method: 'POST',
@@ -215,28 +228,10 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
         .then(() => onEggsChanged?.())
         .catch(() => {});
     }
-    setScoringMovie(null);
-  };
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeReviewMovie || !comment.trim()) return;
-    sounds.playWinnerFanfare();
-    const normalized = ratingInputStr.replace(',', '.').trim();
-    const parsed = parseFloat(normalized);
-    const finalRating = !isNaN(parsed)
-      ? Math.min(10, Math.max(0, Number(parsed.toFixed(2))))
-      : rating;
-    onSubmitReview(activeReviewMovie.id, finalRating, comment.trim(), 'Vé Vàng VIP', author);
     setComment('');
     setActiveReviewMovie(null);
   };
-
-  const judges: { name: string; key: 'scoreTeng' | 'scoreLoc' | 'scoreThanh'; value: string; set: (s: string) => void }[] = [
-    { name: 'Lil Teng', key: 'scoreTeng', value: tengScore, set: setTengScore },
-    { name: 'Lộc', key: 'scoreLoc', value: locScore, set: setLocScore },
-    { name: 'Thành', key: 'scoreThanh', value: thanhScore, set: setThanhScore },
-  ];
 
   return (
     <section>
@@ -418,10 +413,28 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                   {movie.reviews && movie.reviews.length > 0 && (
                     <ul className="mt-5 grid sm:grid-cols-2 gap-3">
                       {movie.reviews.map((rev) => (
-                        <li key={rev.id} className="panel-soft px-4 py-3">
+                        <li key={rev.id} className="panel-soft px-4 py-3 relative group/rev">
                           <div className="flex items-center justify-between text-[13px]">
                             <span className="font-semibold">{rev.author}</span>
-                            <span className="num font-bold">{rev.rating}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="num font-bold text-accent">{rev.rating}★</span>
+                              {onDeleteReview && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (window.confirm(`Xóa đánh giá của ${rev.author}?`)) {
+                                      sounds.playVintageSwitch();
+                                      onDeleteReview(movie.id, rev.id);
+                                    }
+                                  }}
+                                  className="w-5 h-5 rounded hover:bg-stop/15 text-ink-3 hover:text-stop grid place-items-center transition-colors"
+                                  title={`Xóa đánh giá của ${rev.author}`}
+                                  aria-label={`Xóa đánh giá của ${rev.author}`}
+                                >
+                                  <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                           <p className="mt-1 text-[14px] text-ink-2 leading-snug">“{rev.comment}”</p>
                         </li>
@@ -429,27 +442,20 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
                     </ul>
                   )}
 
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <button onClick={() => handleOpenScoreModal(movie)} className="btn btn-sm">
-                      <SlidersHorizontal className="w-4 h-4" />
-                      Chấm điểm
-                    </button>
-                    <button
-                      onClick={() => {
-                        sounds.playVintageSwitch();
-                        setActiveReviewMovie(movie);
-                        setAuthor(currentUser);
-                        const cur = movie.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
-                        const initialScore = cur ? cur.rating : 9;
-                        setRating(initialScore);
-                        setRatingInputStr(String(initialScore));
-                      }}
-                      className="btn btn-quiet btn-sm"
-                    >
-                      <MessageSquarePlus className="w-4 h-4" />
-                      Thêm cảm nhận
-                    </button>
-                  </div>
+                  {(() => {
+                    const myReview = movie.reviews?.find(r => r.author.trim().toLowerCase() === currentUser.trim().toLowerCase());
+                    return (
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        <button
+                          onClick={() => handleOpenReviewModal(movie)}
+                          className={`btn btn-sm ${myReview ? 'bg-accent/15 border-accent text-accent font-bold' : ''}`}
+                        >
+                          <MessageSquarePlus className="w-4 h-4" />
+                          {myReview ? 'Sửa cảm nhận' : 'Thêm cảm nhận'}
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               </li>
             );
@@ -478,168 +484,163 @@ export const WatchedArchive: React.FC<WatchedArchiveProps> = ({
       )}
       <AchievementHall events={eggEvents} movies={movies} />
 
-      {/* Judges scoring sheet (Rule 3.1 & 3.2) */}
-      {scoringMovie && (
-        <Modal onClose={() => setScoringMovie(null)} label={`Chấm điểm ${scoringMovie.title}`}>
-          <ModalHeader jp="ランキング" kicker="Hội đồng chấm điểm" title={scoringMovie.title} onClose={() => setScoringMovie(null)} />
-          <form onSubmit={handleSaveJudgesScore} className="px-5 sm:px-7 pb-6">
-            <p className="text-[13px] text-ink-2 -mt-1 mb-5">
-              Thang 0–10 trên 6 phương diện: kịch bản, diễn xuất, hình ảnh, âm thanh, cảm xúc, giá trị xem lại (Điều 3.1).
-            </p>
-            <a
-              href={scoringMovie.watchUrl || `https://chophim.app/tim-kiem?keyword=${encodeURIComponent(scoringMovie.title)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-sm mb-5"
-            >
-              <ExternalLink className="w-4 h-4" />
-              {scoringMovie.watchUrl ? 'Xem phim' : 'Tìm trên Chophim'}
-            </a>
-            <div className="space-y-4">
-              {judges.map((j) => (
-                <div key={j.key}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="field-label !mb-0" htmlFor={j.key}>{j.name}</label>
-                    <div className="flex items-center gap-1 bg-sunk/80 border border-line focus-within:border-accent rounded px-2 py-0.5">
+      {/* Member review & scoring sheet */}
+      {activeReviewMovie && (() => {
+        const curReview = activeReviewMovie.reviews?.find(r => r.author.trim().toLowerCase() === author.trim().toLowerCase());
+        return (
+          <Modal onClose={() => setActiveReviewMovie(null)} size="md" label={`Cảm nhận ${activeReviewMovie.title}`}>
+            <ModalHeader kicker="Cảm nhận" title={activeReviewMovie.title} onClose={() => setActiveReviewMovie(null)} />
+            <form onSubmit={handleReviewSubmit} className="px-5 sm:px-7 pb-6 space-y-4">
+              <div>
+                <label className="field-label" htmlFor="rev-author">Thành viên</label>
+                <select
+                  id="rev-author"
+                  value={author}
+                  onChange={(e) => handleAuthorChange(e.target.value)}
+                  className="input"
+                >
+                  {BROTHERS_LIST.map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="field-label !mb-0" htmlFor="rev-rating-input">Điểm số (Thang 0 – 10)</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 bg-sunk/90 border border-line focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 rounded-lg px-2.5 py-0.5 transition-all shadow-inner">
                       <input
+                        id="rev-rating-input"
                         type="text"
                         inputMode="decimal"
-                        placeholder="—"
-                        aria-label={`Điểm của ${j.name}`}
-                        value={j.value}
-                        onChange={(e) => {
-                          const raw = e.target.value.trim();
-                          if (!/^\d*[.,]?\d{0,2}$/.test(raw)) return;
-                          j.set(parseFloat(raw.replace(',', '.')) > 10 ? '10' : raw);
+                        maxLength={5}
+                        autoComplete="off"
+                        value={ratingInputStr}
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) => handleRatingInput(e.target.value)}
+                        onBlur={handleRatingBlur}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            (e.target as HTMLInputElement).blur();
+                          }
                         }}
-                        className="w-14 bg-transparent text-right font-mono font-bold text-[14px] text-accent focus:outline-none"
+                        className="w-16 bg-transparent text-right font-display text-[24px] font-bold text-accent tabular-nums focus:outline-none"
+                        placeholder="0.0"
+                        title="Gõ điểm trực tiếp (vd: 8.67, 8.25)"
                       />
-                      <span className="text-[12px] text-ink-3">★</span>
+                      <span className="text-accent text-[20px] font-bold select-none">★</span>
                     </div>
+                    <span className="text-[12px] text-ink-3 font-semibold">
+                      {rating === 0
+                        ? '💀 0 điểm (Rác phẩm)'
+                        : rating <= 2
+                        ? '⚠️ Quá tệ'
+                        : rating <= 4
+                        ? '👎 Dưới trung bình'
+                        : rating <= 6
+                        ? '👌 Xem được'
+                        : rating <= 8
+                        ? '👍 Khá hay'
+                        : rating < 10
+                        ? '🔥 Cực đỉnh'
+                        : '👑 Kiệt tác'}
+                    </span>
                   </div>
-                  <input
-                    id={j.key}
-                    type="range"
-                    min="0"
-                    max="10"
-                    step="0.01"
-                    value={parseScoreInput(j.value) ?? 5}
-                    onChange={(e) => j.set(e.target.value)}
-                    className="w-full cursor-pointer accent-accent"
-                  />
                 </div>
-              ))}
-            </div>
+                <input
+                  id="rev-rating"
+                  type="range"
+                  min="0"
+                  max="10"
+                  step="0.01"
+                  value={rating}
+                  onChange={(e) => handleRatingChange(Number(e.target.value))}
+                  className="w-full h-2 rounded-lg cursor-pointer accent-accent"
+                />
+                <div className="grid grid-cols-6 gap-1.5 mt-2.5">
+                  {[0, 2, 4, 6, 8, 10].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => handleRatingChange(s)}
+                      className="btn btn-quiet btn-sm !py-1 text-[12px]"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11.5px] text-ink-3 mt-1.5 italic">
+                  💡 Có thể kéo mượt thanh trượt (bước 0.01) hoặc gõ trực tiếp điểm số lẻ như 8.67, 8.25 vào ô trên.
+                </p>
+              </div>
 
-            <div className="mt-6 flex items-end justify-between gap-4 py-4 border-y-[1.5px] border-ink">
               <div>
-                <div className="label">Điểm trung bình</div>
-                <div className="text-[13px] text-ink-3 mt-1">Lưu xong tự gắn Vé vàng VIP · đủ 3 điểm mới xếp hạng</div>
-              </div>
-              <div className="display text-[56px] leading-[0.85] text-accent tabular-nums">
-                {calculatedAvg !== null ? calculatedAvg.toFixed(2) : `${scoredCount}/3`}
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <label className="field-label" htmlFor="judge-note">Ghi chú hội đồng</label>
-              <input
-                id="judge-note"
-                type="text"
-                placeholder="oke, bth, quá đỉnh…"
-                value={judgeNote}
-                onChange={(e) => setJudgeNote(e.target.value)}
-                className="input"
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2.5 pt-6">
-              <button type="button" onClick={() => setScoringMovie(null)} className="btn btn-quiet">Để sau</button>
-              <button type="submit" disabled={scoredCount === 0} className="btn btn-primary disabled:!opacity-75">Lưu điểm</button>
-            </div>
-          </form>
-        </Modal>
-      )}
-
-      {/* Member review sheet */}
-      {activeReviewMovie && (
-        <Modal onClose={() => setActiveReviewMovie(null)} size="sm" label={`Cảm nhận ${activeReviewMovie.title}`}>
-          <ModalHeader kicker="Cảm nhận" title={activeReviewMovie.title} onClose={() => setActiveReviewMovie(null)} />
-          <form onSubmit={handleReviewSubmit} className="px-5 sm:px-7 pb-6 space-y-4">
-            <div>
-              <label className="field-label" htmlFor="rev-author">Thành viên</label>
-              <select
-                id="rev-author"
-                value={author}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setAuthor(next);
-                  const cur = activeReviewMovie?.reviews?.find(r => r.author.trim().toLowerCase() === next.trim().toLowerCase());
-                  if (cur) {
-                    handleRatingChange(cur.rating);
-                    setComment(cur.comment || '');
-                  }
-                }}
-                className="input"
-              >
-                {BROTHERS_LIST.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="field-label !mb-0" htmlFor="rev-rating-input">Điểm cá nhân (Thang 0 – 10)</label>
-                <div className="flex items-center gap-1 bg-sunk/80 border border-line focus-within:border-accent rounded px-2 py-0.5">
-                  <input
-                    id="rev-rating-input"
-                    type="text"
-                    inputMode="decimal"
-                    maxLength={5}
-                    autoComplete="off"
-                    value={ratingInputStr}
-                    onChange={(e) => handleRatingInput(e.target.value)}
-                    onBlur={handleRatingBlur}
-                    className="w-14 bg-transparent text-right font-mono font-bold text-[14px] text-accent focus:outline-none"
-                    placeholder="0.0"
-                    title="Gõ điểm cá nhân (vd: 8.67, 8.25)"
-                  />
-                  <span className="text-[12px] text-ink-3">★</span>
+                <div className="field-label">Huy hiệu cảm nhận</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'Siêu phẩm',
+                    'Căng não',
+                    'Hài vãi',
+                    'Gây lú',
+                    'Bình thường',
+                    'Buồn ngủ',
+                    'Phí thời gian',
+                    'Xem xong trầm cảm',
+                    'Xem lại vẫn hay',
+                  ].map((b) => (
+                    <button
+                      key={b}
+                      type="button"
+                      onClick={() => setReviewBadge(b)}
+                      className={`h-7 px-2.5 rounded-full border text-[12px] font-semibold transition-colors ${
+                        reviewBadge === b ? 'bg-ink text-paper border-ink' : 'border-line text-ink-2 hover:border-ink hover:text-ink'
+                      }`}
+                    >
+                      {b}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <input
-                id="rev-rating"
-                type="range"
-                min="0"
-                max="10"
-                step="0.01"
-                value={rating}
-                onChange={(e) => handleRatingChange(Number(e.target.value))}
-                className="w-full cursor-pointer accent-accent"
-              />
-              <p className="text-[11.5px] text-ink-3 mt-1.5 italic">
-                💡 Bạn có thể kéo thanh trượt mượt mà hoặc gõ điểm trực tiếp (vd: 8.67, 8.25).
-              </p>
-            </div>
-            <div>
-              <label className="field-label" htmlFor="rev-comment">Nhận xét</label>
-              <textarea
-                id="rev-comment"
-                rows={3}
-                required
-                placeholder="Cảnh nào ấn tượng nhất? Cái kết thế nào?"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="input"
-              />
-            </div>
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button type="button" onClick={() => setActiveReviewMovie(null)} className="btn btn-quiet">Hủy</button>
-              <button type="submit" className="btn btn-primary">Gửi</button>
-            </div>
-          </form>
-        </Modal>
-      )}
+
+              <div>
+                <label className="field-label" htmlFor="rev-comment">Cảm nhận (tùy chọn)</label>
+                <textarea
+                  id="rev-comment"
+                  rows={2}
+                  placeholder="Cảnh nào ấn tượng nhất? Cảm nhận về bộ phim..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="input"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2.5 pt-2">
+                {curReview && onDeleteReview ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Xóa đánh giá của ${author}?`)) {
+                        sounds.playVintageSwitch();
+                        onDeleteReview(activeReviewMovie.id, curReview.id);
+                        setActiveReviewMovie(null);
+                      }
+                    }}
+                    className="btn btn-quiet !text-stop btn-sm"
+                  >
+                    Xóa đánh giá
+                  </button>
+                ) : <div />}
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setActiveReviewMovie(null)} className="btn btn-quiet">Hủy</button>
+                  <button type="submit" className="btn btn-primary">Lưu đánh giá</button>
+                </div>
+              </div>
+            </form>
+          </Modal>
+        );
+      })()}
     </section>
   );
 };

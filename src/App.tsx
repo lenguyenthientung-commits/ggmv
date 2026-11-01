@@ -271,11 +271,65 @@ export default function App() {
     author: string,
     markWatched?: boolean
   ) => {
+    const finalComment = comment && comment.trim() ? comment.trim() : 'Đã xem và chấm điểm';
+    const norm = (s: string) => s.trim().toLowerCase();
+
+    // Optimistic update
+    setMovies(prev =>
+      prev.map(m => {
+        if (m.id !== movieId) return m;
+        const reviews = [...(m.reviews || [])];
+        const existingIdx = reviews.findIndex(r => norm(r.author) === norm(author));
+        const newRev: MovieReview = {
+          id: existingIdx >= 0 ? reviews[existingIdx].id : `rev-${Date.now()}`,
+          author: author.trim(),
+          rating,
+          badge: badge || 'Siêu phẩm',
+          comment: finalComment,
+          createdAt: new Date().toISOString(),
+        };
+        if (existingIdx >= 0) reviews[existingIdx] = newRev;
+        else reviews.push(newRev);
+
+        const updated: Movie = { ...m, reviews };
+        if (norm(author) === norm('Lil Teng')) updated.scoreTeng = rating;
+        if (norm(author) === norm('Lộc')) updated.scoreLoc = rating;
+        if (norm(author) === norm('Thành')) updated.scoreThanh = rating;
+
+        const jScores = [updated.scoreTeng, updated.scoreLoc, updated.scoreThanh].filter((s): s is number => typeof s === 'number' && Number.isFinite(s));
+        if (jScores.length > 0) {
+          updated.scoreAvg = Number((jScores.reduce((a, b) => a + b, 0) / jScores.length).toFixed(2));
+          updated.statusBadge = '🎟️ Vé Vàng VIP';
+        }
+        if (markWatched) {
+          updated.watched = true;
+          if (!updated.watchedDate) updated.watchedDate = new Date().toISOString().split('T')[0];
+        }
+        return updated;
+      })
+    );
+
     try {
       const res = await fetch(`/api/movies/${movieId}/watched`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, comment, badge, author, markWatched }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setMovies(prev => prev.map(m => (m.id === movieId ? updated : m)));
+        fetchEggs();
+      }
+    } catch {
+      fetchData();
+    }
+  };
+
+  // Delete review
+  const handleDeleteReview = async (movieId: string, reviewId: string) => {
+    try {
+      const res = await fetch(`/api/movies/${movieId}/reviews/${reviewId}`, {
+        method: 'DELETE',
       });
       if (res.ok) {
         const updated = await res.json();
@@ -495,6 +549,7 @@ export default function App() {
             onResetData={handleResetData}
             onUpdateWatchUrl={handleUpdateWatchUrl}
             onSubmitReview={handleSubmitReview}
+            onDeleteReview={handleDeleteReview}
           />
         )}
 
@@ -506,6 +561,8 @@ export default function App() {
               currentUser={currentUser}
               onLockIn={handleLockIn}
               onOpenTrailer={(m) => setCinemaModalMovie(m)}
+              onSubmitReview={handleSubmitReview}
+              onDeleteReview={handleDeleteReview}
               onEggsChanged={fetchEggs}
             />
           </div>
@@ -531,6 +588,7 @@ export default function App() {
             currentUser={currentUser}
             onOpenRules={() => setIsRulesOpen(true)}
             onSubmitReview={handleSubmitReview}
+            onDeleteReview={handleDeleteReview}
             onUpdateJudgesScore={handleUpdateJudgesScore}
             scoreMovieId={pendingScoreId}
             onScoreOpened={() => setPendingScoreId(null)}

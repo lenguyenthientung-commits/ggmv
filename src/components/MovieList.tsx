@@ -20,6 +20,7 @@ interface MovieListProps {
   onResetData: () => void;
   onUpdateWatchUrl?: (movieId: string, watchUrl: string) => void;
   onSubmitReview?: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
+  onDeleteReview?: (movieId: string, reviewId: string) => void;
 }
 
 type FilterTab = 'all' | 'unwatched' | 'top_voted' | 'watched';
@@ -36,6 +37,7 @@ export const MovieList: React.FC<MovieListProps> = ({
   onResetData,
   onUpdateWatchUrl,
   onSubmitReview,
+  onDeleteReview,
 }) => {
   const [activeFilterTab, setActiveFilterTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -176,6 +178,7 @@ export const MovieList: React.FC<MovieListProps> = ({
               onDeleteMovie={onDeleteMovie}
               onUpdateWatchUrl={onUpdateWatchUrl}
               onSubmitReview={onSubmitReview}
+              onDeleteReview={onDeleteReview}
             />
           ))}
         </div>
