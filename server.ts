@@ -422,20 +422,44 @@ async function startServer() {
         if (jScores.length > 0) movie.statusBadge = '🎟️ Vé Vàng VIP';
         recalcAverage(movie);
 
-        // Automatic watched: when all users who voted have rated, OR all 3 judges have rated, OR explicitly marked
-        const voterCount = Array.isArray(movie.votes) ? movie.votes.length : 0;
-        const allVotersRated = voterCount > 0 &&
-          movie.votes.every(v => movie.reviews?.some(r => r.author.trim().toLowerCase() === v.trim().toLowerCase()));
-
+        // Mark watched only when explicitly requested (markWatched === true) or all 3 judges have scored
         const allJudgesRated = movie.scoreTeng !== undefined && movie.scoreLoc !== undefined && movie.scoreThanh !== undefined;
 
-        if (markWatched === true || allVotersRated || allJudgesRated) {
+        if (markWatched === true || allJudgesRated) {
           movie.watched = true;
           if (!movie.watchedDate) {
             movie.watchedDate = new Date().toISOString().split('T')[0];
           }
         }
       }
+    });
+    if (!movie) {
+      res.status(404).json({ error: 'Không tìm thấy phim' });
+      return;
+    }
+    await evaluateArchiveEggs(movie).catch(err => console.error('Easter egg evaluation failed', err));
+    res.json(movie);
+  }));
+
+  // Delete review and rating
+  app.delete('/api/movies/:id/reviews/:reviewId', asyncHandler(async (req, res) => {
+    const { id, reviewId } = req.params;
+    const movie = await updateDoc<Movie>(moviesCol, id, movie => {
+      if (!movie.reviews) return;
+      const targetReview = movie.reviews.find(r => r.id === reviewId);
+      if (!targetReview) return;
+
+      movie.reviews = movie.reviews.filter(r => r.id !== reviewId);
+
+      // If author was a judge, clear their score
+      const norm = (s: string) => s.trim().toLowerCase();
+      if (norm(targetReview.author) === norm('Lil Teng')) delete movie.scoreTeng;
+      if (norm(targetReview.author) === norm('Lộc')) delete movie.scoreLoc;
+      if (norm(targetReview.author) === norm('Thành')) delete movie.scoreThanh;
+
+      const jScores = [movie.scoreTeng, movie.scoreLoc, movie.scoreThanh].filter((s): s is number => typeof s === 'number' && Number.isFinite(s));
+      if (jScores.length === 0) delete movie.statusBadge;
+      recalcAverage(movie);
     });
     if (!movie) {
       res.status(404).json({ error: 'Không tìm thấy phim' });

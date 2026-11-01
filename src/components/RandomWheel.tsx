@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
-import { RotateCcw, Play, Check, Shuffle, Shield, X, ExternalLink } from 'lucide-react';
-import { Modal, SectionHeader } from './ui';
+import { RotateCcw, Play, Check, Shuffle, Shield, X, ExternalLink, Star, Trash2 } from 'lucide-react';
+import { Modal, ModalHeader, SectionHeader } from './ui';
+import { BROTHERS_LIST } from './Header';
 import { soundtrack } from '../utils/soundtrack';
 import { playFx, unlockSecret } from '../badges';
 
@@ -16,6 +17,8 @@ interface RandomWheelProps {
   onOpenRules?: () => void;
   onLockIn: (movie: Movie) => void;
   onOpenTrailer: (movie: Movie) => void;
+  onSubmitReview?: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
+  onDeleteReview?: (movieId: string, reviewId: string) => void;
   onEggsChanged?: () => void;
 }
 
@@ -74,6 +77,8 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   currentUser,
   onLockIn,
   onOpenTrailer,
+  onSubmitReview,
+  onDeleteReview,
   onEggsChanged,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -88,6 +93,81 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
   const [isSpinning, setIsSpinning] = useState(false);
   const [winnerMovie, setWinnerMovie] = useState<Movie | null>(null);
   const [showWinnerModal, setShowWinnerModal] = useState(false);
+
+  // Rating states for winner movie
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
+  const [reviewAuthor, setReviewAuthor] = useState(currentUser);
+  const [reviewScore, setReviewScore] = useState(8.5);
+  const [scoreInputStr, setScoreInputStr] = useState('8.5');
+  const [reviewBadge, setReviewBadge] = useState('Siêu phẩm');
+  const [reviewComment, setReviewComment] = useState('');
+  const [markWatchedImmediately, setMarkWatchedImmediately] = useState(false);
+
+  const handleScoreChange = (newScore: number) => {
+    const clamped = Math.min(10, Math.max(0, Number(newScore.toFixed(2))));
+    setReviewScore(clamped);
+    setScoreInputStr(String(clamped));
+  };
+
+  const handleScoreInput = (raw: string) => {
+    if (raw === '' || raw === '.' || raw === ',') {
+      setScoreInputStr(raw);
+      return;
+    }
+    if (!/^\d*[.,]?\d*$/.test(raw)) return;
+    const normalized = raw.replace(',', '.').trim();
+    const parts = normalized.split('.');
+    if (parts[1] && parts[1].length > 2) return;
+    const num = parseFloat(normalized);
+    if (isNaN(num)) return;
+    if (num > 10) {
+      setScoreInputStr('10');
+      setReviewScore(10);
+      return;
+    }
+    if (num < 0) {
+      setScoreInputStr('0');
+      setReviewScore(0);
+      return;
+    }
+    setScoreInputStr(raw);
+    setReviewScore(Number(num.toFixed(2)));
+  };
+
+  const handleScoreBlur = () => {
+    if (scoreInputStr === '' || scoreInputStr === '.' || scoreInputStr === ',') {
+      handleScoreChange(reviewScore);
+      return;
+    }
+    const normalized = scoreInputStr.replace(',', '.').trim();
+    const num = parseFloat(normalized);
+    if (isNaN(num)) {
+      handleScoreChange(reviewScore);
+    } else {
+      handleScoreChange(Math.min(10, Math.max(0, num)));
+    }
+  };
+
+  const handleRatingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!winnerMovie) return;
+    sounds.playWinnerFanfare();
+    const normalized = scoreInputStr.replace(',', '.').trim();
+    const parsed = parseFloat(normalized);
+    const finalScore = !isNaN(parsed)
+      ? Math.min(10, Math.max(0, Number(parsed.toFixed(2))))
+      : reviewScore;
+
+    onSubmitReview?.(
+      winnerMovie.id,
+      finalScore,
+      reviewComment.trim(),
+      reviewBadge,
+      reviewAuthor,
+      markWatchedImmediately
+    );
+    setIsRatingOpen(false);
+  };
 
   // Rule 2.3 & 2.4: VETO cards state (3 cards / month per judge), shared on the server
   const [vetoCounts, setVetoCounts] = useState<{ [judge: string]: number }>({});
@@ -840,6 +920,42 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
                   <span className="font-semibold">{winnerMovie.suggestedBy}:</span>{' '}
                   <span className="text-night-ink/75">“{winnerMovie.whyWatch}”</span>
                 </p>
+
+                {(() => {
+                  const live = movies.find(m => m.id === winnerMovie.id) || winnerMovie;
+                  return live.reviews && live.reviews.length > 0 ? (
+                    <div className="mt-4 space-y-2 max-h-32 overflow-y-auto pr-1">
+                      {live.reviews.map((rev) => (
+                        <div key={rev.id} className="p-2 rounded bg-night-2/70 border border-night-line text-[12.5px] flex items-center justify-between">
+                          <div className="flex items-center gap-2 truncate">
+                            <span className="font-bold text-night-ink">{rev.author}</span>
+                            {rev.badge && <span className="chip !text-[10px] !py-0 !px-1.5">{rev.badge}</span>}
+                            {rev.comment && <span className="text-night-ink/70 italic truncate">“{rev.comment}”</span>}
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                            <span className="num font-bold text-accent">{rev.rating}★</span>
+                            {onDeleteReview && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (window.confirm(`Xóa đánh giá của ${rev.author}?`)) {
+                                    sounds.playVintageSwitch();
+                                    onDeleteReview(winnerMovie.id, rev.id);
+                                  }
+                                }}
+                                className="w-5 h-5 rounded hover:bg-stop/20 text-night-ink/40 hover:text-stop grid place-items-center transition-colors"
+                                title={`Xóa đánh giá của ${rev.author}`}
+                                aria-label={`Xóa đánh giá của ${rev.author}`}
+                              >
+                                <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </div>
 
@@ -878,13 +994,35 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
               {winnerMovie.trailerUrl && (
                 <button
                   onClick={() => {
+                    sounds.playVintageSwitch();
                     onOpenTrailer(winnerMovie);
-                    setShowWinnerModal(false);
                   }}
                   className="btn btn-sm"
                 >
                   <Play className="w-4 h-4 fill-current" />
                   Trailer
+                </button>
+              )}
+              {onSubmitReview && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playVintageSwitch();
+                    const live = movies.find(m => m.id === winnerMovie.id) || winnerMovie;
+                    const cur = live.reviews?.find(r => r.author.toLowerCase() === currentUser.toLowerCase());
+                    const initialScore = cur ? cur.rating : 8.5;
+                    setReviewAuthor(currentUser);
+                    setReviewScore(initialScore);
+                    setScoreInputStr(String(initialScore));
+                    setReviewBadge(cur?.badge || 'Siêu phẩm');
+                    setReviewComment(cur?.comment || '');
+                    setMarkWatchedImmediately(false);
+                    setIsRatingOpen(true);
+                  }}
+                  className="btn btn-sm bg-accent/20 border-accent text-accent font-bold hover:bg-accent hover:text-on-accent"
+                >
+                  <Star className="w-4 h-4 fill-current" />
+                  Chấm điểm
                 </button>
               )}
               <button
@@ -900,6 +1038,205 @@ export const RandomWheel: React.FC<RandomWheelProps> = ({
               </button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Rating & Review Modal inside Wheel */}
+      {isRatingOpen && winnerMovie && (
+        <Modal onClose={() => setIsRatingOpen(false)} size="md" label={`Chấm điểm ${winnerMovie.title}`}>
+          <ModalHeader
+            kicker="Đánh giá thành viên"
+            title={winnerMovie.title}
+            onClose={() => setIsRatingOpen(false)}
+          />
+          <form onSubmit={handleRatingSubmit} className="p-5 sm:p-6 space-y-4">
+            <div>
+              <label className="field-label" htmlFor="w-author">Người chấm điểm</label>
+              <select
+                id="w-author"
+                value={reviewAuthor}
+                onChange={(e) => {
+                  const nextAuthor = e.target.value;
+                  setReviewAuthor(nextAuthor);
+                  const live = movies.find(m => m.id === winnerMovie.id) || winnerMovie;
+                  const existing = live.reviews?.find(r => r.author.trim().toLowerCase() === nextAuthor.trim().toLowerCase());
+                  if (existing) {
+                    setReviewScore(existing.rating);
+                    setScoreInputStr(String(existing.rating));
+                    setReviewBadge(existing.badge || 'Siêu phẩm');
+                    setReviewComment(existing.comment || '');
+                  }
+                }}
+                className="input"
+              >
+                {BROTHERS_LIST.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="field-label !mb-0" htmlFor="w-score-input">Điểm số (Thang 0 – 10)</label>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 bg-sunk/90 border border-line focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 rounded-lg px-2.5 py-0.5 transition-all shadow-inner">
+                    <input
+                      id="w-score-input"
+                      type="text"
+                      inputMode="decimal"
+                      maxLength={5}
+                      autoComplete="off"
+                      value={scoreInputStr}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => handleScoreInput(e.target.value)}
+                      onBlur={handleScoreBlur}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleScoreBlur();
+                        }
+                      }}
+                      className="w-16 bg-transparent text-right font-display text-[24px] font-bold text-accent tabular-nums focus:outline-none"
+                      placeholder="0.0"
+                      title="Gõ điểm trực tiếp (vd: 8.67, 8.25)"
+                    />
+                    <span className="text-accent text-[20px] font-bold select-none">★</span>
+                  </div>
+                  <span className="text-[12px] text-ink-3 font-semibold">
+                    {reviewScore === 0
+                      ? '💀 0 điểm'
+                      : reviewScore <= 4
+                      ? '👎 Dưới TB'
+                      : reviewScore <= 6
+                      ? '👌 Xem được'
+                      : reviewScore <= 8
+                      ? '👍 Khá hay'
+                      : reviewScore < 10
+                      ? '🔥 Cực đỉnh'
+                      : '👑 Kiệt tác'}
+                  </span>
+                </div>
+              </div>
+              <input
+                id="w-score"
+                type="range"
+                min="0"
+                max="10"
+                step="0.01"
+                value={reviewScore}
+                onChange={(e) => handleScoreChange(parseFloat(e.target.value))}
+                className="w-full h-2 rounded-lg cursor-pointer accent-accent"
+              />
+              <div className="grid grid-cols-6 gap-1.5 mt-2.5">
+                {[0, 2, 4, 6, 8, 10].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => handleScoreChange(s)}
+                    className={`btn btn-sm !h-8 text-[13px] font-mono font-bold transition-all ${
+                      reviewScore === s ? 'btn-primary shadow-none' : ''
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="field-label">Huy hiệu cảm nhận</div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  'Siêu phẩm',
+                  'Căng não',
+                  'Hài vãi',
+                  'Gây lú',
+                  'Bình thường',
+                  'Buồn ngủ',
+                  'Phí thời gian',
+                  'Xem xong trầm cảm',
+                  'Xem lại vẫn hay',
+                ].map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => setReviewBadge(b)}
+                    className={`h-7 px-2.5 rounded-full border text-[12px] font-semibold transition-colors ${
+                      reviewBadge === b ? 'bg-ink text-paper border-ink' : 'border-line text-ink-2 hover:border-ink hover:text-ink'
+                    }`}
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="field-label" htmlFor="w-comment">Cảm nhận (tùy chọn)</label>
+              <textarea
+                id="w-comment"
+                rows={2}
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Vài dòng cảm nhận nhanh về bộ phim cùng anh em..."
+                className="input"
+              />
+            </div>
+
+            <label className="flex items-start gap-2.5 cursor-pointer p-3 bg-sunk/60 rounded-md border border-line text-[12.5px] text-ink select-none hover:bg-sunk transition-colors">
+              <input
+                type="checkbox"
+                checked={markWatchedImmediately}
+                onChange={(e) => setMarkWatchedImmediately(e.target.checked)}
+                className="mt-0.5 rounded border-line accent-accent w-4 h-4 cursor-pointer"
+              />
+              <div>
+                <span className="font-bold text-ink">Chốt phim là ĐÃ XEM luôn</span>
+                <p className="mt-0.5 text-ink-3 text-[11.5px] leading-relaxed">
+                  Nếu không tích, phim vẫn ở trạng thái chờ và anh em có thể tiếp tục chấm thêm.
+                </p>
+              </div>
+            </label>
+
+            <div className="flex items-center justify-between gap-2.5 pt-2">
+              {(() => {
+                const live = movies.find(m => m.id === winnerMovie.id) || winnerMovie;
+                const myRev = live.reviews?.find(r => r.author.trim().toLowerCase() === reviewAuthor.trim().toLowerCase());
+                return myRev && onDeleteReview ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`Xóa đánh giá của ${reviewAuthor}?`)) {
+                        sounds.playVintageSwitch();
+                        onDeleteReview(winnerMovie.id, myRev.id);
+                        setIsRatingOpen(false);
+                      }
+                    }}
+                    className="btn btn-quiet !text-stop"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Xóa đánh giá
+                  </button>
+                ) : <div />;
+              })()}
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsRatingOpen(false)}
+                  className="btn btn-quiet"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                >
+                  Lưu đánh giá
+                </button>
+              </div>
+            </div>
+          </form>
         </Modal>
       )}
     </section>

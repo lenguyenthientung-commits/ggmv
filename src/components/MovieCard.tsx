@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Movie } from '../types/cinema';
-import { ThumbsUp, Play, CalendarPlus, Check, Star, Trash2, ExternalLink, Tv, Edit3, MessageSquarePlus } from 'lucide-react';
+import { ThumbsUp, Play, CalendarPlus, Check, Star, Trash2, ExternalLink, Tv, Edit3, MessageSquarePlus, X } from 'lucide-react';
 import { sounds } from '../utils/soundEffects';
 import { Modal, ModalHeader } from './ui';
 import { BROTHERS_LIST } from './Header';
@@ -18,6 +18,7 @@ interface MovieCardProps {
   onDeleteMovie: (movieId: string) => void;
   onUpdateWatchUrl?: (movieId: string, watchUrl: string) => void;
   onSubmitReview?: (movieId: string, rating: number, comment: string, badge: string, author: string, markWatched?: boolean) => void;
+  onDeleteReview?: (movieId: string, reviewId: string) => void;
 }
 
 export const MovieCard: React.FC<MovieCardProps> = ({
@@ -30,6 +31,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   onDeleteMovie,
   onUpdateWatchUrl,
   onSubmitReview,
+  onDeleteReview,
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -281,14 +283,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                 {/* Rating & Review Section */}
                 <div className="pt-3 border-t-[1.5px] border-line">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-[14px]">
-                      <Star className="w-4 h-4 fill-accent text-accent" />
-                      <span className="num font-bold">{avgRating ? `${avgRating}/10` : 'Chưa có điểm'}</span>
-                      {movie.reviews && movie.reviews.length > 0 && (
-                        <span className="text-ink-3">từ {movie.reviews.length} đánh giá</span>
-                      )}
-                    </div>
-
                     <div className="flex items-center gap-2">
                       {onSubmitReview && (
                         <button
@@ -308,7 +302,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                           className={`btn btn-sm ${myReview ? 'bg-accent/15 border-accent text-accent font-bold' : ''}`}
                         >
                           <Star className="w-3.5 h-3.5 fill-accent text-accent" />
-                          {myReview ? `Đã chấm ${myReview.rating}★ (Đổi điểm)` : 'Chấm điểm phim'}
+                          {myReview ? `Đánh giá thêm / Đổi điểm (${myReview.rating}★)` : 'Chấm điểm & Đánh giá'}
                         </button>
                       )}
 
@@ -329,6 +323,16 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                         {movie.watched ? 'Đã xem ✓' : 'Chốt đã xem'}
                       </button>
                     </div>
+
+                    {avgRating && (
+                      <div className="flex items-center gap-2 text-[14px]">
+                        <Star className="w-4 h-4 fill-accent text-accent" />
+                        <span className="num font-bold">{avgRating}/10</span>
+                        {movie.reviews && movie.reviews.length > 0 && (
+                          <span className="text-ink-3">từ {movie.reviews.length} đánh giá</span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Voters rating progress banner */}
@@ -349,9 +353,11 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                         )}
                       </div>
                       <div className="text-[11.5px] text-ink-3 font-medium">
-                        {allVotersDone
-                          ? (movie.watched ? '🏆 Đã chốt lên Bảng Vàng' : '✨ Tự động chuyển Đã Xem')
-                          : '⚡ Tự động chốt khi đủ người chấm'}
+                        {movie.watched
+                          ? '🏆 Đã chốt lên Bảng Vàng'
+                          : allVotersDone
+                          ? 'Đủ người vote đã chấm · Bấm "Chốt đã xem" để chuyển'
+                          : 'Mỗi anh em vote có thể vào chấm điểm'}
                       </div>
                     </div>
                   )}
@@ -360,13 +366,31 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                   {movie.reviews && movie.reviews.length > 0 && (
                     <div className="mt-3 space-y-2 max-h-36 overflow-y-auto pr-1">
                       {movie.reviews.map((rev) => (
-                        <div key={rev.id} className="p-2.5 rounded-md bg-card border border-line text-[13px]">
+                        <div key={rev.id} className="p-2.5 rounded-md bg-card border border-line text-[13px] relative group/rev">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-ink">{rev.author}</span>
                               {rev.badge && <span className="chip !text-[10px] !py-0 !px-1.5">{rev.badge}</span>}
                             </div>
-                            <span className="num font-bold text-accent">{rev.rating}★</span>
+                            <div className="flex items-center gap-2">
+                              <span className="num font-bold text-accent">{rev.rating}★</span>
+                              {onDeleteReview && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (window.confirm(`Xóa đánh giá của ${rev.author}?`)) {
+                                      sounds.playVintageSwitch();
+                                      onDeleteReview(movie.id, rev.id);
+                                    }
+                                  }}
+                                  className="w-5 h-5 rounded hover:bg-stop/15 text-ink-3 hover:text-stop grid place-items-center transition-colors"
+                                  title={`Xóa đánh giá của ${rev.author}`}
+                                  aria-label={`Xóa đánh giá của ${rev.author}`}
+                                >
+                                  <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                           {rev.comment && <p className="mt-1 text-ink-2 italic">“{rev.comment}”</p>}
                         </div>
@@ -452,7 +476,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({
                     <button
                       onClick={() => {
                         sounds.playVintageSwitch();
-                        setIsDetailOpen(false);
                         onOpenTrailer(movie);
                       }}
                       className="btn btn-primary"
@@ -665,20 +688,39 @@ export const MovieCard: React.FC<MovieCardProps> = ({
               </div>
             </label>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsRatingOpen(false)}
-                className="btn btn-quiet"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-              >
-                Lưu đánh giá
-              </button>
+            <div className="flex items-center justify-between gap-2.5 pt-2">
+              {myReview && onDeleteReview ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Xóa đánh giá của ${reviewAuthor}?`)) {
+                      sounds.playVintageSwitch();
+                      onDeleteReview(movie.id, myReview.id);
+                      setIsRatingOpen(false);
+                    }
+                  }}
+                  className="btn btn-quiet !text-stop"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Xóa đánh giá
+                </button>
+              ) : <div />}
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsRatingOpen(false)}
+                  className="btn btn-quiet"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                >
+                  Lưu đánh giá
+                </button>
+              </div>
             </div>
           </form>
         </Modal>
