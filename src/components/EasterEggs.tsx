@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Movie } from '../types/cinema';
 import { sounds } from '../utils/soundEffects';
-import { EggEvent, EggId, Story, UNLOCK_COPY, isSensitiveFilm, latestLegendaryDate } from '../easterEggs';
+import { EggEvent, EggId, SHIBA_RATE, Story, UNLOCK_COPY, isSensitiveFilm, latestLegendaryDate } from '../easterEggs';
 import { isHaunted } from '../seasons/worlds';
 import { BadgeDef, FxKind, SecretId, Tier, SECRET_BADGES, clubBadges, loadSecrets, memberBadges, playFx, unlockSecret } from '../badges';
 import { BIRTHDAY_FACT, CAMEO_FACTS, CINEMA_FACTS, CinemaFact } from '../cinemaFacts';
@@ -365,6 +365,7 @@ export const ShibaUsher: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [misses, setMisses] = useState(0);
   const [look, setLook] = useState({ x: 0, y: 0 });
+  const [inFooter] = useState(() => Math.random() < SHIBA_RATE);
   const lastDodge = useRef(0);
   const caught = misses >= USHER_MISSES;
 
@@ -373,7 +374,7 @@ export const ShibaUsher: React.FC = () => {
     setOpen(true);
   };
 
-  // A long scroll brings Shiba out, at most once a day
+  // A long scroll may bring Shiba out, at most once a day
   useEffect(() => {
     let last = window.scrollY;
     let total = 0;
@@ -382,6 +383,7 @@ export const ShibaUsher: React.FC = () => {
       last = window.scrollY;
       if (total < window.innerHeight * 8) return;
       window.removeEventListener('scroll', onScroll);
+      if (Math.random() >= SHIBA_RATE) return;
       const today = new Date().toDateString();
       try {
         if (localStorage.getItem(USHER_DAY_KEY) === today) return;
@@ -432,9 +434,11 @@ export const ShibaUsher: React.FC = () => {
 
   return (
     <>
-      <button onClick={summon} className="shrink-0 hover:-translate-y-0.5 transition-transform" aria-label="Gọi Shiba" title="Shiba">
-        <Shiba size={36} />
-      </button>
+      {inFooter && (
+        <button onClick={summon} className="shrink-0 hover:-translate-y-0.5 transition-transform" aria-label="Gọi Shiba" title="Shiba">
+          <Shiba size={36} />
+        </button>
+      )}
       {open && (
         <div className="egg-usher" style={{ left, top }}>
           <div

@@ -94,6 +94,9 @@ export function isSensitiveFilm(movie: Movie): boolean {
   return SENSITIVE_TITLES.test(text);
 }
 
+// How often Shiba actually shows up when it could: footer, long scroll, trailer room
+export const SHIBA_RATE = 1 / 3;
+
 // Shiba the critic: one reaction per film, read from its own record. Most films get none.
 export function shibaReview(movie: Movie, hour = new Date().getHours()): string | null {
   if (isSensitiveFilm(movie)) return null;

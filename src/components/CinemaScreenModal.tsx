@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Movie } from '../types/cinema';
 import { X, ExternalLink } from 'lucide-react';
 import { Modal } from './ui';
 import { Shiba } from './Shiba';
-import { shibaReview } from '../easterEggs';
+import { SHIBA_RATE, shibaReview } from '../easterEggs';
 
 interface CinemaScreenModalProps {
   movie: Movie | null;
@@ -33,10 +33,12 @@ const getEmbedUrl = (url?: string) => {
 };
 
 export const CinemaScreenModal: React.FC<CinemaScreenModalProps> = ({ movie, onClose, currentUser }) => {
+  // Rolled once per film opened, so a re-render can't make Shiba flicker
+  const shibaHere = useMemo(() => Math.random() < SHIBA_RATE, [movie?.id]);
   if (!movie) return null;
 
   const embedUrl = getEmbedUrl(movie.trailerUrl);
-  const review = shibaReview(movie);
+  const review = shibaHere ? shibaReview(movie) : null;
 
   return (
     <Modal onClose={onClose} tone="night" size="xl" label={`Trailer ${movie.title}`}>
