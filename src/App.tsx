@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Movie, WeekendSession } from './types/cinema';
+import { Movie, MovieReview, WeekendSession } from './types/cinema';
 import { INITIAL_MOVIES, INITIAL_SESSIONS } from './data/initialData';
 import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
