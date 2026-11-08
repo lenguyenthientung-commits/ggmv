@@ -10,6 +10,7 @@ import type { CollectionReference, DocumentData } from 'firebase-admin/firestore
 import { INITIAL_MOVIES, INITIAL_SESSIONS } from './src/data/initialData.ts';
 import type { Movie, MovieReview, WeekendSession } from './src/types/cinema.ts';
 import { applyJudgeScores, recalcAverage } from './src/utils/judging.ts';
+import { SESSION_COOKIE, SESSION_MS, createSession, passwordMatches, readCookie, verifySession } from './src/utils/session.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -170,6 +171,47 @@ async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
 
   app.use(express.json());
+  app.set('trust proxy', 1); // Render sits behind one proxy: req.ip must be the visitor's
+
+  // ---------- Login: one club password, session cookie valid for one year ----------
+  const CLUB_PASSWORD = process.env.CLUB_PASSWORD;
+  const SESSION_SECRET = process.env.SESSION_SECRET;
+  const authOn = Boolean(CLUB_PASSWORD && SESSION_SECRET);
+  if (!authOn) {
+    console.warn('CLUB_PASSWORD hoặc SESSION_SECRET chưa được cấu hình: đăng nhập đang TẮT, ai cũng vào được.');
+  }
+  const loggedIn = (req: Request) => !authOn || verifySession(readCookie(req.headers.cookie, SESSION_COOKIE), SESSION_SECRET!);
+
+  // Max 10 wrong passwords per IP per 15 minutes (in memory: resets on restart)
+  const failures = new Map<string, { count: number; since: number }>();
+  app.post('/api/auth/login', (req: Request, res: Response) => {
+    const now = Date.now();
+    const entry = failures.get(req.ip ?? '');
+    if (entry && now - entry.since < 15 * 60_000 && entry.count >= 10) {
+      res.status(429).json({ error: 'Sai quá nhiều lần, thử lại sau 15 phút' });
+      return;
+    }
+    if (!authOn || !passwordMatches(req.body?.password, CLUB_PASSWORD!)) {
+      const fresh = entry && now - entry.since < 15 * 60_000 ? entry : { count: 0, since: now };
+      failures.set(req.ip ?? '', { count: fresh.count + 1, since: fresh.since });
+      res.status(401).json({ error: 'Sai mật khẩu' });
+      return;
+    }
+    failures.delete(req.ip ?? '');
+    res.cookie(SESSION_COOKIE, createSession(SESSION_SECRET!), { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: SESSION_MS });
+    res.json({ authenticated: true });
+  });
+  app.post('/api/auth/logout', (_req: Request, res: Response) => {
+    res.clearCookie(SESSION_COOKIE);
+    res.json({ authenticated: false });
+  });
+  app.get('/api/auth/me', (req: Request, res: Response) => {
+    res.json({ authenticated: loggedIn(req) });
+  });
+  app.use('/api', (req: Request, res: Response, next: NextFunction) => {
+    if (loggedIn(req)) next();
+    else res.status(401).json({ error: 'Chưa đăng nhập' });
+  });
 
   const OMDB_API_KEY = process.env.OMDB_API_KEY;
   if (!OMDB_API_KEY) {
