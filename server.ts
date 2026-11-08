@@ -303,6 +303,10 @@ async function startServer() {
       return;
     }
 
+    const normalizeTitle = (value: unknown) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().replace(/[^a-z0-9]/g, '');
+    const incomingTitles = [title, originalTitle].map(normalizeTitle).filter(Boolean);
+    const incomingYear = Number(year) || undefined;
+
     const newMovie: Movie = {
       id: `movie-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       title: title.trim(),
@@ -325,7 +329,20 @@ async function startServer() {
       createdAt: new Date().toISOString(),
     };
 
-    await moviesCol.doc(newMovie.id).set({ ...newMovie, _order: Date.now() });
+    await db.runTransaction(async (transaction) => {
+      const existingSnapshot = await transaction.get(moviesCol);
+      const duplicate = existingSnapshot.docs.find(doc => {
+        const movie = doc.data() as Movie;
+        const existingTitles = [movie.title, movie.originalTitle].map(normalizeTitle);
+        const titleMatches = incomingTitles.some(candidate => existingTitles.includes(candidate));
+        return titleMatches && (!incomingYear || !movie.year || Number(movie.year) === incomingYear);
+      });
+      if (duplicate) {
+        const movie = duplicate.data() as Movie;
+        throw Object.assign(new Error(`“${movie.title}” (${movie.year}) đã có trong kho.`), { status: 409 });
+      }
+      transaction.set(moviesCol.doc(newMovie.id), { ...newMovie, _order: Date.now() });
+    });
     res.status(201).json(newMovie);
   }));
 
@@ -702,7 +719,8 @@ async function startServer() {
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     console.error('API error:', err);
-    res.status(500).json({ error: 'Lỗi máy chủ khi đọc/ghi Firestore' });
+    const status = typeof err === 'object' && err !== null && 'status' in err && typeof err.status === 'number' ? err.status : 500;
+    res.status(status).json({ error: status === 409 && err instanceof Error ? err.message : 'Server error' });
   });
 
   // Fail fast with a clear message: without credentials the Firestore client crashes the process later

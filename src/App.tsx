@@ -140,7 +140,7 @@ export default function App() {
   }, [activeTab]);
 
   // Handle add movie
-  const handleAddMovie = async (movieData: Partial<Movie>) => {
+  const handleAddMovie = async (movieData: Partial<Movie>): Promise<boolean> => {
     try {
       const res = await fetch('/api/movies', {
         method: 'POST',
@@ -150,8 +150,25 @@ export default function App() {
       if (res.ok) {
         const savedMovie = await res.json();
         setMovies(prev => [savedMovie, ...prev]);
+        return true;
       } else {
-        // Optimistic local fallback
+        const error = await res.json().catch(() => ({}));
+        if (res.status === 409) {
+          alert(error.error || 'Phim này đã có trong kho.');
+          return false;
+        }
+        // Keep offline/local mode usable when the API is unavailable.
+        const normalizeTitle = (value: unknown) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().replace(/[^a-z0-9]/g, '');
+        const incomingTitle = normalizeTitle(movieData.originalTitle || movieData.title);
+        const incomingYear = Number(movieData.year) || undefined;
+        const duplicate = movies.find(m => {
+          const titleMatch = [m.title, m.originalTitle].some(title => normalizeTitle(title) === incomingTitle);
+          return titleMatch && (!incomingYear || !m.year || Number(m.year) === incomingYear);
+        });
+        if (duplicate) {
+          alert(`“${duplicate.title}” (${duplicate.year}) đã có trong kho.`);
+          return false;
+        }
         const fallbackMovie: Movie = {
           id: `movie-${Date.now()}`,
           title: movieData.title || 'Phim mới',
@@ -174,9 +191,28 @@ export default function App() {
           createdAt: new Date().toISOString(),
         };
         setMovies(prev => [fallbackMovie, ...prev]);
+        return true;
       }
     } catch {
-      // Offline fallback
+      const normalizeTitle = (value: unknown) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().replace(/[^a-z0-9]/g, '');
+      const incomingTitle = normalizeTitle(movieData.originalTitle || movieData.title);
+      const incomingYear = Number(movieData.year) || undefined;
+      const duplicate = movies.find(m => [m.title, m.originalTitle].some(title => normalizeTitle(title) === incomingTitle) && (!incomingYear || !m.year || Number(m.year) === incomingYear));
+      if (duplicate) {
+        alert(`“${duplicate.title}” (${duplicate.year}) đã có trong kho.`);
+        return false;
+      }
+      const fallbackMovie: Movie = {
+        id: `movie-${Date.now()}`, title: movieData.title || 'Phim mới', originalTitle: movieData.originalTitle,
+        year: movieData.year || 2024, durationMinutes: movieData.durationMinutes || 120,
+        genres: movieData.genres || ['Chính kịch'], director: movieData.director, country: movieData.country,
+        suggestedBy: movieData.suggestedBy || currentUser, vibe: movieData.vibe || 'Hành động đỉnh cao',
+        platform: movieData.platform || 'Netflix', posterUrl: movieData.posterUrl || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80',
+        trailerUrl: movieData.trailerUrl, watchUrl: movieData.watchUrl, synopsis: movieData.synopsis || '',
+        whyWatch: movieData.whyWatch || '', votes: [currentUser], watched: false, createdAt: new Date().toISOString(),
+      };
+      setMovies(prev => [fallbackMovie, ...prev]);
+      return true;
     }
   };
 

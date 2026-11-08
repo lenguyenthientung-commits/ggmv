@@ -9,7 +9,7 @@ interface AddMovieModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: string;
-  onAddMovie: (movieData: Partial<Movie>) => void;
+  onAddMovie: (movieData: Partial<Movie>) => Promise<boolean> | boolean;
 }
 
 interface OmdbSearchResult {
@@ -164,12 +164,12 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     sounds.playVintageSwitch();
-    onAddMovie({
+    const added = await onAddMovie({
       title: title.trim(),
       originalTitle: originalTitle.trim() || undefined,
       year: Number(year),
@@ -189,7 +189,7 @@ export const AddMovieModal: React.FC<AddMovieModalProps> = ({
       whyWatch: whyWatch.trim() || 'Phim hay anh em xem cuối tuần nhé!',
     });
 
-    onClose();
+    if (added) onClose();
   };
 
   return (
