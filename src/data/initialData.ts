@@ -200,7 +200,7 @@ export const INITIAL_MOVIES: Movie[] = [
     ],
     "director": "Antoine Fuqua",
     "actors": "Jaafar Jackson, Nia Long, Colman Domingo",
-    "suggestedBy": "Shiba",
+    "suggestedBy": "Thành",
     "vibe": "Hành động đỉnh cao",
     "platform": "Khác",
     "posterUrl": "https://m.media-amazon.com/images/M/MV5BNzllNmRlN2EtMDQyOC00ODJjLTg4OWQtZDNmNGU3YzlkNjc1XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
@@ -208,9 +208,8 @@ export const INITIAL_MOVIES: Movie[] = [
     "synopsis": "The early life of musician Michael Jackson, from the discovery of his talent as the lead of the Jackson Five to the artist whose creative ambition fueled a pursuit to become the biggest entertainer in the world.",
     "whyWatch": "🎖️ HẠNG #4 BXH GAY GANG (6.97★). Cháu ruột Jaafar Jackson tái hiện bước nhảy Moonwalk huyền thoại.",
     "votes": [
-      "Shiba",
-      "Lộc",
       "Thành",
+      "Lộc",
       "Lil Teng"
     ],
     "watched": true,
@@ -261,7 +260,7 @@ export const INITIAL_MOVIES: Movie[] = [
       "Võ thuật"
     ],
     "director": "Gavin O'Connor",
-    "suggestedBy": "Shiba",
+    "suggestedBy": "Thành",
     "vibe": "Hành động đỉnh cao",
     "platform": "Netflix",
     "posterUrl": "https://m.media-amazon.com/images/M/MV5BMTk4ODk5MTMyNV5BMl5BanBnXkFtZTcwMDMyNTg0Ng@@._V1_QL75_UX380_CR0,12,380,562_.jpg",
@@ -269,9 +268,8 @@ export const INITIAL_MOVIES: Movie[] = [
     "synopsis": "The youngest son of an alcoholic former boxer returns home, where he's trained by his father for competition in a mixed martial arts tournament - a path that puts the fighter on a collision course with his estranged older brother.",
     "whyWatch": "Tom Hardy đấm nhau MMA đỉnh cao, tình cảm anh em gia đình xúc động rớt nước mắt. Kèo cuối tuần siêu đầm!",
     "votes": [
-      "Shiba",
-      "Lộc",
-      "Thành"
+      "Thành",
+      "Lộc"
     ],
     "watched": false,
     "createdAt": "2026-10-01T10:00:00.000Z"
@@ -288,7 +286,7 @@ export const INITIAL_MOVIES: Movie[] = [
       "Kịch tính"
     ],
     "director": "James Mangold",
-    "suggestedBy": "Shiba",
+    "suggestedBy": "Thành",
     "vibe": "Hành động đỉnh cao",
     "platform": "HBO Max",
     "posterUrl": "https://m.media-amazon.com/images/M/MV5BOTBjNTEyNjYtYjdkNi00YzE5LTljYzUtZjVlYmYwZmJmZWYxXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
@@ -296,7 +294,7 @@ export const INITIAL_MOVIES: Movie[] = [
     "synopsis": "American car designer Carroll Shelby and driver Ken Miles battle corporate interference and the laws of physics to build a revolutionary race car for Ford in order to defeat Ferrari at the 24 Hours of Le Mans in 1966.",
     "whyWatch": "Tiếng gầm rú của động cơ V8 7.000 vòng/phút, Christian Bale và Matt Damon diễn ăn ý tuyệt đối.",
     "votes": [
-      "Shiba",
+      "Thành",
       "Lil Teng",
       "Nem"
     ],
@@ -342,7 +340,7 @@ export const INITIAL_MOVIES: Movie[] = [
       "Kịch tính"
     ],
     "director": "Thomas Vinterberg",
-    "suggestedBy": "Shiba",
+    "suggestedBy": "Thành",
     "vibe": "Căng não",
     "platform": "Netflix",
     "posterUrl": "https://m.media-amazon.com/images/M/MV5BMTg2NDg3ODg4NF5BMl5BanBnXkFtZTcwNzk3NTc3Nw@@._V1_QL75_UY562_CR7,0,380,562_.jpg",
@@ -350,9 +348,8 @@ export const INITIAL_MOVIES: Movie[] = [
     "synopsis": "A teacher lives a lonely life, all the while struggling over his son's custody. His life slowly gets better as he finds love, but his new luck is about to be brutally shattered by an innocent lie from a young girl.",
     "whyWatch": "Mads Mikkelsen diễn đỉnh nóc kịch trần. Xem xong thấy sự đáng sợ của tin đồn và đám đông định kiến.",
     "votes": [
-      "Shiba",
-      "Nem",
-      "Thành"
+      "Thành",
+      "Nem"
     ],
     "watched": false,
     "createdAt": "2026-10-04T10:00:00.000Z"
@@ -404,7 +401,6 @@ export const INITIAL_MOVIES: Movie[] = [
     "whyWatch": "Adrien Brody đóng cảnh sống sót giữa tàn tích đổ nát lay động tận tâm can. Nhạc Chopin vang lên rùng mình.",
     "votes": [
       "Lil Teng",
-      "Shiba",
       "Thành"
     ],
     "watched": false,
@@ -431,7 +427,7 @@ export const INITIAL_MOVIES: Movie[] = [
     "whyWatch": "Phim tình bạn thiếu thời đỉnh nhất mọi thời đại. Hội bạn thân xem phim này thì chỉ có ôm nhau tâm sự đến sáng.",
     "votes": [
       "Lộc",
-      "Shiba",
+      "Thành",
       "Hoèn",
       "Nem"
     ],
@@ -537,9 +533,8 @@ export const INITIAL_MOVIES: Movie[] = [
     "whyWatch": "Gã sát thủ Anton Chigurh cầm bình khí nén tung đồng xu xem ai sống ai chết. Lạnh gáy từng giây!",
     "votes": [
       "Nem",
-      "Shiba",
-      "Lộc",
-      "Thành"
+      "Thành",
+      "Lộc"
     ],
     "watched": false,
     "createdAt": "2026-10-11T10:00:00.000Z"
@@ -565,8 +560,7 @@ export const INITIAL_MOVIES: Movie[] = [
     "whyWatch": "Cực kỳ hợp cho hội anh em tụ tập uống bia, hài thông minh tình huống dở khóc dở cười liên tục.",
     "votes": [
       "Lộc",
-      "Thành",
-      "Shiba"
+      "Thành"
     ],
     "watched": false,
     "createdAt": "2026-10-12T10:00:00.000Z"
@@ -617,9 +611,8 @@ export const INITIAL_MOVIES: Movie[] = [
     "whyWatch": "\"Say hello to my little friend!\". Tony Montana là tượng đài bất hủ của phim xã hội đen thế giới.",
     "votes": [
       "Lil Teng",
-      "Shiba",
-      "Nem",
-      "Thành"
+      "Thành",
+      "Nem"
     ],
     "watched": false,
     "createdAt": "2026-10-14T10:00:00.000Z"
@@ -636,7 +629,7 @@ export const INITIAL_MOVIES: Movie[] = [
       "Hài hước"
     ],
     "director": "Daniel Kwan, Daniel Scheinert",
-    "suggestedBy": "Shiba",
+    "suggestedBy": "Thành",
     "vibe": "Hài bựa",
     "platform": "VieON",
     "posterUrl": "https://m.media-amazon.com/images/M/MV5BOWNmMzAzZmQtNDQ1NC00Nzk5LTkyMmUtNGI2N2NkOWM4MzEyXkEyXkFqcGc@._V1_QL75_UY562_CR4,0,380,562_.jpg",
@@ -644,7 +637,7 @@ export const INITIAL_MOVIES: Movie[] = [
     "synopsis": "A middle-aged Chinese immigrant is swept up into an insane adventure in which she alone can save existence by exploring other universes and connecting with the lives she could have led.",
     "whyWatch": "Thắng 7 giải Oscar. Ý tưởng quái đản hài hước nhưng đoạn hai tảng đá nói chuyện làm cả rạp xúc động nghẹn ngào.",
     "votes": [
-      "Shiba",
+      "Thành",
       "Lộc",
       "Lil Teng"
     ],
@@ -663,7 +656,7 @@ export const INITIAL_MOVIES: Movie[] = [
       "Kịch tính"
     ],
     "director": "Ron Howard",
-    "suggestedBy": "Shiba",
+    "suggestedBy": "Thành",
     "vibe": "Hành động đỉnh cao",
     "platform": "Netflix",
     "posterUrl": "https://m.media-amazon.com/images/M/MV5BMTZhOGQxM2ItNGQyYy00YzE5LWI5MjMtNmMzNGQzNDE1OTUzXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
@@ -671,7 +664,6 @@ export const INITIAL_MOVIES: Movie[] = [
     "synopsis": "James Hunt and Niki Lauda, two extremely skilled Formula One racers, have an intense rivalry with each other. However, it is their enmity that pushes them to their limits.",
     "whyWatch": "Cuộc đối đầu huyền thoại F1 mùa giải 1976. Xem cảnh Niki Lauda trở lại sau vụ tai nạn thiêu cháy mà nổi da gà.",
     "votes": [
-      "Shiba",
       "Thành",
       "Nem"
     ],
@@ -689,7 +681,7 @@ export const INITIAL_MOVIES: Movie[] = [
       "Kịch tính"
     ],
     "director": "Joseph Kosinski",
-    "suggestedBy": "Shiba",
+    "suggestedBy": "Thành",
     "vibe": "Hành động đỉnh cao",
     "platform": "HBO Max",
     "posterUrl": "https://m.media-amazon.com/images/M/MV5BMDBkZDNjMWEtOTdmMi00NmExLTg5MmMtNTFlYTJlNWY5YTdmXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg",
@@ -697,9 +689,8 @@ export const INITIAL_MOVIES: Movie[] = [
     "synopsis": "The story involves Maverick confronting his past while training a group of younger Top Gun graduates, including the son of his deceased best friend, for an impossible mission.",
     "whyWatch": "Tom Cruise tự lái máy bay tiêm kích thật 100%. Xem trên màn chiếu lớn với âm thanh vòm thì sướng run người!",
     "votes": [
-      "Shiba",
-      "Lộc",
       "Thành",
+      "Lộc",
       "Lil Teng"
     ],
     "watched": false,
@@ -780,7 +771,6 @@ export const INITIAL_MOVIES: Movie[] = [
       "Lil Teng",
       "Lộc",
       "Thành",
-      "Shiba",
       "Hoèn",
       "Nem"
     ],
@@ -799,7 +789,7 @@ export const INITIAL_SESSIONS: WeekendSession[] = [
     "location": "Rạp Chiếu Riêng Tư Gay Gang // Phòng Khách Nhà Lộc",
     "snackDuty": [
       {
-        "person": "Shiba",
+        "person": "Thành",
         "item": "1 Thùng Bia Heineken Bạc & Bỏng Ngô Phô Mai"
       },
       {
@@ -812,11 +802,6 @@ export const INITIAL_SESSIONS: WeekendSession[] = [
       }
     ],
     "attendees": [
-      {
-        "name": "Shiba",
-        "status": "going",
-        "note": "Chắc chắn có mặt đúng 20h20 chuẩn bị bia"
-      },
       {
         "name": "Lil Teng",
         "status": "going",

@@ -21,7 +21,8 @@ import { clubBadges, archiveBadgeIds, takeNewArchiveBadges, findBadge } from './
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string>(() => {
-    return localStorage.getItem('cinebro_user') || 'Shiba';
+    const saved = localStorage.getItem('cinebro_user');
+    return !saved || saved === 'Shiba' ? 'Thành' : saved; // Shiba was merged into Thành
   });
 
   const [activeTab, setActiveTab] = useState<'movies' | 'wheel' | 'sessions' | 'archive' | 'achievements' | 'stats'>('movies');

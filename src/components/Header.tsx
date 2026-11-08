@@ -31,7 +31,6 @@ export const BROTHERS_LIST = [
   'Lil Teng',
   'Lộc',
   'Thành',
-  'Shiba',
   'Hoèn',
   'Nem',
 ];

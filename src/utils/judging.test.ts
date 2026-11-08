@@ -35,7 +35,7 @@ test('a partly scored film stays unranked even with a review or an old average',
 });
 
 test('reviews stand in only while no judge has scored', () => {
-  const m = movie({ reviews: [review('Nem', 7), review('Shiba', 8)] });
+  const m = movie({ reviews: [review('Nem', 7), review('Hoèn', 8)] });
   recalcAverage(m);
   assert.equal(m.scoreAvg, 7.5);
   assert.equal(rankScore(m), 7.5);
